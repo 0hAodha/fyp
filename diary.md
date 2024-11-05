@@ -1,4 +1,8 @@
 ## Tue 05 Nov 2024
+- Started diary file.
+- Created Git repository.
+- Added diary, PDD, & final report to Git repository.
+
 ### Meeting with Supervisor
 - Discussed research ethics, supervisor sent the following documents from the research ethics committee:
   - Plain language statement.
