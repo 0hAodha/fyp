@@ -28,7 +28,7 @@
 - Discussed map & plotting libraries:
   - Leading choice is Mapbox: works with React Native, free up to 50,000 monthly map loads.
 - Action items:
-  - [ ] Create final report LaTeX document.
+  - [X] Create final report LaTeX document.
   - [X] Add skeleton of PDD to Git repository.
   - [ ] Make decision on React vs React Native.
 
