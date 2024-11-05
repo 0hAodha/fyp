@@ -1,0 +1,99 @@
+%! TeX program = lualatex
+\documentclass[a4paper,11pt]{article} 
+% packages
+\usepackage{censor}
+\StopCensoring
+\usepackage{fontspec}
+\setmainfont{EB Garamond}
+% for tironian et fallback
+% % \directlua{luaotfload.add_fallback
+% % ("emojifallback",
+% %      {"Noto Serif:mode=harf"}
+% % )}
+% % \setmainfont{EB Garamond}[RawFeature={fallback=emojifallback}]
+
+\setmonofont[Scale=MatchLowercase]{Deja Vu Sans Mono}
+\usepackage[a4paper,left=2cm,right=2cm,top=\dimexpr15mm+1.5\baselineskip,bottom=2cm]{geometry}
+\setlength{\parindent}{0pt}
+
+\usepackage{fancyhdr}       % Headers and footers 
+\fancyhead[R]{\normalfont \leftmark}
+\fancyhead[L]{}
+\pagestyle{fancy}
+
+\usepackage{microtype}      % Slightly tweak font spacing for aesthetics
+\usepackage[english]{babel} % Language hyphenation and typographical rules
+\usepackage{xcolor}
+\definecolor{linkblue}{RGB}{0, 64, 128}
+\usepackage[final, colorlinks = false, urlcolor = linkblue]{hyperref} 
+% \newcommand{\secref}[1]{\textbf{§~\nameref{#1}}}
+\newcommand{\secref}[1]{\textbf{§\ref{#1}~\nameref{#1}}}
+
+\usepackage{changepage}     % adjust margins on the fly
+
+\usepackage{minted}
+\usemintedstyle{algol_nu}
+
+\usepackage{pgfplots}
+\pgfplotsset{width=\textwidth,compat=1.9}
+
+\usepackage{caption}
+\newenvironment{code}{\captionsetup{type=listing}}{}
+\captionsetup[listing]{skip=0pt}
+\setlength{\abovecaptionskip}{5pt}
+\setlength{\belowcaptionskip}{5pt}
+
+\usepackage[yyyymmdd]{datetime}
+\renewcommand{\dateseparator}{--}
+
+\usepackage{enumitem}
+
+\usepackage{titlesec}
+
+\author{Andrew Hayes}
+
+\begin{document}
+\begin{titlepage}
+    \begin{center}
+        \hrule
+        \vspace*{0.6cm}
+        \Huge \textsc{ct413}
+        \vspace*{0.6cm}
+        \hrule
+        \LARGE
+       \vspace{0.5cm}
+       Project Definition Document
+       \vspace{0.5cm}
+       \hrule
+       \vfill
+       \hrule
+        \begin{minipage}{0.495\textwidth} 
+            \vspace{0.4em}
+            \raggedright
+            \normalsize 
+            \begin{tabular}{@{}l l}
+                Name: & Andrew Hayes \\
+                Student ID: & 21321503 \\
+                % E-mail: & \href{mailto://a.hayes18@universityofgalway.ie}{a.hayes18@universityofgalway.ie} \\
+                Programme: & 4BCT
+            \end{tabular}
+        \end{minipage}
+        \begin{minipage}{0.495\textwidth} 
+            \raggedleft
+            \vspace*{0.8cm}
+            \Large
+            \today
+            \vspace*{0.6cm}
+        \end{minipage}
+        \medskip\hrule 
+    \end{center}
+\end{titlepage}
+
+\pagenumbering{roman}
+\newpage
+\tableofcontents
+\newpage
+\setcounter{page}{1}
+\pagenumbering{arabic}
+
+\end{document}
