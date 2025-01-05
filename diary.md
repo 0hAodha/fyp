@@ -1,3 +1,15 @@
+## Sun 05 Jan 2025
+- Finish PDD.
+  - Add Gantt chart.
+- Submit PDD.
+- Merge old diary formats into one.
+
+## Tue 19 Nov 2024
+- Research into research ethics.
+- Research user feedback gathering.
+- Draft survey.
+- Packed in for exams / Christmas holidays.
+
 ## Tue 05 Nov 2024
 - Started diary file.
 - Created Git repository.
@@ -34,5 +46,28 @@
 - Action items:
   - [X] Create final report LaTeX document.
   - [X] Add skeleton of PDD to Git repository.
-  - [ ] Make decision on React vs React Native.
+  - [X] Make decision on React vs React Native.
 
+## Tue 29 Oct 2024
+- Work on map POC, test various map technologies.
+- Work on basic "plotting points on a map" POC. 
+- Moved meetings to every second week.
+
+## Tue 22 Oct 2024
+- Work on API call POC, various languages.
+
+## Tue 15 Oct 2024
+- Research existing technologies.
+- React Native Hello World.
+- For the backend, I'm currently leaning towards the AWS Student Plan as I have some experience in AWS and the NoSQL nature of DynamoDB would likely be the most suitable for the JSON data that I would likely be working with in the application itself. However, I still need to do further research on this, ideally getting an estimate of how much compute power I will actually need (keeping in mind that a NoSQL database will likely require more computation to generate statistical data on than a structured SQL database) and ensuring that I can stay within the limits given by the AWS student plan.
+
+## Tue 08 Oct 2024
+- Had first meeting with supervisor.
+- Discussed project in general.
+- Decided to focus on live tracking of public transport.
+- Research APIs and potential technologies to use.
+
+## Mon 07 Oct 2024
+- Received project allocations.
+- Reached out to allocated project supervisor (Dr. Adrian Clear).
+- Scheduled weekly meetings every Tuesday at 12.
