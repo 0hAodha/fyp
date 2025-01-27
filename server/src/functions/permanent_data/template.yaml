@@ -1,0 +1,11 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  MyLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: permanent_data.lambda_handler
+      Runtime: python3.13  # or whatever Python version you're using
+      CodeUri: .
+      MemorySize: 1000
+      Timeout: 600
