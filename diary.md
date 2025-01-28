@@ -1,3 +1,17 @@
+## Mon 27 Jan 2025
+- Create transient_data DynamoDB database in AWS.
+- Deploy transient_data.py to DynamoDB and execute it.
+- Realise AWS costs are $0.04 already: using too many WriteUnits in DynamoDB.
+  - Not sure what this means, must investigate.
+
+## Sun 26 Jan 2025
+- Write transient_data.py to fetch live data.
+- Write permanent_data.py to fetch live data.
+- Decide to fetch Luas data as-needed, only efficient way to do it.
+- Decide to separate data into permanent data (e.g., station data) and transient data (e.g., train data).
+- Create permanent_data DynamoDB database in AWS.
+- Deploy permanent_data.py to DynamoDB and execute it.
+
 ## Sun 05 Jan 2025
 - Finish PDD.
   - Add Gantt chart.
