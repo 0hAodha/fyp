@@ -1,3 +1,20 @@
+## Wed 27 Feb 2025
+- Add `return_newest_data` and `return_all_data`.
+- Set up API endpoints for getting all permanent data and newest transient data on AWS.
+
+## Tue 26 Feb 2025
+- Met with supervisor.
+- Not a lot of time, need plan for final few weeks.
+- Work on frontend this weekend.
+- Get database working locally.
+- Was working on getting server working locally, got database and lambdas working but couldn't get them to talk to each other.
+
+## Tue 11 Feb 2025
+- Meeting with supervisor.
+- Discussed avoiding costs for AWS database.
+- Decided to prioritise getting the functions working locally, either with an AWS simulation of some kind (to be investigated) or by adapting the functions to be more agnostic and write to something like a locally hosted MongoDB.
+- Discussed showing the report to supervisor soon.
+
 ## Mon 27 Jan 2025
 - Create transient_data DynamoDB database in AWS.
 - Deploy transient_data.py to DynamoDB and execute it.
