@@ -1,12 +1,12 @@
-## Thu 28 Feb 2025
+## Thu 27 Feb 2025
 - Set up frontend with ReactJS.
 - Test plot, map zoom, etc.
 
-## Wed 27 Feb 2025
+## Wed 26 Feb 2025
 - Add `return_newest_data` and `return_all_data`.
 - Set up API endpoints for getting all permanent data and newest transient data on AWS.
 
-## Tue 26 Feb 2025
+## Tue 25 Feb 2025
 - Met with supervisor.
 - Not a lot of time, need plan for final few weeks.
 - Work on frontend this weekend.
