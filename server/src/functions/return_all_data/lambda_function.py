@@ -11,6 +11,10 @@ def lambda_handler(event, context):
 
         items = response.get('Items', [])
 
+        if 'queryStringParameters' in event and event['queryStringParameters'] and 'objectType' in event['queryStringParameters']:
+            objectType = event['queryStringParameters']['objectType']
+            items = [item for item in items if item['objectType'] == objectType]
+
         return {
             'statusCode': 200,
             'body': json.dumps(items)
