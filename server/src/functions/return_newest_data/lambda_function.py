@@ -18,7 +18,8 @@ def lambda_handler(event, context):
 
         # assuming that filtering by timestamp first makes sense, as we expect to have a lot of historical data and not many object types
         if 'queryStringParameters' in event and event['queryStringParameters'] and 'objectType' in event['queryStringParameters']:
-            newest_items = [item for item in items if item['objectType'] == event['queryStringParameters']['objectType']]
+            objectType = event['queryStringParameters']['objectType']
+            newest_items = [item for item in newest_items if item['objectType'] == objectType]
 
         return {
             'statusCode': 200,
