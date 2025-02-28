@@ -76,6 +76,29 @@ def fetch_gtfs():
     zip_file = requests.get(url).content
 
     with zipfile.ZipFile(io.BytesIO(zip_file)) as zip:
+        # will need to access the list of agencies for later objects, so keeping separate
+        agencies = []
+
+        # extract agencies data
+        if "agencies.txt" in zip.namelist():
+            with zip.open("agencies.txt") as file:
+                agencies_csv = file.read().decode('utf-8')
+                csv_reader = csv.DictReader(agencies_csv.splitlines(), delimiter=",")
+                agencies_json = [row for row in csv_reader]
+
+                for agency in agencies_json:
+                    agencies.append({
+                        "objectID": "BusAgency" + agency["agency_id"],
+                        "objectType": "BusAgency",
+                        # no latitude or longitude
+
+                        "busAgencyID": agency["agency_id"],
+                        "busAgencyName": agency["agency_name"],
+                        "busAgencyURL": agency["agency_url"]
+                    })
+
+        data += agencies
+
         # extract routes data
         if "routes.txt" in zip.namelist():
             with zip.open("routes.txt") as file:
@@ -89,7 +112,9 @@ def fetch_gtfs():
                         "objectType": "BusRoute",
                         # no latitude or longitude
 
+                        "busRouteID": route["route_id"],
                         "busRouteAgencyID": route["agency_id"],
+                        "busRouteAgencyName": next((agency['busAgencyName'] for agency in agencies if agency['busAgencyID'] == route["agency_id"]), None),
                         "busRouteShortName": route["route_short_name"],
                         "busRouteLongName": route["route_long_name"]
                     })
@@ -140,3 +165,8 @@ def lambda_handler(event, context):
 
     except Exception as e:
         return {"statusCode": 500, "error": str(e)}
+
+
+if "__main__" == __name__:
+    data = fetch_train_stations() + fetch_luas() + fetch_gtfs()
+    print(json.dumps(data))
