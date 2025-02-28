@@ -1,3 +1,9 @@
+## Fri 28 Feb 2025
+- Update newest_data API to accept objectType arguments.
+  - Add test script to test this.
+- Update all_data API to accept objectType arguments.
+  - Add test script to test this.
+
 ## Thu 27 Feb 2025
 - Set up frontend with ReactJS.
 - Test plot, map zoom, etc.
