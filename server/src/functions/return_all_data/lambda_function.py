@@ -7,9 +7,15 @@ table = dynamodb.Table(os.environ['TABLE_NAME'])
 
 def lambda_handler(event, context):
     try:
+        items = []
         response = table.scan()
 
-        items = response.get('Items', [])
+        items.extend(response.get('Items', []))
+
+        # continue to scan while there are more pages
+        while 'LastEvaluatedKey' in response:
+            response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+            items.extend(response.get('Items', []))
 
         if 'queryStringParameters' in event and event['queryStringParameters'] and 'objectType' in event['queryStringParameters']:
             objectType = event['queryStringParameters']['objectType']
