@@ -1,6 +1,8 @@
 ## Thu 27 Feb 2025
 - Set up frontend with ReactJS.
 - Test plot, map zoom, etc.
+- Checked AWS spending; all good for API requests.
+- Created icons.
 
 ## Wed 26 Feb 2025
 - Add `return_newest_data` and `return_all_data`.
