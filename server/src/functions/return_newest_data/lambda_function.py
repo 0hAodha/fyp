@@ -8,14 +8,17 @@ table = dynamodb.Table(os.environ['TABLE_NAME'])
 
 def lambda_handler(event, context):
     try:
-        # Scan the table to get all items
         response = table.scan(
             FilterExpression=Attr('timestamp').exists()
         )
         items = response['Items']
 
-        newest_timestamp = max([int(item['timestamp'] for item in items)])
+        newest_timestamp = max([int(item['timestamp']) for item in items])
         newest_items = [item for item in items if int(item['timestamp']) == newest_timestamp]
+
+        # assuming that filtering by timestamp first makes sense, as we expect to have a lot of historical data and not many object types
+        if 'queryStringParameters' in event and event['queryStringParameters'] and 'objectType' in event['queryStringParameters']:
+            newest_items = [item for item in items if item['objectType'] == event['queryStringParameters']['objectType']]
 
         return {
             'statusCode': 200,
