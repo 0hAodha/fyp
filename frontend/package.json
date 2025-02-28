@@ -16,6 +16,7 @@
     "postcss": "^8.5.3",
     "react": "^19.0.0-rc.1",
     "react-dom": "^19.0.0-rc.1",
+    "react-helmet": "^6.1.0",
     "react-leaflet": "^5.0.0-rc.2",
     "tailwindcss": "^4.0.9"
   },
