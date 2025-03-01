@@ -100,7 +100,12 @@ def fetch_buses():
     response.raise_for_status()
     buses_json = response.json()
 
+    bus_routes_list = fetch_bus_routes()
+    bus_routes_hashmap = {route["busRouteID"]: route for route in bus_routes_list if "busRouteID" in route}
+
     for bus in buses_json["entity"]:
+        busRouteID = str(bus["vehicle"]["trip"]["route_id"])
+
         buses.append({
             "objectID": "Bus-" + bus["id"],
             "objectType": "Bus",
@@ -114,11 +119,22 @@ def fetch_buses():
             "busStartTime": str(bus["vehicle"]["trip"]["start_time"]),
             "busStartDate": str(bus["vehicle"]["trip"]["start_date"]),
             "busScheduleRelationship": str(bus["vehicle"]["trip"]["schedule_relationship"]),
-            "busRoute": str(bus["vehicle"]["trip"]["route_id"]),
+            "busRoute": busRouteID,
+            "busRouteAgencyName": str(bus_routes_hashmap[busRouteID]["busRouteAgencyName"]),
+            "busRouteLongName": str(bus_routes_hashmap[busRouteID]["busRouteLongName"]),
+            "busRouteShortName": str(bus_routes_hashmap[busRouteID]["busRouteShortName"]),
             "busDirection": str(bus["vehicle"]["trip"]["direction_id"]),
         })
 
     return buses
+
+# function to fetch bus route data
+def fetch_bus_routes():
+    permanent_data_api = os.environ["PERMANENT_DATA_API"]
+    routes = requests.get(permanent_data_api + "?objectType=BusRoute").json()
+
+    return routes
+
 
 def lambda_handler(event, context):
     print("Lambda handler triggered; fetching data.")
