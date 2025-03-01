@@ -106,8 +106,8 @@ def fetch_gtfs():
         agencies = []
 
         # extract agencies data
-        if "agencies.txt" in zip.namelist():
-            with zip.open("agencies.txt") as file:
+        if "agency.txt" in zip.namelist():
+            with zip.open("agency.txt") as file:
                 agencies_csv = file.read().decode('utf-8')
                 csv_reader = csv.DictReader(agencies_csv.splitlines(), delimiter=",")
                 agencies_json = [row for row in csv_reader]
