@@ -6,6 +6,7 @@
 - Fix missing bus agency data in permanent data.
 - Add bus route information to bus objects in transient data.
 - Filter POC and train plotting.
+- Cluster overlapping icons + add toggle.
 
 ## Fri 28 Feb 2025
 - Update newest_data API to accept objectType arguments.
