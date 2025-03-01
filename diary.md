@@ -3,6 +3,8 @@
   - Sped up querying IrishRailStations from approx 10s to 1s (10x improvement!).
 - Add GSI and sort code to transient_data to allow efficient querying.
   - Sped up querying around 8x.
+- Fix missing bus agency data in permanent data.
+- Add bus route information to bus objects in transient data.
 
 ## Fri 28 Feb 2025
 - Update newest_data API to accept objectType arguments.
