@@ -12,8 +12,10 @@ dynamodb = boto3.resource("dynamodb")
 # API URLs
 irishrail_url = "http://api.irishrail.ie/realtime/realtime.asmx/"
 
-# function to fetch Irish Rail station data
-def fetch_train_stations():
+# function to fetch Irish Rail station data with types
+# this function seems to be missing stations -- the API must have some uncategorised stations that it won't return
+# unfortunately, this is the only way to categorise stations as the API won't return the station's category
+def fetch_train_stations_with_type():
     api_function = "getAllStationsXML_WithStationType?StationType="
     station_types = ["M", "S", "D"]
     stations = []
@@ -37,6 +39,30 @@ def fetch_train_stations():
             })
 
     return stations
+
+# function to fetch Irish Rail station data without types
+def fetch_train_stations():
+    api_function = "getAllStationsXML"
+    stations = []
+
+    stations_xml  = requests.get(irishrail_url + api_function).text
+    stations_json = json.loads(json.dumps(xmltodict.parse(stations_xml)))
+
+    for station in stations_json["ArrayOfObjStation"]["objStation"]:
+        stations.append({
+            "objectID": "IrishRailStation-" + station["StationCode"],
+            "objectType": "IrishRailStation",
+            "latitude": station["StationLatitude"],
+            "longitude": station["StationLongitude"],
+
+            "trainStationID": station["StationId"],
+            "trainStationCode": station["StationCode"],
+            "trainStationAlias": station["StationAlias"],
+            "trainStationDesc": station["StationDesc"],
+        })
+
+    return stations
+
 
 
 # function to fetch Luas stops data
