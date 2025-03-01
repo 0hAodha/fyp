@@ -1,31 +1,62 @@
 import boto3
 import json
-from boto3.dynamodb.conditions import Attr
 import os
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ['TABLE_NAME'])
+gsi_name = "objectType-index"
 
 def lambda_handler(event, context):
     try:
-        response = table.scan(
-            FilterExpression=Attr('timestamp').exists()
-        )
-        items = response['Items']
+        query_params = event.get('queryStringParameters', {}) or {}
+        object_type = query_params.get('objectType')
 
-        newest_timestamp = max([int(item['timestamp']) for item in items])
-        newest_items = [item for item in items if int(item['timestamp']) == newest_timestamp]
+        # Step 1: Retrieve the latest timestamp
+        if object_type:
+            response = table.query(
+                IndexName=gsi_name,
+                KeyConditionExpression="objectType = :obj",
+                ProjectionExpression="#ts",
+                ExpressionAttributeNames={"#ts": "timestamp"},
+                ExpressionAttributeValues={":obj": object_type},
+                Limit=1,
+                ScanIndexForward=False  # Get the latest timestamp
+            )
+        else:
+            response = table.scan(
+                ProjectionExpression="#ts",
+                ExpressionAttributeNames={"#ts": "timestamp"}
+            )
 
-        # assuming that filtering by timestamp first makes sense, as we expect to have a lot of historical data and not many object types
-        if 'queryStringParameters' in event and event['queryStringParameters'] and 'objectType' in event['queryStringParameters']:
-            objectType = event['queryStringParameters']['objectType']
-            newest_items = [item for item in newest_items if item['objectType'] == objectType]
+        if not response.get('Items'):
+            return {'statusCode': 200, 'body': json.dumps([])}
+
+        # Extract the newest timestamp
+        newest_timestamp = max(int(item['timestamp']) for item in response['Items'])
+
+        # Convert newest_timestamp to the correct type for DynamoDB comparison
+        if object_type:
+            response = table.query(
+                IndexName=gsi_name,
+                KeyConditionExpression="objectType = :obj AND #ts = :ts",
+                ExpressionAttributeNames={"#ts": "timestamp"},
+                ExpressionAttributeValues={
+                    ":obj": object_type,
+                    ":ts": str(newest_timestamp)  # Ensure correct type
+                }
+            )
+        else:
+            response = table.scan(
+                FilterExpression="#ts = :ts",
+                ExpressionAttributeNames={"#ts": "timestamp"},
+                ExpressionAttributeValues={":ts": str(newest_timestamp)}  # Ensure correct type
+            )
 
         return {
             'statusCode': 200,
-            'body': json.dumps(newest_items)
+            'body': json.dumps(response['Items'])
         }
-    
+
     except Exception as e:
         return {
             'statusCode': 500,
