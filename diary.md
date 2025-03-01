@@ -1,6 +1,8 @@
 ## Sat 01 Mar 2025
 - Add GSI to permanent_data table to allow efficient querying of objects by type.
   - Sped up querying IrishRailStations from approx 10s to 1s (10x improvement!).
+- Add GSI and sort code to transient_data to allow efficient querying.
+  - Sped up querying around 8x.
 
 ## Fri 28 Feb 2025
 - Update newest_data API to accept objectType arguments.
