@@ -8,6 +8,9 @@ import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
 import trainStationIconURL from "../assets/icons/train-station.png";
 import trainIconURL from "../assets/icons/train.png";
+import luasIconURL from "../assets/icons/tram-station.png";
+import busStopIconURL from "../assets/icons/bus-station.png";
+import busIconURL from "../assets/icons/bus.png";
 
 // Fix Leaflet marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -19,7 +22,10 @@ L.Icon.Default.mergeOptions({
 
 const icons = new Map([
     ["IrishRailStation", new Icon({ iconUrl: trainStationIconURL, iconSize: [24, 24] })],
-    ["IrishRailTrain", new Icon({ iconUrl: trainIconURL, iconSize: [24, 24] })],
+    ["IrishRailTrain", new Icon({ iconUrl: trainIconURL, iconSize: [38, 38] })],
+    ["LuasStop", new Icon({ iconUrl: luasIconURL, iconSize: [38, 38] })],
+    ["BusStop", new Icon({ iconUrl: busStopIconURL, iconSize: [24, 24] })],
+    ["Bus", new Icon({ iconUrl: busIconURL, iconSize: [38, 38] })],
 ]);
 
 const MapComponent = ({ markers, clusteringEnabled }) => {

@@ -5,6 +5,9 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
     const dataSources = [
         { id: "IrishRailTrains", name: "Irish Rail Trains" },
         { id: "IrishRailStations", name: "Irish Rail Stations" },
+        { id: "LuasStops", name: "Luas Stops" },
+        { id: "BusStops", name: "Bus Stops" },
+        { id: "Buses", name: "Buses", },
     ];
 
     return (

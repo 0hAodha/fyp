@@ -9,6 +9,9 @@ const PERMANENT_DATA_API = "https://a6y312dpuj.execute-api.us-east-1.amazonaws.c
 const dataSources = [
     { id: "IrishRailTrains", name: "Irish Rail Trains", url: `${TRANSIENT_DATA_API}?objectType=IrishRailTrain` },
     { id: "IrishRailStations", name: "Irish Rail Stations", url: `${PERMANENT_DATA_API}?objectType=IrishRailStation` },
+    { id: "LuasStops", name: "Luas Stops", url: `${PERMANENT_DATA_API}?objectType=LuasStop` },
+    { id: "BusStops", name: "Bus Stops", url: `${PERMANENT_DATA_API}?objectType=BusStop` },
+    { id: "Buses", name: "Buses", url: `${TRANSIENT_DATA_API}?objectType=Bus` },
 ];
 
 function App() {
