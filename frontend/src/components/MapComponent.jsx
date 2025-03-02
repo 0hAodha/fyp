@@ -8,7 +8,17 @@ import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
 import trainStationIconURL from "../assets/icons/train-station.png";
 import trainIconURL from "../assets/icons/train.png";
+
+import trainNotRunningIconURL from "../assets/icons/trainNotRunning.png";
+import trainOnTimeIconURL from "../assets/icons/train_ontime.png";
+import trainLateIconURL from "../assets/icons/train_late.png";
+
+import dartNotRunningIconURL from "../assets/icons/DARTnotRunning.png";
+import dartOnTimeIconURL from "../assets/icons/DARTOnTime.png";
+import dartLateIconURL from "../assets/icons/DARTLate.png";
+
 import luasIconURL from "../assets/icons/tram-station.png";
+
 import busStopIconURL from "../assets/icons/bus-station.png";
 import busIconURL from "../assets/icons/bus.png";
 
@@ -23,6 +33,19 @@ L.Icon.Default.mergeOptions({
 const icons = new Map([
     ["IrishRailStation", new Icon({ iconUrl: trainStationIconURL, iconSize: [24, 24] })],
     ["IrishRailTrain", new Icon({ iconUrl: trainIconURL, iconSize: [38, 38] })],
+
+    ["mainlineNotRunning", new Icon({ iconUrl: trainNotRunningIconURL, iconSize: [38, 38] })],
+    ["mainlineOnTime", new Icon({ iconUrl: trainOnTimeIconURL, iconSize: [38, 38] })],
+    ["mainlineLate", new Icon({ iconUrl: trainLateIconURL, iconSize: [38, 38] })],
+
+    ["suburbanNotRunning", new Icon({ iconUrl: trainNotRunningIconURL, iconSize: [38, 38] })],
+    ["suburbanOnTime", new Icon({ iconUrl: trainOnTimeIconURL, iconSize: [38, 38] })],
+    ["suburbanLate", new Icon({ iconUrl: trainLateIconURL, iconSize: [38, 38] })],
+
+    ["dartNotRunning", new Icon({ iconUrl: dartNotRunningIconURL, iconSize: [38, 38] })],
+    ["dartOnTime", new Icon({ iconUrl: dartOnTimeIconURL, iconSize: [38, 38] })],
+    ["dartLate", new Icon({ iconUrl: dartLateIconURL, iconSize: [38, 38] })],
+
     ["LuasStop", new Icon({ iconUrl: luasIconURL, iconSize: [38, 38] })],
     ["BusStop", new Icon({ iconUrl: busStopIconURL, iconSize: [24, 24] })],
     ["Bus", new Icon({ iconUrl: busIconURL, iconSize: [38, 38] })],
