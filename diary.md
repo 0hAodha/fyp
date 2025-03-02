@@ -1,3 +1,6 @@
+## Sun 02 Mar 2025
+- Refactor frontend into separate components.
+
 ## Sat 01 Mar 2025
 - Add GSI to permanent_data table to allow efficient querying of objects by type.
   - Sped up querying IrishRailStations from approx 10s to 1s (10x improvement!).
