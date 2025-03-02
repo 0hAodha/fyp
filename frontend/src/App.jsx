@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import MapComponent from "./components/MapComponent";
 import LoadingOverlay from "./components/LoadingOverlay";
+import LuasPopup from "./components/LuasPopup";
 
 const TRANSIENT_DATA_API = "https://281bc6mcm5.execute-api.us-east-1.amazonaws.com/transient_data";
 const PERMANENT_DATA_API = "https://a6y312dpuj.execute-api.us-east-1.amazonaws.com/permanent_data";
@@ -140,6 +141,26 @@ function App() {
                                         <li><b>Bus Stop Code:</b> {item.busStopCode || "N/A"}</li>
                                     </ul>
                                 </div>
+                            );
+                            break;
+
+                        case "LuasStop":
+                            objectTitle = item.luasStopName + " Luas Stop";
+                            let luasLine;
+
+                            switch (item.luasStopLineID) {
+                                case "1":
+                                    luasLine = "Green Line";
+                                    break;
+                                case "2":
+                                    luasLine = "Red Line";
+                                    break;
+                                default:
+                                    luasLine = "N/A";
+                            }
+
+                            popupContent = (
+                                <LuasPopup item={item} objectTitle={objectTitle} luasLine={luasLine} />
                             );
                             break;
 
