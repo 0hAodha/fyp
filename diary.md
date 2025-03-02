@@ -8,6 +8,7 @@
   - Need to create proxy API in AWS.
 - Added return_luas_data.
 - Made Luas proxy API in AWS.
+- Use Luas proxy API in LuasPopup.
 
 ## Sat 01 Mar 2025
 - Add GSI to permanent_data table to allow efficient querying of objects by type.
