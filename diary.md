@@ -4,7 +4,7 @@
 - Add all data sources to map.
 - Add DART icons.
 - Add popups for all data sources except Luas.
-- Add Luas popups but getting blocked by CORS .
+- Add Luas popups but getting blocked by CORS 🙄.
   - Need to create proxy API in AWS.
 
 ## Sat 01 Mar 2025
