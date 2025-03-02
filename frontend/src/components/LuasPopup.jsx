@@ -5,18 +5,25 @@ const LuasPopup = ({ item, objectTitle, luasLine }) => {
 
     const fetchLuasData = async () => {
         try {
-            const response = await fetch(`http://luasforecasts.rpa.ie/xml/get.ashx?action=forecast&stop=${item.luasStopCode}&encrypt=false`);
-            const text = await response.text();
-            const parser = new DOMParser();
-            const xml = parser.parseFromString(text, "text/xml");
-            const trams = Array.from(xml.getElementsByTagName("tram"));
+            const response = await fetch(`https://3fzg2hdskc.execute-api.us-east-1.amazonaws.com/return_luas_data?luasStopCode=${item.luasStopCode}`);
+            const data = await response.json();
 
-            if (trams.length === 0) {
-                setLuasInfo("No trams available");
+            if (!data.stopInfo || !data.stopInfo.direction) {
+                setLuasInfo("No tram data available");
                 return;
             }
 
-            const tramInfo = trams.map(tram => `Destination: ${tram.getAttribute("destination")}, Arrival: ${tram.getAttribute("dueMins")} mins`).join("<br>");
+            const tramInfo = data.stopInfo.direction.map(direction => {
+                // Ensure 'tram' is an array, if it's not, convert it into an array
+                const trams = Array.isArray(direction.tram) ? direction.tram : [direction.tram];
+
+                const tramDetails = trams.map(tram =>
+                    `Destination: ${tram["@destination"]}, Arrival: ${tram["@dueMins"]} mins`
+                ).join("<br>");
+
+                return `<b>${direction["@name"]}:</b><br>${tramDetails}`;
+            }).join("<br><br>");
+
             setLuasInfo(tramInfo);
         } catch (error) {
             setLuasInfo("Failed to fetch Luas data");
