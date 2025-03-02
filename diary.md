@@ -6,6 +6,8 @@
 - Add popups for all data sources except Luas.
 - Add Luas popups but getting blocked by CORS 🙄.
   - Need to create proxy API in AWS.
+- Added return_luas_data.
+- Made Luas proxy API in AWS.
 
 ## Sat 01 Mar 2025
 - Add GSI to permanent_data table to allow efficient querying of objects by type.
