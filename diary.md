@@ -2,6 +2,8 @@
 - Refactor frontend into separate components.
 - Edit icon files to have different colours for better distinguishability; make live data icons bigger than permanent data icons (assuming that people are more concered with live data than non-live).
 - Add all data sources to map.
+- Add DART icons.
+- Add popups for all data sources except Luas.
 
 ## Sat 01 Mar 2025
 - Add GSI to permanent_data table to allow efficient querying of objects by type.
