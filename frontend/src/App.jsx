@@ -21,6 +21,8 @@ function App() {
     const [loading, setLoading] = useState(false);
     const [clusteringEnabled, setClusteringEnabled] = useState(true);
 
+    const [searchTerm, setSearchTerm] = useState("");
+
     const fetchData = async () => {
         setLoading(true);
         try {
@@ -34,6 +36,7 @@ function App() {
                     let icon = item.objectType;
                     let popupContent;
                     let objectTitle;
+                    let markerText = "";
 
                     switch (item.objectType) {
                         case "IrishRailTrain":
@@ -63,24 +66,23 @@ function App() {
                                     trainStatus = "Running";
                                     break;
                                 default:
-                                    trainStatus = "Not running"
+                                    trainStatus = "Not running";
                             }
 
                             const splitMessage = item.trainPublicMessage.split("\\n");
                             const match = splitMessage[1].match(/\((.*?)\)/);
                             const punctuality = match ? match[1] : "N/A";
 
-                            // set icon depending on lateness of train and type of train
-                            if (trainStatus == "Not running") {
+                            // set icon depending on lateness of train and type
+                            if (trainStatus === "Not running") {
                                 icon += "NotRunning";
-                            }
-                            else if (punctuality.charAt(0) === "-" || punctuality.charAt(0) === "0") {
+                            } else if (punctuality.charAt(0) === "-" || punctuality.charAt(0) === "0") {
                                 icon += "OnTime";
-                            }
-                            else {
-                                icon += "Late"
+                            } else {
+                                icon += "Late";
                             }
 
+                            // Build the popup UI
                             popupContent = (
                                 <div>
                                     <h3>{objectTitle}</h3>
@@ -94,11 +96,18 @@ function App() {
                                     </ul>
                                 </div>
                             );
+
+                            markerText = `Irish Rail Train: ${item.trainCode} 
+                                          Train Details: ${splitMessage[1].split("(")[0]}
+                                          Train Type: ${trainType} 
+                                          Status: ${trainStatus} 
+                                          Direction: ${item.trainDirection} 
+                                          Update: ${splitMessage[2]} 
+                                          Punctuality: ${punctuality}`;
                             break;
 
                         case "IrishRailStation":
                             objectTitle = item.trainStationDesc + " Train Station";
-
                             popupContent = (
                                 <div>
                                     <h3>{objectTitle}</h3>
@@ -109,11 +118,14 @@ function App() {
                                     </ul>
                                 </div>
                             );
+
+                            markerText = `Train Station: ${item.trainStationDesc} 
+                                          ID: ${item.trainStationID} 
+                                          Code: ${item.trainStationCode}`;
                             break;
 
                         case "Bus":
                             objectTitle = item.busRouteAgencyName + ": " + item.busRouteShortName;
-
                             popupContent = (
                                 <div>
                                     <h3>{objectTitle}</h3>
@@ -124,14 +136,17 @@ function App() {
                                         <li><b>Bus Route Long Name:</b> {item.busRouteLongName}</li>
                                         <li><b>Agency: </b> {item.busRouteAgencyName}</li>
                                     </ul>
-
                                 </div>
                             );
+
+                            markerText = `Bus Agency: ${item.busRouteAgencyName} 
+                                          Route: ${item.busRoute} 
+                                          Route Short Name: ${item.busRouteShortName} 
+                                          Route Long Name: ${item.busRouteLongName}`;
                             break;
 
                         case "BusStop":
                             objectTitle = item.busStopName + " Bus Stop";
-
                             popupContent = (
                                 <div>
                                     <h3>{objectTitle}</h3>
@@ -142,12 +157,16 @@ function App() {
                                     </ul>
                                 </div>
                             );
+
+                            markerText = `Bus Stop: ${item.busStopName} 
+                                          ID: ${item.busStopID} 
+                                          Code: ${item.busStopCode || "N/A"}`;
                             break;
 
                         case "LuasStop":
                             objectTitle = item.luasStopName + " Luas Stop";
-                            let luasLine;
 
+                            let luasLine;
                             switch (item.luasStopLineID) {
                                 case "1":
                                     luasLine = "Green Line";
@@ -158,10 +177,11 @@ function App() {
                                 default:
                                     luasLine = "N/A";
                             }
-
                             popupContent = (
                                 <LuasPopup item={item} objectTitle={objectTitle} luasLine={luasLine} />
                             );
+                            markerText = `Luas Stop: ${item.luasStopName} 
+                                          Line: ${luasLine}`;
                             break;
 
                         default:
@@ -170,12 +190,14 @@ function App() {
                                     <h3>{item.objectType}</h3>
                                 </div>
                             );
+                            markerText = `Unknown Object Type: ${item.objectType}`;
                     }
 
                     return {
                         coords: [item.latitude, item.longitude],
                         popup: popupContent,
                         icon: icon,
+                        markerText: markerText.toLowerCase(),
                     };
                 });
             setMarkers(newMarkers);
@@ -185,9 +207,41 @@ function App() {
         setLoading(false);
     };
 
+    const filteredMarkers = markers.filter((marker) => {
+        if (!searchTerm.trim()) {
+            return true;
+        }
+        return marker.markerText.includes(searchTerm.toLowerCase());
+    });
+
     return (
         <div style={{ height: "100vh", width: "100vw", display: "flex", position: "relative" }}>
             {loading && <LoadingOverlay />}
+
+            <div
+                style={{
+                    position: "absolute",
+                    top: "10px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    zIndex: 1000
+                }}
+            >
+                <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search..."
+                    style={{
+                        width: "250px", fontSize: "16px", padding: "6px",
+                        padding: "10px", background: "rgba(255, 255, 255, 0.9)", color: "black",
+                        borderRadius: "10px",
+                        display: "flex", flexDirection: "column",
+                        alignItems: "center", zIndex: 1000, overflow: "hidden", justifyContent: "center"
+                    }}
+                />
+            </div>
+
             <Sidebar
                 selectedSources={selectedSources}
                 setSelectedSources={setSelectedSources}
@@ -196,7 +250,7 @@ function App() {
                 fetchData={fetchData}
             />
             <div style={{ flex: 1 }}>
-                <MapComponent markers={markers} clusteringEnabled={clusteringEnabled} />
+                <MapComponent markers={filteredMarkers} clusteringEnabled={clusteringEnabled} />
             </div>
         </div>
     );
