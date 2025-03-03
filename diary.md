@@ -1,3 +1,6 @@
+## Mon 03 Mar 2025
+- Add primitive search.
+
 ## Sun 02 Mar 2025
 - Refactor frontend into separate components.
 - Edit icon files to have different colours for better distinguishability; make live data icons bigger than permanent data icons (assuming that people are more concered with live data than non-live).
