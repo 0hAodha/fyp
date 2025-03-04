@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Sidebar from "./components/Sidebar";
 import MapComponent from "./components/MapComponent";
 import LoadingOverlay from "./components/LoadingOverlay";
@@ -21,7 +21,20 @@ function App() {
     const [loading, setLoading] = useState(false);
     const [clusteringEnabled, setClusteringEnabled] = useState(true);
 
+    // Search states: one is the raw user input, the other is the actual term we filter on
+    const [searchInput, setSearchInput] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
+
+    // Debounce effect
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setSearchTerm(searchInput);
+        }, 300); // Adjust this delay as desired
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [searchInput]);
 
     const fetchData = async () => {
         setLoading(true);
@@ -41,7 +54,6 @@ function App() {
                     switch (item.objectType) {
                         case "IrishRailTrain":
                             objectTitle = "Irish Rail Train: " + item.trainCode;
-
                             let trainType;
                             switch (item.trainType) {
                                 case "M":
@@ -82,7 +94,6 @@ function App() {
                                 icon += "Late";
                             }
 
-                            // Build the popup UI
                             popupContent = (
                                 <div>
                                     <h3>{objectTitle}</h3>
@@ -97,13 +108,7 @@ function App() {
                                 </div>
                             );
 
-                            markerText = `Irish Rail Train: ${item.trainCode} 
-                                          Train Details: ${splitMessage[1].split("(")[0]}
-                                          Train Type: ${trainType} 
-                                          Status: ${trainStatus} 
-                                          Direction: ${item.trainDirection} 
-                                          Update: ${splitMessage[2]} 
-                                          Punctuality: ${punctuality}`;
+                            markerText = item.trainPublicMessage + " " +  item.trainDirection;
                             break;
 
                         case "IrishRailStation":
@@ -118,10 +123,7 @@ function App() {
                                     </ul>
                                 </div>
                             );
-
-                            markerText = `Train Station: ${item.trainStationDesc} 
-                                          ID: ${item.trainStationID} 
-                                          Code: ${item.trainStationCode}`;
+                            markerText = item.trainStationCode + " " + item.trainStationDesc;
                             break;
 
                         case "Bus":
@@ -138,11 +140,7 @@ function App() {
                                     </ul>
                                 </div>
                             );
-
-                            markerText = `Bus Agency: ${item.busRouteAgencyName} 
-                                          Route: ${item.busRoute} 
-                                          Route Short Name: ${item.busRouteShortName} 
-                                          Route Long Name: ${item.busRouteLongName}`;
+                            markerText = item.busRouteAgencyName + " " + item.busRouteShortName + " " + item.busRouteLongName;
                             break;
 
                         case "BusStop":
@@ -157,10 +155,7 @@ function App() {
                                     </ul>
                                 </div>
                             );
-
-                            markerText = `Bus Stop: ${item.busStopName} 
-                                          ID: ${item.busStopID} 
-                                          Code: ${item.busStopCode || "N/A"}`;
+                            markerText = item.busStopName;
                             break;
 
                         case "LuasStop":
@@ -180,8 +175,7 @@ function App() {
                             popupContent = (
                                 <LuasPopup item={item} objectTitle={objectTitle} luasLine={luasLine} />
                             );
-                            markerText = `Luas Stop: ${item.luasStopName} 
-                                          Line: ${luasLine}`;
+                            markerText = item.luasStopIrishName + " " + item.luasStopName;
                             break;
 
                         default:
@@ -200,6 +194,7 @@ function App() {
                         markerText: markerText.toLowerCase(),
                     };
                 });
+
             setMarkers(newMarkers);
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -207,17 +202,21 @@ function App() {
         setLoading(false);
     };
 
-    const filteredMarkers = markers.filter((marker) => {
+    // 2. Memoize the filtered markers so it recalculates only if `searchTerm` or `markers` changes
+    const filteredMarkers = useMemo(() => {
         if (!searchTerm.trim()) {
-            return true;
+            return markers;
         }
-        return marker.markerText.includes(searchTerm.toLowerCase());
-    });
+        return markers.filter((marker) =>
+            marker.markerText.includes(searchTerm.toLowerCase())
+        );
+    }, [searchTerm, markers]);
 
     return (
         <div style={{ height: "100vh", width: "100vw", display: "flex", position: "relative" }}>
             {loading && <LoadingOverlay />}
 
+            {/* SEARCH BOX */}
             <div
                 style={{
                     position: "absolute",
@@ -229,15 +228,13 @@ function App() {
             >
                 <input
                     type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
                     placeholder="Search..."
                     style={{
-                        width: "250px", fontSize: "16px", padding: "6px",
+                        width: "250px", fontSize: "16px",
                         padding: "10px", background: "rgba(255, 255, 255, 0.9)", color: "black",
-                        borderRadius: "10px",
-                        display: "flex", flexDirection: "column",
-                        alignItems: "center", zIndex: 1000, overflow: "hidden", justifyContent: "center"
+                        borderRadius: "10px", overflow: "hidden"
                     }}
                 />
             </div>
