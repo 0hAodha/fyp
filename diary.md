@@ -1,3 +1,6 @@
+## Tue 04 Mar 2052
+- Add debounce effect to search to prevent application from running out of memory, freezing up, and making markers unresponsive.
+
 ## Mon 03 Mar 2025
 - Add primitive search.
 
