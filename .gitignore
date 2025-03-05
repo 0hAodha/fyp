@@ -303,3 +303,5 @@ TSWLatexianTemp*
 .idea/
 
 *.json
+
+__pycache__/
