@@ -214,7 +214,7 @@ function App() {
 
     return (
         <div style={{ height: "100vh", width: "100vw", display: "flex", position: "relative" }}>
-            {loading && <LoadingOverlay />}
+            {loading && <LoadingOverlay message={"Loading data..."}/>}
 
             {/* SEARCH BOX */}
             <div
