@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import PropTypes from 'prop-types';
+import Cookies from "js-cookie";
 
 const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setClusteringEnabled, fetchData }) => {
     const [isOpen, setIsOpen] = useState(true);
@@ -7,8 +9,21 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
         { id: "IrishRailStations", name: "Irish Rail Stations" },
         { id: "LuasStops", name: "Luas Stops" },
         { id: "BusStops", name: "Bus Stops" },
-        { id: "Buses", name: "Buses", },
+        { id: "Buses", name: "Buses" },
     ];
+
+    // Load selected sources from cookies on component mount
+    useEffect(() => {
+        const savedSources = Cookies.get("selectedSources");
+        if (savedSources) {
+            setSelectedSources(JSON.parse(savedSources));
+        }
+    }, [setSelectedSources]);
+
+    const handleSubmit = () => {
+        Cookies.set("selectedSources", JSON.stringify(selectedSources), { expires: 7 });
+        fetchData();
+    };
 
     return (
         <div style={{
@@ -52,11 +67,19 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
                         />
                         <label htmlFor="toggleClustering">Cluster overlapping icons</label>
                     </div>
-                    <button onClick={fetchData} style={{ marginTop: "10px" }}>Submit</button>
+                    <button onClick={handleSubmit} style={{ marginTop: "10px" }}>Submit</button>
                 </div>
             )}
         </div>
     );
+};
+
+Sidebar.propTypes = {
+    selectedSources: PropTypes.array.isRequired,
+    setSelectedSources: PropTypes.func.isRequired,
+    clusteringEnabled: PropTypes.bool.isRequired,
+    setClusteringEnabled: PropTypes.func.isRequired,
+    fetchData: PropTypes.func.isRequired,
 };
 
 export default Sidebar;
