@@ -1,6 +1,7 @@
 ## Wed 05 Mar 2025
 - Add variable text to loading screen.
 - Attempt to find the user's geolocation and centre the map + put a marker there.
+- Save the user's selected filters to a cookie upon submit, and load this cookie on page load to pre-select the user's last selection.
 
 ## Tue 04 Mar 2025
 - Add debounce effect to search to prevent application from running out of memory, freezing up, and making markers unresponsive.
