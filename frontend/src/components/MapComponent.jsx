@@ -1,4 +1,4 @@
-import React from "react";
+import { React, useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import L, { Icon } from "leaflet";
@@ -21,6 +21,7 @@ import luasIconURL from "../assets/icons/tram-station.png";
 
 import busStopIconURL from "../assets/icons/bus-station.png";
 import busIconURL from "../assets/icons/bus.png";
+import LoadingOverlay from "./LoadingOverlay.jsx";
 
 // Fix Leaflet marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -52,12 +53,54 @@ const icons = new Map([
 ]);
 
 const MapComponent = ({ markers, clusteringEnabled }) => {
+    const [userLocation, setUserLocation] = useState(null);
+    const [userLocationAvailable, setUserLocationAvailable] = useState(false); // Track if location was successfully retrieved
+
+    useEffect(() => {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    console.log("user location info available");
+                    setUserLocation([position.coords.latitude, position.coords.longitude]);
+                    setUserLocationAvailable(true); // Mark as successfully retrieved
+                },
+                (error) => {
+                    console.log("error getting user loc info");
+                    console.error("Error getting location:", error);
+                    setUserLocation([53.4494762, -7.5029786]); // Default location on error
+                    setUserLocationAvailable(false); // Mark as not successfully retrieved
+                },
+                {
+                    enableHighAccuracy: true,  // Request more accurate location (uses GPS if available)
+                    timeout: 2000,             // Maximum wait time is 2 seconds
+                    maximumAge: 0              // Do not use cached positions
+                }
+            );
+        } else {
+            console.log("user loc info unavailable");
+            setUserLocation([53.4494762, -7.5029786]); // Default location if geolocation is not supported
+            setUserLocationAvailable(false);
+        }
+    }, []);
+
+    const mapCentre = userLocation || [53.4494762, -7.5029786];
+
+    // wait until the user location is defined to load the map
+    if (!userLocation) {
+        return <LoadingOverlay message={"Attempting to determine current location..."}/>;
+    }
+
     return (
-        <MapContainer center={[53.4494762, -7.5029786]} zoom={7} minZoom={4} style={{ height: "100%", width: "100%" }}>
+        <MapContainer center={mapCentre} zoom={7} minZoom={4} style={{ height: "100%", width: "100%" }}>
             <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
+            {userLocationAvailable && (
+                <Marker position={userLocation}>
+                    <Popup>You are here</Popup>
+                </Marker>
+            )}
             {clusteringEnabled ? (
                 <MarkerClusterGroup>
                     {markers.map(({ coords, popup, icon }, index) => (
