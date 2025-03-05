@@ -1,4 +1,8 @@
-## Tue 04 Mar 2052
+## Wed 05 Mar 2025
+- Add variable text to loading screen.
+- Attempt to find the user's geolocation and centre the map + put a marker there.
+
+## Tue 04 Mar 2025
 - Add debounce effect to search to prevent application from running out of memory, freezing up, and making markers unresponsive.
 
 ## Mon 03 Mar 2025
