@@ -1,3 +1,7 @@
+## Fri 07 Mar 2025
+- Add red & green Luas icons for Red & Green lines.
+- Add conditional filters (head hurts from Boolean algebra now).
+
 ## Wed 05 Mar 2025
 - Add variable text to loading screen.
 - Attempt to find the user's geolocation and centre the map + put a marker there.
