@@ -2,27 +2,153 @@ import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import Cookies from "js-cookie";
 
+const menuData = [
+    {
+        id: "irish-rail",
+        name: "Irish Rail",
+        children: [
+            {
+                id: "irish-rail-trains",
+                name: "Irish Rail Trains",
+                children: [
+                    { id: "mainline", name: "Mainline" },
+                    { id: "suburban", name: "Suburban" },
+                    { id: "dart", name: "DART" },
+                    { id: "running", name: "Running" },
+                    { id: "not-yet-running", name: "Not yet running" },
+                    { id: "terminated", name: "Terminated" },
+                    { id: "early", name: "Early" },
+                    { id: "on-time", name: "On-time" },
+                    { id: "late", name: "Late" },
+                ],
+            },
+            { id: "irish-rail-stations", name: "Irish Rail Stations" },
+        ],
+    },
+    {
+        id: "bus",
+        name: "Bus",
+        children: [
+            { id: "buses", name: "Buses" },
+            { id: "bus-stops", name: "Bus Stops" },
+        ],
+    },
+    {
+        id: "luas-stops",
+        name: "Luas Stops",
+        children: [
+            { id: "red-line", name: "Red Line" },
+            { id: "green-line", name: "Green Line" },
+            { id: "enabled", name: "Enabled" },
+            { id: "disabled", name: "Disabled" },
+            { id: "park-and-ride", name: "Must be Park & Ride" },
+            { id: "cycle-and-ride", name: "Must be Cycle & Ride" },
+        ],
+    },
+];
+
+const getAllDefaultCheckedIds = (data) => {
+    const ids = [];
+    const traverse = (items, isTopLevel = true) => {
+        items.forEach((item) => {
+            if (!isTopLevel && item.id !== "cycle-and-ride" && item.id !== "park-and-ride") {
+                ids.push(item.id);  // Check non-top-level items by default
+            }
+            if (item.children) {
+                traverse(item.children, false);  // Child items are not top-level
+            }
+        });
+    };
+    traverse(data);
+    return ids;
+};
+
+const CheckboxItem = ({ item, selectedSources, setSelectedSources, enabledSources, setEnabledSources, level = 0, parentChecked = true }) => {
+    const isChecked = selectedSources.includes(item.id);
+    const isDisabled = !parentChecked;  // Disable if any parent is not checked
+    const isEnabled = isChecked && parentChecked;  // Only enabled if checked and parent is checked
+
+    const handleCheckboxChange = () => {
+        setSelectedSources((prev) =>
+            isChecked
+                ? prev.filter((id) => id !== item.id)
+                : [...prev, item.id]
+        );
+    };
+
+    // Track enabled sources based on parent and own state
+    useEffect(() => {
+        setEnabledSources((prev) => {
+            const newEnabledSources = new Set(prev);
+            if (isEnabled) newEnabledSources.add(item.id);
+            else newEnabledSources.delete(item.id);
+            return Array.from(newEnabledSources);
+        });
+    }, [isEnabled, item.id, setEnabledSources]);
+
+    const hasChildren = item.children && item.children.length > 0;
+    const isTopLevel = level === 0;
+
+    return (
+        <div style={{ paddingLeft: `${level * 20}px` }}>
+            <div
+                key={item.id}
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    color: isDisabled ? "gray" : "black",
+                }}
+            >
+                <input
+                    type="checkbox"
+                    id={item.id}
+                    checked={isChecked}
+                    onChange={handleCheckboxChange}
+                    disabled={isDisabled}  // Disable if any parent is not checked
+                />
+                <label htmlFor={item.id} style={{ cursor: isDisabled ? "not-allowed" : "pointer" }}>
+                    {item.name}
+                </label>
+            </div>
+            {hasChildren && (
+                <div>
+                    {item.children.map((child) => (
+                        <CheckboxItem
+                            key={child.id}
+                            item={child}
+                            selectedSources={selectedSources}
+                            setSelectedSources={setSelectedSources}
+                            enabledSources={enabledSources}
+                            setEnabledSources={setEnabledSources}
+                            level={level + 1}
+                            parentChecked={isEnabled}  // Pass true only if all parents are checked
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
 const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setClusteringEnabled, fetchData }) => {
     const [isOpen, setIsOpen] = useState(true);
-    const dataSources = [
-        { id: "IrishRailTrains", name: "Irish Rail Trains" },
-        { id: "IrishRailStations", name: "Irish Rail Stations" },
-        { id: "LuasStops", name: "Luas Stops" },
-        { id: "BusStops", name: "Bus Stops" },
-        { id: "Buses", name: "Buses" },
-    ];
+    const [enabledSources, setEnabledSources] = useState([]);  // New state to track enabled sources
 
-    // Load selected sources from cookies on component mount
+    // Load selected sources from cookies or set all as default checked
     useEffect(() => {
         const savedSources = Cookies.get("selectedSources");
         if (savedSources) {
             setSelectedSources(JSON.parse(savedSources));
+        } else {
+            const allDefaultChecked = getAllDefaultCheckedIds(menuData);
+            setSelectedSources(allDefaultChecked);
         }
     }, [setSelectedSources]);
 
     const handleSubmit = () => {
         Cookies.set("selectedSources", JSON.stringify(selectedSources), { expires: 7 });
-        fetchData();
+        fetchData(enabledSources);  // Use enabledSources for data fetching
     };
 
     return (
@@ -34,39 +160,22 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
             height: isOpen ? "auto" : "40px", display: "flex", flexDirection: "column",
             alignItems: "center", zIndex: 1000, overflow: "hidden", justifyContent: "center"
         }}>
-            <button onClick={() => setIsOpen(!isOpen)} style={{
-                background: "none", border: "none", color: "black",
-                fontSize: "16px", cursor: "pointer", display: "flex",
-                alignItems: "center", width: "100%", justifyContent: "center",
-                padding: "8px 10px", fontWeight: "bold"
-            }}>
+            <button onClick={() => setIsOpen(!isOpen)} style={{ background: "none", border: "none", color: "black" }}>
                 {isOpen ? "▼ Filters" : "▶ Filters"}
             </button>
             {isOpen && (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", width: "100%" }}>
                     <h3>Select Data Sources</h3>
-                    {dataSources.map(({ id, name }) => (
-                        <div key={id} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <input
-                                type="checkbox"
-                                id={id}
-                                checked={selectedSources.includes(id)}
-                                onChange={() =>
-                                    setSelectedSources((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id])
-                                }
-                            />
-                            <label htmlFor={id}>{name}</label>
-                        </div>
-                    ))}
-                    <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
-                        <input
-                            type="checkbox"
-                            id="toggleClustering"
-                            checked={clusteringEnabled}
-                            onChange={() => setClusteringEnabled(!clusteringEnabled)}
+                    {menuData.map((item) => (
+                        <CheckboxItem
+                            key={item.id}
+                            item={item}
+                            selectedSources={selectedSources}
+                            setSelectedSources={setSelectedSources}
+                            enabledSources={enabledSources}
+                            setEnabledSources={setEnabledSources}
                         />
-                        <label htmlFor="toggleClustering">Cluster overlapping icons</label>
-                    </div>
+                    ))}
                     <button onClick={handleSubmit} style={{ marginTop: "10px" }}>Submit</button>
                 </div>
             )}
