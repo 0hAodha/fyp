@@ -18,6 +18,8 @@ import dartOnTimeIconURL from "../assets/icons/DARTOnTime.png";
 import dartLateIconURL from "../assets/icons/DARTLate.png";
 
 import luasIconURL from "../assets/icons/tram-station.png";
+import luasIconGreenURL from "../assets/icons/luasGreen.png";
+import luasIconRedURL from "../assets/icons/luasRed.png"
 
 import busStopIconURL from "../assets/icons/bus-station.png";
 import busIconURL from "../assets/icons/bus.png";
@@ -48,6 +50,9 @@ const icons = new Map([
     ["dartLate", new Icon({ iconUrl: dartLateIconURL, iconSize: [38, 38] })],
 
     ["LuasStop", new Icon({ iconUrl: luasIconURL, iconSize: [38, 38] })],
+    ["LuasStopGreen", new Icon({ iconUrl: luasIconGreenURL, iconSize: [38, 38] })],
+    ["LuasStopRed", new Icon({ iconUrl: luasIconRedURL, iconSize: [38, 38] })],
+
     ["BusStop", new Icon({ iconUrl: busStopIconURL, iconSize: [24, 24] })],
     ["Bus", new Icon({ iconUrl: busIconURL, iconSize: [38, 38] })],
 ]);
