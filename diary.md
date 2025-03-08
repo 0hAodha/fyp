@@ -1,5 +1,6 @@
 ## Sat 08 Mar 2025
 - Make CSS more responsive for smaller screens.
+- Make `return_all_data` accept a list of `objectType`s.
 
 ## Fri 07 Mar 2025
 - Add red & green Luas icons for Red & Green lines.
