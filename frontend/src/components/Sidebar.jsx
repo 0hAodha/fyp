@@ -132,7 +132,7 @@ const CheckboxItem = ({ item, selectedSources, setSelectedSources, enabledSource
 };
 
 const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setClusteringEnabled, fetchData }) => {
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(false);
     const [enabledSources, setEnabledSources] = useState([]);  // New state to track enabled sources
 
     // Load selected sources from cookies or set all as default checked
@@ -153,11 +153,11 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
 
     return (
         <div style={{
-            position: "absolute", top: "10px", right: "10px",
+            position: "absolute", top: window.innerWidth < 900 ? "8vh" : "1vh", right: "1vh",
             width: "250px", minWidth: "50px",
             padding: isOpen ? "10px" : "5px 10px", background: "rgba(255, 255, 255, 0.9)", color: "black",
             borderRadius: "10px", transition: "height 0.2s ease-in-out, padding 0.2s ease-in-out",
-            height: isOpen ? "auto" : "40px", display: "flex", flexDirection: "column",
+            height: isOpen ? "auto" : "5vh", display: "flex", flexDirection: "column",
             alignItems: "center", zIndex: 1000, overflow: "hidden", justifyContent: "center"
         }}>
             <button onClick={() => setIsOpen(!isOpen)} style={{ background: "none", border: "none", color: "black" }}>
