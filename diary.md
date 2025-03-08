@@ -1,3 +1,6 @@
+## Sat 08 Mar 2025
+- Make CSS more responsive for smaller screens.
+
 ## Fri 07 Mar 2025
 - Add red & green Luas icons for Red & Green lines.
 - Add conditional filters (head hurts from Boolean algebra now).
