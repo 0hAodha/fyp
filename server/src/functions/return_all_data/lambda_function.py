@@ -4,10 +4,10 @@ import boto3
 from boto3.dynamodb.conditions import Key, Attr
 
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table(os.environ['TABLE_NAME'])
-
 
 def lambda_handler(event, context):
+    table = dynamodb.Table(os.environ['TABLE_NAME'])
+
     try:
         # Check if objectType is present in query string parameters
         if 'queryStringParameters' in event and event['queryStringParameters'] and 'objectType' in event[
