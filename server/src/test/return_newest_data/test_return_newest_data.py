@@ -2,108 +2,118 @@ import unittest
 from unittest.mock import patch, MagicMock
 import json
 import os
-
-# Mock environment variable BEFORE importing lambda_handler
-os.environ['TABLE_NAME'] = 'mock_table'
-
 from functions.return_newest_data.lambda_function import lambda_handler
-from boto3.dynamodb.conditions import Attr
-from botocore.exceptions import ClientError
+
 
 class TestLambdaFunction(unittest.TestCase):
 
-    @patch('src.functions.return_newest_data.lambda_function.boto3.resource')
-    def test_single_object_type(self, mock_boto_resource):
-        mock_table = MagicMock()
-        mock_boto_resource.return_value.Table.return_value = mock_table
+    # Mock environment variable before each test
+    def setUp(self):
+        patch.dict(os.environ, {'TABLE_NAME': 'test-table'}).start()
 
-        # Mock scan response for single object type with pagination
-        def mock_scan(**kwargs):
-            if 'FilterExpression' in kwargs:
-                filter_expr = kwargs['FilterExpression']
-                if 'objectType' in str(filter_expr):
-                    return {'Items': [{'objectType': 'type1', 'timestamp': '1234567890'}]}
-                elif 'timestamp' in str(filter_expr):
-                    return {'Items': [{'objectType': 'type1', 'timestamp': '1234567890'}]}
-            # Simulate pagination
-            if 'ExclusiveStartKey' in kwargs:
-                return {'Items': [], 'LastEvaluatedKey': None}
-            return {'Items': [{'timestamp': '1234567890'}], 'LastEvaluatedKey': {'dummy_key': 'dummy_value'}}
+    # Clean up patches after each test
+    def tearDown(self):
+        patch.stopall()
 
-        mock_table.scan.side_effect = mock_scan
+    @patch('functions.return_newest_data.lambda_function.dynamodb.Table')
+    def test_lambda_handler_with_object_type(self, mock_table):
+        # Mock scan responses for timestamps
+        mock_table.return_value.scan.side_effect = [
+            {'Items': [{'timestamp': '1234567890'}, {'timestamp': '1234567891'}]},  # First scan for timestamps
+            {'Items': [{'objectID': '1', 'objectType': 'Bus', 'timestamp': '1234567891'}]}  # Fetch latest items
+        ]
 
-        event = {'queryStringParameters': {'objectType': 'type1'}}
-        context = {}
+        # Mock event with objectType query parameter
+        event = {
+            'queryStringParameters': {
+                'objectType': 'Bus'
+            }
+        }
 
-        response = lambda_handler(event, context)
+        result = lambda_handler(event, {})
+        self.assertEqual(result['statusCode'], 200)
 
-        print("test_single_object_type - Status Code:", response['statusCode'])
-        print("Response Body:", response['body'])
+        # Parse result body
+        body = json.loads(result['body'])
+        self.assertEqual(len(body), 1)
+        self.assertEqual(body[0]['objectType'], 'Bus')
 
-        self.assertEqual(response['statusCode'], 200)
-        self.assertEqual(json.loads(response['body']), [{'objectType': 'type1', 'timestamp': '1234567890'}])
+    @patch('functions.return_newest_data.lambda_function.dynamodb.Table')
+    def test_lambda_handler_without_object_type(self, mock_table):
+        # Mock scan responses for timestamps and data
+        mock_table.return_value.scan.side_effect = [
+            {'Items': [{'timestamp': '1234567890'}, {'timestamp': '1234567891'}]},  # First scan for timestamps
+            {'Items': [{'objectID': '1', 'objectType': 'Bus', 'timestamp': '1234567891'}]}  # Fetch latest items
+        ]
 
-    @patch('src.functions.return_newest_data.lambda_function.boto3.resource')
-    def test_multiple_object_types(self, mock_boto_resource):
-        mock_table = MagicMock()
-        mock_boto_resource.return_value.Table.return_value = mock_table
+        # Mock event without objectType query parameter
+        event = {
+            'queryStringParameters': None
+        }
 
-        # Mock scan response for multiple object types with pagination
-        def mock_scan(**kwargs):
-            if 'FilterExpression' in kwargs:
-                filter_expr = kwargs['FilterExpression']
-                if 'objectType' in str(filter_expr):
-                    return {'Items': [
-                        {'objectType': 'type1', 'timestamp': '1234567891'},
-                        {'objectType': 'type2', 'timestamp': '1234567891'}
-                    ]}
-                elif 'timestamp' in str(filter_expr):
-                    return {'Items': [
-                        {'objectType': 'type1', 'timestamp': '1234567891'},
-                        {'objectType': 'type2', 'timestamp': '1234567891'}
-                    ]}
-            # Simulate pagination
-            if 'ExclusiveStartKey' in kwargs:
-                return {'Items': [], 'LastEvaluatedKey': None}
-            return {'Items': [{'timestamp': '1234567891'}], 'LastEvaluatedKey': {'dummy_key': 'dummy_value'}}
+        result = lambda_handler(event, {})
+        self.assertEqual(result['statusCode'], 200)
 
-        mock_table.scan.side_effect = mock_scan
+        # Parse result body
+        body = json.loads(result['body'])
+        self.assertEqual(len(body), 1)
+        self.assertEqual(body[0]['objectType'], 'Bus')
 
-        event = {'queryStringParameters': {'objectType': 'type1,type2'}}
-        context = {}
+    @patch('functions.return_newest_data.lambda_function.dynamodb.Table')
+    def test_lambda_handler_with_pagination(self, mock_table):
+        # Mock paginated scan responses for timestamps and data
+        mock_table.return_value.scan.side_effect = [
+            {'Items': [{'timestamp': '1234567890'}], 'LastEvaluatedKey': 'key1'},
+            {'Items': [{'timestamp': '1234567891'}]},  # Last page for timestamps
+            {'Items': [{'objectID': '1', 'objectType': 'Bus', 'timestamp': '1234567891'}], 'LastEvaluatedKey': 'key2'},
+            {'Items': [{'objectID': '2', 'objectType': 'Train', 'timestamp': '1234567891'}]}  # Last page for data
+        ]
 
-        response = lambda_handler(event, context)
+        event = {
+            'queryStringParameters': {
+                'objectType': 'Bus,Train'
+            }
+        }
 
-        print("test_multiple_object_types - Status Code:", response['statusCode'])
-        print("Response Body:", response['body'])
+        result = lambda_handler(event, {})
+        self.assertEqual(result['statusCode'], 200)
 
-        self.assertEqual(response['statusCode'], 200)
-        self.assertEqual(json.loads(response['body']), [
-            {'objectType': 'type1', 'timestamp': '1234567891'},
-            {'objectType': 'type2', 'timestamp': '1234567891'}
-        ])
+        body = json.loads(result['body'])
+        self.assertEqual(len(body), 2)
+        self.assertEqual(body[0]['objectType'], 'Bus')
+        self.assertEqual(body[1]['objectType'], 'Train')
 
-    @patch('src.functions.return_newest_data.lambda_function.boto3.resource')
-    def test_exception_handling(self, mock_boto_resource):
-        mock_table = MagicMock()
-        mock_boto_resource.return_value.Table.return_value = mock_table
+    @patch('functions.return_newest_data.lambda_function.dynamodb.Table')
+    def test_lambda_handler_no_data(self, mock_table):
+        # Mock empty scan response
+        mock_table.return_value.scan.return_value = {'Items': []}
 
-        # Mock scan to raise a ResourceNotFoundException
-        mock_table.scan.side_effect = ClientError(
-            {"Error": {"Code": "ResourceNotFoundException", "Message": "Requested resource not found"}},
-            "Scan"
-        )
+        event = {
+            'queryStringParameters': None
+        }
 
-        event = {'queryStringParameters': {'objectType': 'type1'}}
-        context = {}
+        result = lambda_handler(event, {})
+        self.assertEqual(result['statusCode'], 200)
 
-        response = lambda_handler(event, context)
+        body = json.loads(result['body'])
+        self.assertEqual(len(body), 0)
 
-        print("test_exception_handling - Status Code:", response['statusCode'])
-        print("Response Body:", response['body'])
+    @patch('functions.return_newest_data.lambda_function.dynamodb.Table')
+    def test_lambda_handler_error(self, mock_table):
+        # Mock table scan to raise an exception
+        mock_table.return_value.scan.side_effect = Exception('DynamoDB error')
 
-        self.assertEqual(response['statusCode'], 500)
-        self.assertIn('Requested resource not found', json.loads(response['body'])['error'])
+        event = {
+            'queryStringParameters': None
+        }
 
-if __name__ == '__main__':
+        result = lambda_handler(event, {})
+        self.assertEqual(result['statusCode'], 500)
+
+        body = json.loads(result['body'])
+        self.assertIn('error', body)
+        self.assertEqual(body['error'], 'DynamoDB error')
+
+
+if __name__ == "__main__":
     unittest.main()
