@@ -306,3 +306,4 @@ TSWLatexianTemp*
 
 __pycache__/
 .coverage
+htmlcov/
