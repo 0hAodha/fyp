@@ -305,3 +305,4 @@ TSWLatexianTemp*
 *.json
 
 __pycache__/
+.coverage
