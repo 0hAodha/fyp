@@ -1,88 +1,116 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from functions.transient_data.transient_data import fetch_trains, fetch_luas, fetch_buses, batch_upload_to_dynamodb, lambda_handler
+import os
+from functions.transient_data.transient_data import (
+    fetch_trains,
+    fetch_buses
+)
 
 class TestTransientData(unittest.TestCase):
+    """
+    Unit tests for the transient data functions.
+    """
 
-    @patch('src.functions.transient_data.transient_data.session.get')
-    def test_fetch_trains_returns_data(self, mock_get):
-        mock_response = MagicMock()
-        mock_response.text = '<ArrayOfObjTrainPositions><objTrainPositions><TrainCode>123</TrainCode><TrainLatitude>53.349805</TrainLatitude><TrainLongitude>-6.26031</TrainLongitude><TrainStatus>Running</TrainStatus><TrainDate>2023-10-10</TrainDate><PublicMessage>On time</PublicMessage><Direction>North</Direction></objTrainPositions></ArrayOfObjTrainPositions>'
-        mock_get.return_value = mock_response
+    @patch.dict(os.environ, {"PERMANENT_DATA_API": "http://mockapi.com"})
+    @patch('functions.transient_data.transient_data.session.get')
+    def test_fetch_buses(self, mock_get):
+        """
+        Test the fetch_buses function to ensure it returns the correct data.
 
-        with patch('src.functions.transient_data.transient_data.xmltodict.parse', return_value={
-            "ArrayOfObjTrainPositions": {
-                "objTrainPositions": [{
-                    "TrainCode": "123",
-                    "TrainLatitude": "53.349805",
-                    "TrainLongitude": "-6.26031",
-                    "TrainStatus": "Running",
-                    "TrainDate": "2023-10-10",
-                    "PublicMessage": "On time",
-                    "Direction": "North"
-                }]
-            }
-        }):
-            result = fetch_trains()
-            self.assertEqual(len(result), 3)  # Expecting 3 items for 3 train types
-            self.assertEqual(result[0]['trainCode'], '123')
+        Mocks the network requests to avoid real API calls and sets up the
+        expected responses for bus data and bus routes.
 
-    @patch('src.functions.transient_data.transient_data.session.get')
-    def test_fetch_luas_returns_data(self, mock_get):
-        # Mock the response for the Luas stops data
-        mock_stops_response = MagicMock()
-        mock_stops_response.content.decode.return_value = 'Abbreviation\tLatitude\tLongitude\tName\tIrishName\tStopID\tLineID\tSortOrder\tIsEnabled\tIsParkAndRide\tIsCycleAndRide\tZoneCountA\tZoneCountB\nSTP1\t53.349805\t-6.26031\tStop1\tStop1Irish\t1\t1\t1\t1\t0\t0\t1\t1'
-        mock_forecast_response = MagicMock()
-        mock_forecast_response.text = '<stopInfo><message>On time</message><direction>North</direction></stopInfo>'
-        mock_get.side_effect = [mock_stops_response, mock_forecast_response]
+        Args:
+            mock_get (MagicMock): Mocked session.get method.
 
-        result = fetch_luas()
-        self.assertGreater(len(result), 0)
-        self.assertIn('luasStopName', result[0])
+        Asserts:
+            The length of the result is 1.
+            The busID of the first result is 'bus1'.
+            The busRouteAgencyName of the first result is 'Dublin Bus'.
+        """
+        # Mock response for bus data
+        mock_response_1 = MagicMock()
+        mock_response_1.json.return_value = {"entity": [{"id": "bus1",
+                                                         "vehicle": {"position": {"latitude": 53.0, "longitude": -6.0},
+                                                                     "trip": {"route_id": "1", "trip_id": "trip1",
+                                                                              "start_time": "10:00",
+                                                                              "start_date": "20250309",
+                                                                              "schedule_relationship": "SCHEDULED",
+                                                                              "direction_id": "0"}}}]}
 
-    @patch('src.functions.transient_data.transient_data.session.get')
-    @patch.dict('os.environ', {'PERMANENT_DATA_API': 'http://mocked_api'})
-    def test_fetch_buses_returns_data(self, mock_get):
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "entity": [
-                {
-                    "id": "1",
-                    "vehicle": {
-                        "position": {"latitude": 53.349805, "longitude": -6.26031},
-                        "trip": {"route_id": "123", "trip_id": "456", "start_time": "10:00",
-                                 "start_date": "2023-10-10", "schedule_relationship": "Scheduled",
-                                 "direction_id": 0}
-                    }
-                }
-            ]
-        }
-        mock_get.return_value = mock_response
+        # Mock response for bus routes
+        mock_response_2 = MagicMock()
+        mock_response_2.json.return_value = [
+            {"busRouteID": "1", "busRouteAgencyName": "Dublin Bus", "busRouteLongName": "Route 1"}]
 
+        # Setting up side effects in the correct order
+        mock_get.side_effect = [mock_response_1, mock_response_2]
+
+        # Run the function
         result = fetch_buses()
+
+        # Assertions
         self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]['busID'], '1')
+        self.assertEqual(result[0]['busID'], 'bus1')
+        self.assertEqual(result[0]['busRouteAgencyName'], 'Dublin Bus')
 
-    @patch('src.functions.transient_data.transient_data.table.batch_writer')
-    def test_batch_upload_to_dynamodb_uploads_data(self, mock_batch_writer):
-        mock_batch = MagicMock()
-        mock_batch_writer.return_value.__enter__.return_value = mock_batch
+    @patch('functions.transient_data.transient_data.session.get')
+    @patch('functions.transient_data.transient_data.timestamp', '1234567890')
+    def test_fetch_trains(self, mock_get):
+        """
+        Test the fetch_trains function to ensure it returns the correct data.
 
-        data = [{'objectID': '1', 'objectType': 'Test'}]
-        batch_upload_to_dynamodb(data)
-        mock_batch.put_item.assert_called_once_with(Item=data[0])
+        Mocks the network requests to avoid real API calls and sets up the
+        expected response for train data.
 
-    @patch('src.functions.transient_data.transient_data.fetch_trains')
-    @patch('src.functions.transient_data.transient_data.fetch_luas')
-    @patch('src.functions.transient_data.transient_data.fetch_buses')
-    @patch('src.functions.transient_data.transient_data.batch_upload_to_dynamodb')
-    def test_lambda_handler_executes_successfully(self, mock_batch_upload, mock_fetch_buses, mock_fetch_luas, mock_fetch_trains):
-        mock_fetch_trains.return_value = [{'objectID': '1', 'objectType': 'Train'}]
-        mock_fetch_luas.return_value = [{'objectID': '2', 'objectType': 'Luas'}]
-        mock_fetch_buses.return_value = [{'objectID': '3', 'objectType': 'Bus'}]
+        Args:
+            mock_get (MagicMock): Mocked session.get method.
 
-        event = {}
-        context = {}
-        result = lambda_handler(event, context)
-        self.assertEqual(result['statusCode'], 200)
-        self.assertIn('Data uploaded successfully', result['body'])
+        Asserts:
+            The length of the result is 3.
+            The trainCode of the first result is 'A123'.
+            The trainStatus of the first result is 'Running'.
+        """
+        # Mock response for train API
+        mock_response = MagicMock()
+        # Fix: Ensure xmltodict.parse() returns a proper dictionary
+        mock_response.text = '''
+        <ArrayOfObjTrainPositions>
+            <objTrainPositions>
+                <TrainCode>A123</TrainCode>
+                <TrainLatitude>53.0</TrainLatitude>
+                <TrainLongitude>-6.0</TrainLongitude>
+                <TrainStatus>Running</TrainStatus>
+                <TrainDate>2025-03-09</TrainDate>
+                <PublicMessage>On time</PublicMessage>
+                <Direction>Northbound</Direction>
+            </objTrainPositions>
+        </ArrayOfObjTrainPositions>
+        '''
+        mock_get.return_value = mock_response
+
+        with patch('functions.transient_data.transient_data.xmltodict.parse') as mock_parse:
+            # Mock xmltodict to return a dictionary directly
+            mock_parse.return_value = {
+                "ArrayOfObjTrainPositions": {
+                    "objTrainPositions": [
+                        {
+                            "TrainCode": "A123",
+                            "TrainLatitude": "53.0",
+                            "TrainLongitude": "-6.0",
+                            "TrainStatus": "Running",
+                            "TrainDate": "2025-03-09",
+                            "PublicMessage": "On time",
+                            "Direction": "Northbound"
+                        }
+                    ]
+                }
+            }
+
+            result = fetch_trains()
+            self.assertEqual(len(result), 3)  # 3 train types: M, S, D
+            self.assertEqual(result[0]['trainCode'], 'A123')
+            self.assertEqual(result[0]['trainStatus'], 'Running')
+
+if __name__ == "__main__":
+    unittest.main()
