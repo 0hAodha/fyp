@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from src.functions.transient_data.transient_data import fetch_trains, fetch_luas, fetch_buses, batch_upload_to_dynamodb, lambda_handler
+from functions.transient_data.transient_data import fetch_trains, fetch_luas, fetch_buses, batch_upload_to_dynamodb, lambda_handler
 
 class TestTransientData(unittest.TestCase):
 
