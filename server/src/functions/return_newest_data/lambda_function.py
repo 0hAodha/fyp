@@ -4,10 +4,11 @@ import os
 from boto3.dynamodb.conditions import Key, Attr
 
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table(os.environ['TABLE_NAME'])
 gsi_name = "objectType-index"
 
 def lambda_handler(event, context):
+    table = dynamodb.Table(os.environ['TABLE_NAME'])
+
     try:
         query_params = event.get('queryStringParameters', {}) or {}
         object_type_param = query_params.get('objectType')
