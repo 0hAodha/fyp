@@ -1,5 +1,6 @@
 ## Sun 09 Mar 2025
 - Optimise `permanent_data.py` with better batched uploading and asynchronous API calls.
+- Optimise `transient_data.py` with better batched uploading and asynchronous API calls.
 
 ## Sat 08 Mar 2025
 - Make CSS more responsive for smaller screens.
