@@ -3,6 +3,7 @@
 - Optimise `transient_data.py` with better batched uploading and asynchronous API calls.
 - Add `test_permanent_data`.
 - Add `test_transient_data`.
+- Add tests for `return_all_data`.
 
 ## Sat 08 Mar 2025
 - Make CSS more responsive for smaller screens.
