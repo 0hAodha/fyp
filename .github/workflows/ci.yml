@@ -46,7 +46,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           export PYTHONPATH=$(pwd)/server/src
-          pytest --cov=src/functions --cov-report=term-missing --cov-report=xml --cov-report=html
+          pytest --cov=src/functions --cov=server/src --cov-report=term-missing --cov-report=xml --cov-report=html
 
       # Upload coverage report as an artifact
       - name: Upload coverage report (HTML)
