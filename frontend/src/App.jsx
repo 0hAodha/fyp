@@ -8,11 +8,11 @@ const TRANSIENT_DATA_API = "https://281bc6mcm5.execute-api.us-east-1.amazonaws.c
 const PERMANENT_DATA_API = "https://a6y312dpuj.execute-api.us-east-1.amazonaws.com/permanent_data";
 
 const dataSources = [
-    { id: "irish-rail-trains", name: "Irish Rail Trains", url: `${TRANSIENT_DATA_API}?objectType=IrishRailTrain` },
-    { id: "irish-rail-stations", name: "Irish Rail Stations", url: `${PERMANENT_DATA_API}?objectType=IrishRailStation` },
-    { id: "luas-stops", name: "Luas Stops", url: `${PERMANENT_DATA_API}?objectType=LuasStop` },
-    { id: "bus-stops", name: "Bus Stops", url: `${PERMANENT_DATA_API}?objectType=BusStop` },
-    { id: "buses", name: "Buses", url: `${TRANSIENT_DATA_API}?objectType=Bus` },
+    { id: "irish-rail-trains", name: "Irish Rail Trains", api: "transient", objectType: "IrishRailTrain" },
+    { id: "irish-rail-stations", name: "Irish Rail Stations", api: "permanent", objectType: "IrishRailStation" },
+    { id: "luas-stops", name: "Luas Stops", api: "permanent", objectType: "LuasStop" },
+    { id: "bus-stops", name: "Bus Stops", api: "permanent", objectType: "BusStop" },
+    { id: "buses", name: "Buses", api: "transient", objectType: "Bus" },
 ];
 
 function App() {
@@ -39,12 +39,16 @@ function App() {
     const fetchData = async (enabledSources) => {
         setLoading(true);
         try {
-            const newMarkers = (await Promise.all(
-                dataSources
-                    .filter(({ id }) => enabledSources.includes(id))
-                    .map(({ url }) => fetch(url).then((res) => res.json()))
-            ))
-                .flat()
+            const transientTypes = dataSources.filter(({ id, api }) => enabledSources.includes(id) && api === "transient").map(({ objectType }) => objectType);
+            const permanentTypes = dataSources.filter(({ id, api }) => enabledSources.includes(id) && api === "permanent").map(({ objectType }) => objectType);
+
+            const requests = [];
+            if (transientTypes.length) requests.push(fetch(`${TRANSIENT_DATA_API}?objectType=${transientTypes.join(",")}`).then(res => res.json()));
+            if (permanentTypes.length) requests.push(fetch(`${PERMANENT_DATA_API}?objectType=${permanentTypes.join(",")}`).then(res => res.json()));
+
+            const responses = await Promise.all(requests);
+
+            const newMarkers = responses.flat()
                 .map((item) => {
                     const showMainline = enabledSources.includes("mainline");
                     const showSuburban = enabledSources.includes("suburban");
