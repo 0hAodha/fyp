@@ -2,6 +2,8 @@
 - Add `ci.yml`.
 - Update frontend to only send one request per API when loading data, using the list of `objectType`s functionaliy, thereby reducing the number of requests made.
   - Speeds up loading time from 20s to 15s for all data.
+- Add Navbar, skeleton Statistics page.
+- Enable TailwindCSS.
 
 ## Sun 09 Mar 2025
 - Optimise `permanent_data.py` with better batched uploading and asynchronous API calls.
