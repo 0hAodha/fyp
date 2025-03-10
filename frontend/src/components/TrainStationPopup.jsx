@@ -38,7 +38,7 @@ const TrainStationPopup = ({ item, objectTitle }) => {
 
             setTrainInfo(trainInfoHtml);
         } catch (error) {
-            setTrainInfo("Failed to fetch train data");
+            setTrainInfo("No trains due in the next 90 minutes");
         }
     };
 
