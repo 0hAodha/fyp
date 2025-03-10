@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+
 import Sidebar from "./components/Sidebar";
 import MapComponent from "./components/MapComponent";
 import LoadingOverlay from "./components/LoadingOverlay";
 import LuasPopup from "./components/LuasPopup";
+import Navbar from "./components/Navbar";
+import Statistics from "./components/Statistics.jsx";
 
 const TRANSIENT_DATA_API = "https://281bc6mcm5.execute-api.us-east-1.amazonaws.com/transient_data";
 const PERMANENT_DATA_API = "https://a6y312dpuj.execute-api.us-east-1.amazonaws.com/permanent_data";
@@ -300,46 +304,54 @@ function App() {
     }, [searchTerm, markers]);
 
     return (
-        <div style={{ height: "100vh", width: "100vw", display: "flex", position: "relative" }}>
-            {loading && <LoadingOverlay message={"Loading data..."}/>}
+        <Router>
+            <Navbar />
+            <Routes>
+                <Route
+                    path="/"
+                    element={
+                        <div style={{ height: "100vh", width: "100vw", display: "flex", position: "relative", paddingTop: "5vh" }}>
+                        {loading && <LoadingOverlay message={"Loading data..."} />} <div
+                                style={{
+                                    position: "absolute",
+                                    top: "1vh",
+                                    height: "5vh",
+                                    width: "250px", minWidth: "50px",
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    zIndex: 1000
+                                }}
+                            >
+                                <input
+                                    type="text"
+                                    value={searchInput}
+                                    onChange={(e) => setSearchInput(e.target.value)}
+                                    placeholder="Search..."
+                                    style={{
+                                        width: "250px", fontSize: "16px",
+                                        top: "6vh", marginTop: "5vh",
+                                        padding: "10px", background: "rgba(255, 255, 255, 0.9)", color: "black",
+                                        borderRadius: "10px", overflow: "hidden"
+                                    }}
+                                />
+                            </div>
 
-            {/* SEARCH BOX */}
-            <div
-                style={{
-                    position: "absolute",
-                    top: "1vh",
-                    height: "5vh",
-                    width: "250px", minWidth: "50px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    zIndex: 1000
-                }}
-            >
-                <input
-                    type="text"
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    placeholder="Search..."
-                    style={{
-                        width: "250px", fontSize: "16px",
-                        padding: "10px", background: "rgba(255, 255, 255, 0.9)", color: "black",
-                        borderRadius: "10px", overflow: "hidden"
-                    }}
+                            <Sidebar
+                                selectedSources={selectedSources}
+                                setSelectedSources={setSelectedSources}
+                                clusteringEnabled={clusteringEnabled}
+                                setClusteringEnabled={setClusteringEnabled}
+                                fetchData={fetchData}
+                            />
+                            <div style={{ flex: 1 }}>
+                                <MapComponent markers={filteredMarkers} clusteringEnabled={clusteringEnabled} />
+                            </div>
+                        </div>
+                    }
                 />
-            </div>
-
-            <Sidebar
-                selectedSources={selectedSources}
-                setSelectedSources={setSelectedSources}
-                clusteringEnabled={clusteringEnabled}
-                setClusteringEnabled={setClusteringEnabled}
-                fetchData={fetchData}
-            />
-            <div style={{ flex: 1 }}>
-                <MapComponent markers={filteredMarkers} clusteringEnabled={clusteringEnabled} />
-            </div>
-        </div>
+                <Route path="/statistics" element={<Statistics />} />
+            </Routes>
+        </Router>
     );
 }
-
 export default App;

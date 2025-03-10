@@ -41,7 +41,7 @@ const LuasPopup = ({ item, objectTitle, luasLine }) => {
                 <li><b>Cycle & ride?:</b> {(item.luasStopIsCycleAndRide === "1") ? "Yes" : "No"}</li>
                 <li><b>Operational?:</b> {(item.luasStopIsEnabled === "1") ? "Yes" : "No"}</li>
             </ul>
-            <button onClick={fetchLuasData} style={{ padding: "5px", marginTop: "5px", cursor: "pointer" }}>
+            <button onClick={fetchLuasData} style={{ padding: "5px", marginTop: "5px", cursor: "pointer", color: "white" }}>
                 Load Luas Schedule
             </button>
             <div dangerouslySetInnerHTML={{ __html: luasInfo }} style={{ marginTop: "10px" }}></div>

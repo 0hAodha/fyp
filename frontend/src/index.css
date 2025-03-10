@@ -1,7 +1,5 @@
-/* @tailwind base;
-@tailwind components;
-@tailwind utilities;
- */
+@import "tailwindcss";
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -83,4 +81,17 @@ button:focus-visible {
 
 .leaflet-container {
   height: 100vh;
+}
+
+h3 {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+body, html, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
