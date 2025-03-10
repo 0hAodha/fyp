@@ -6,6 +6,8 @@
 - Enable TailwindCSS.
 - Add better handling for Luas forecast information.
 - Re-add cluster toggle to side panel.
+- Add Lambda function + API to return trains due to a station in the next 90 minutes.
+- Add button to fetch trains due to a station in the next 90 minutes.
 
 ## Sun 09 Mar 2025
 - Optimise `permanent_data.py` with better batched uploading and asynchronous API calls.
