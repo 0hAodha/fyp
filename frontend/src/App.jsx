@@ -126,7 +126,7 @@ function App() {
 
                             // set icon depending on lateness of train and type
                             if (punctualityStr === "early") {
-                                latenessMessage = -punctuality + " minute" + (punctuality === 1 ? "" : "s") + " early";
+                                latenessMessage = -punctuality + " minute" + (punctuality === -1 ? "" : "s") + " early";
                                 icon += "OnTime";
                             }
                             else if (punctualityStr === "On time") {
