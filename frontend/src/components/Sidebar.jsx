@@ -164,7 +164,7 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
                 {isOpen ? "▼ Filters" : "▶ Filters"}
             </button>
             {isOpen && (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", width: "100%" }}>
+                <div style={{display: "flex", flexDirection: "column", alignItems: "flex-start", width: "100%"}}>
                     {menuData.map((item) => (
                         <CheckboxItem
                             key={item.id}
@@ -175,7 +175,16 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
                             setEnabledSources={setEnabledSources}
                         />
                     ))}
-                    <button onClick={handleSubmit} style={{ marginTop: "10px", color: "white" }}>Submit</button>
+                    <div style={{marginTop: "10px", display: "flex", alignItems: "center", gap: "8px"}}>
+                        <input
+                            type="checkbox"
+                            id="toggleClustering"
+                            checked={clusteringEnabled}
+                            onChange={() => setClusteringEnabled(!clusteringEnabled)}
+                        />
+                        <label htmlFor="toggleClustering">Cluster overlapping icons</label>
+                    </div>
+                    <button onClick={handleSubmit} style={{marginTop: "10px", color: "white"}}>Submit</button>
                 </div>
             )}
         </div>
