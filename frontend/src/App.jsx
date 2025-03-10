@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
+import Navbar from "./components/Navbar";
+import Statistics from "./components/Statistics.jsx";
+
 import Sidebar from "./components/Sidebar";
 import MapComponent from "./components/MapComponent";
 import LoadingOverlay from "./components/LoadingOverlay";
+
 import LuasPopup from "./components/LuasPopup";
-import Navbar from "./components/Navbar";
-import Statistics from "./components/Statistics.jsx";
+import TrainStationPopup from "./components/TrainStationPopup";
 
 const TRANSIENT_DATA_API = "https://281bc6mcm5.execute-api.us-east-1.amazonaws.com/transient_data";
 const PERMANENT_DATA_API = "https://a6y312dpuj.execute-api.us-east-1.amazonaws.com/permanent_data";
@@ -183,14 +186,7 @@ function App() {
                         case "IrishRailStation":
                             objectTitle = item.trainStationDesc + " Train Station";
                             popupContent = (
-                                <div>
-                                    <h3>{objectTitle}</h3>
-                                    <ul>
-                                        <li><b>Train Station Name:</b> {item.trainStationDesc}</li>
-                                        <li><b>Train Station ID:</b> {item.trainStationID}</li>
-                                        <li><b>Train Station Code:</b> {item.trainStationCode}</li>
-                                    </ul>
-                                </div>
+                                <TrainStationPopup item={item} objectTitle={objectTitle} />
                             );
 
                             markerText = item.trainStationCode + " " + item.trainStationDesc;
