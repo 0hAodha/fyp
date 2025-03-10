@@ -17,11 +17,28 @@ const LuasPopup = ({ item, objectTitle, luasLine }) => {
                 // Ensure 'tram' is an array, if it's not, convert it into an array
                 const trams = Array.isArray(direction.tram) ? direction.tram : [direction.tram];
 
-                const tramDetails = trams.map(tram =>
-                    `Destination: ${tram["@destination"]}, Arrival: ${tram["@dueMins"]} mins`
-                ).join("<br>");
+                // const tramDetails = trams.map(tram =>
+                //     `Destination: ${tram["@destination"]}, Arrival: ${tram["@dueMins"]} mins`
+                // ).join("<br>");
 
-                return `<b>${direction["@name"]}:</b><br>${tramDetails}`;
+                let tramDetails = "";
+                trams.forEach(tram => {
+                    if (tram["@dueMins"] === "DUE") {
+                        tramDetails += `<br>Destination: ${tram["@destination"]}; Arrival: DUE NOW.`;
+                    }
+                    else if (tram["@dueMins"] === "1") {
+                        tramDetails += `<br>Destination: ${tram["@destination"]}; Arrival: 1 minute.`;
+                    }
+                    else if (tram["@destination"] == "No trams forecast") {
+                        tramDetails += "<br>No trams forecast";
+                    }
+                    else {
+                        tramDetails += `<br>Destination: ${tram["@destination"]}; Arrival: ${tram["@dueMins"]} minutes.`;
+                    }
+                });
+
+
+                return `<b>${direction["@name"]}:</b> ${tramDetails}`;
             }).join("<br><br>");
 
             setLuasInfo(tramInfo);
