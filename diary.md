@@ -7,6 +7,7 @@
 - Add better handling for Luas forecast information.
 - Re-add cluster toggle to side panel.
 - Add Lambda function + API to return trains due to a station in the next 90 minutes.
+- Add unit tests for `return_station_data`.
 - Add button to fetch trains due to a station in the next 90 minutes.
 
 ## Sun 09 Mar 2025
