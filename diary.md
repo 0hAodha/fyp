@@ -4,6 +4,8 @@
   - Speeds up loading time from 20s to 15s for all data.
 - Add Navbar, skeleton Statistics page.
 - Enable TailwindCSS.
+- Add better handling for Luas forecast information.
+- Re-add cluster toggle to side panel.
 
 ## Sun 09 Mar 2025
 - Optimise `permanent_data.py` with better batched uploading and asynchronous API calls.
