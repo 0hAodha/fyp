@@ -1,3 +1,9 @@
+## Tue 11 Mar 2025
+- Fix spacing of Statistics page
+- Add ObjectTypeProportionPieChart.
+- Revert to previous batch upload method to overcome blank data issue.
+- Add scroll limits on map.
+
 ## Mon 10 Mar 2025
 - Add `ci.yml`.
 - Update frontend to only send one request per API when loading data, using the list of `objectType`s functionaliy, thereby reducing the number of requests made.
