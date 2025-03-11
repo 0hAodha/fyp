@@ -3,3 +3,4 @@ Requests
 xmltodict
 pytest
 pytest-cov
+dotenv
