@@ -6,6 +6,7 @@ import os
 import boto3
 import time
 from concurrent.futures import ThreadPoolExecutor
+from dotenv import load_dotenv
 
 # Create a reusable session for requests
 session = requests.Session()
@@ -216,6 +217,8 @@ if __name__ == "__main__":
     """
     Main function to fetch and print data locally.
     """
+    load_dotenv()
+
     with ThreadPoolExecutor() as executor:
         futures = [
             executor.submit(fetch_trains),
