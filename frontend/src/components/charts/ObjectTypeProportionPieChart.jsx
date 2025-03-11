@@ -18,7 +18,7 @@ const ObjectTypeProportionPieChart = ({ label, dataList }) => {
     return (
         <div className="flex flex-col items-center p-4 bg-white shadow-lg rounded-lg w-full max-w-md">
             <h2 className="text-xl font-semibold text-center mb-4">{label}</h2>
-            <ResponsiveContainer width={300} height={300}>
+            <ResponsiveContainer width={350} height={300}>
                 <PieChart>
                     <Pie
                         data={chartData}
