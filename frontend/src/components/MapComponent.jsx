@@ -96,7 +96,15 @@ const MapComponent = ({ markers, clusteringEnabled }) => {
     }
 
     return (
-        <MapContainer center={mapCentre} zoom={7} minZoom={4} style={{ height: "100%", width: "100%" }}>
+        <MapContainer
+            center={mapCentre}
+            zoom={7}
+            minZoom={4}
+            maxBounds={[[150, -50], [0, 50]]}
+            maxBoundsViscosity={0.3}
+            style={{ height: "100%", width: "100%" }}
+        >
+
             <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
