@@ -36,7 +36,7 @@ function App() {
     useEffect(() => {
         const handler = setTimeout(() => {
             setSearchTerm(searchInput);
-        }, 300); // Adjust this delay as desired
+        }, 300);
 
         return () => {
             clearTimeout(handler);

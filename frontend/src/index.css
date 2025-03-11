@@ -25,6 +25,7 @@ a:hover {
 }
 
 body {
+  color: black;
   margin: 0;
   display: flex;
   place-items: center;
@@ -94,4 +95,8 @@ body, html, #root {
   padding: 0;
   box-sizing: border-box;
   overflow-x: hidden;
+}
+
+.leaflet-marker-icon {
+  color: white;
 }
