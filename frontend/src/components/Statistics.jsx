@@ -48,7 +48,7 @@ const Statistics = () => {
             className="min-h-screen w-full flex flex-col bg-white pt-[7vh] px-4"
         >
             <div
-                className="mx-auto px-4 flex flex-wrap gap-4 pt-[4vh] jut stify-center">
+                className="mx-auto px-4 flex flex-wrap gap-4 pt-[4vh] justify-center">
                 {transientTypes.length > 0 ? (
                     transientTypes.slice(0, 6).map((type, index) => (
                         <div key={index} className="bg-white shadow-md rounded-lg p-4">
