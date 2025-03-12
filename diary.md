@@ -5,6 +5,7 @@
 - Add a filter that allows the user to specify a number of kilometres within which to display items, thus allowing them to only see nearby items.
 - Centre the map on the selected marker when button is clicked to retrieve more data.
 - Fix the filters side panel and the search bar overlapping on narrow screens by moving the search bar down lower.
+- Add train statuses and train types pie charts.
 
 ## Tue 11 Mar 2025
 - Fix spacing of Statistics page
