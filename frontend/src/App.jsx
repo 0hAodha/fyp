@@ -379,30 +379,31 @@ function App() {
                     path="/"
                     element={
                         <div style={{ height: "100vh", width: "100vw", display: "flex", position: "relative", paddingTop: "5vh" }}>
-                            {loading && <LoadingOverlay message={"Loading data..."} />} <div
-                            style={{
-                                position: "absolute",
-                                top: "1vh",
-                                height: "5vh",
-                                width: "250px", minWidth: "50px",
-                                left: "50%",
-                                transform: "translateX(-50%)",
-                                zIndex: 1000
-                            }}
-                        >
-                            <input
-                                type="text"
-                                onChange={(e) => handleSearchChange(e)}
-                                placeholder="Search..."
+                            {loading && <LoadingOverlay message={"Loading data..."} />}
+                            <div
                                 style={{
-                                    width: "250px", fontSize: "16px",
-                                    top: "6vh", marginTop: "5vh",
-                                    padding: "10px", background: "rgba(255, 255, 255, 0.9)", color: "black",
-                                    borderRadius: "10px", overflow: "hidden"
+                                    position: "absolute",
+                                    top: "1vh",
+                                    height: "5vh",
+                                    width: "250px", minWidth: "50px",
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    zIndex: 1000,
+                                    ...(window.innerWidth < 800 ? { top: "auto", bottom: "10vh" } : {})
                                 }}
-                            />
-                        </div>
-
+                            >
+                                <input
+                                    type="text"
+                                    onChange={(e) => handleSearchChange(e)}
+                                    placeholder="Search..."
+                                    style={{
+                                        width: "250px", fontSize: "16px",
+                                        top: "6vh", marginTop: "5vh",
+                                        padding: "10px", background: "rgba(255, 255, 255, 0.9)", color: "black",
+                                        borderRadius: "10px", overflow: "hidden"
+                                    }}
+                                />
+                            </div>
                             <Sidebar
                                 selectedSources={selectedSources}
                                 setSelectedSources={setSelectedSources}

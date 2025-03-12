@@ -161,7 +161,7 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
 
     return (
         <div style={{
-            position: "absolute", top: window.innerWidth < 900 ? "8vh" : "6vh", right: "1vh",
+            position: "absolute", top: "6vh", right: "1vh",
             width: "250px", minWidth: "50px",
             padding: isOpen ? "10px" : "5px 10px", background: "rgba(255, 255, 255, 0.9)", color: "black",
             borderRadius: "10px", transition: "height 0.2s ease-in-out, padding 0.2s ease-in-out",
