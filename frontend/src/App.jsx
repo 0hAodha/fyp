@@ -229,7 +229,7 @@ function App() {
                                     ((showRunning && trainStatus == "Running") || (showNotYetRunning && trainStatus == "Not yet running") || (showTerminated && trainStatus == "Terminated")) &&
                                     ((trainStatus == "Running" && showEarly && punctualityStr == "early") || (trainStatus == "Running" && showOnTime && punctualityStr == "On time") || (trainStatus == "Running" && showLate && punctualityStr == "late")
                                         || (trainStatus == "Not yet running" && showNotYetRunning) || (trainStatus == "Terminated" && showTerminated))) &&
-                                    (userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
+                                    (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
 
                             break;
 
@@ -241,7 +241,7 @@ function App() {
 
                             markerText = item.trainStationCode + " " + item.trainStationDesc;
                             display = (item.latitude !== "0" && item.longitude !== "0") &&
-                                (userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
+                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
 
                             break;
 
@@ -262,7 +262,7 @@ function App() {
 
                             markerText = item.busRouteAgencyName + " " + item.busRouteShortName + " " + item.busRouteLongName;
                             display = (item.latitude !== "0" && item.longitude !== "0") &&
-                                (userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
+                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
 
                             break;
 
@@ -281,7 +281,7 @@ function App() {
 
                             markerText = item.busStopName;
                             display = (item.latitude !== "0" && item.longitude !== "0") &&
-                                (userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
+                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
 
                             break;
 
@@ -312,7 +312,7 @@ function App() {
                                 (showEnabled && item.luasStopIsEnabled === "1" || showDisabled && item.luasStopIsEnabled === "0") &&
                                 (!showCycleAndRide || (showCycleAndRide && item.luasStopIsCycleAndRide === "1")) &&
                                 (!showParkAndRide || (showParkAndRide && item.luasStopIsParkAndRide === "1")) &&
-                                (userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true)
+                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true)
                             );
 
                             break;
