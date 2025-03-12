@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
@@ -28,20 +28,26 @@ function App() {
     const [loading, setLoading] = useState(false);
     const [clusteringEnabled, setClusteringEnabled] = useState(true);
 
-    // Search states: one is the raw user input, the other is the actual term we filter on
-    const [searchInput, setSearchInput] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
+    const debounceTimeout = useRef(null);
 
-    // Debounce effect
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setSearchTerm(searchInput);
+    const [filteredMarkers, setFilteredMarkers] = useState([]);
+    const [numMarkers, setNumMarkers] = useState(0);
+
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+
+        // Clear any existing timeout to reset the debounce timer
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
+        }
+
+        // Set a new timeout to update the state only after 300ms of inactivity
+        debounceTimeout.current = setTimeout(() => {
+            setSearchTerm(value); // Only update state after delay
         }, 300);
+    };
 
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [searchInput]);
 
     const fetchData = async (enabledSources) => {
         setLoading(true);
@@ -282,6 +288,7 @@ function App() {
                 })
                 .filter((marker) => marker.display);
 
+            setNumMarkers(newMarkers.length);
             setMarkers(newMarkers);
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -290,14 +297,51 @@ function App() {
     };
 
     // 2. Memoize the filtered markers so it recalculates only if `searchTerm` or `markers` changes
-    const filteredMarkers = useMemo(() => {
-        if (!searchTerm.trim()) {
-            return markers;
-        }
-        return markers.filter((marker) =>
+    // const filteredMarkers = useMemo(() => {
+    //     setLoading(true);
+    //     console.log("set loading true");
+    //
+    //     if (!searchTerm.trim()) {
+    //         setLoading(false);
+    //         return markers;
+    //     }
+    //     const newMarkers = markers.filter((marker) =>
+    //         marker.markerText.includes(searchTerm.toLowerCase())
+    //     );
+    //
+    //     setLoading(false);
+    //     console.log("set loading false");
+    //     return newMarkers;
+    //
+    // }, [searchTerm, markers]);
+
+    const memoizedFilteredMarkers = useMemo(() => {
+        return markers.filter(marker =>
             marker.markerText.includes(searchTerm.toLowerCase())
         );
     }, [searchTerm, markers]);
+
+    useEffect(() => {
+        if (numMarkers > 500) {
+            setLoading(true); // Start loading immediately
+        }
+
+        const timeout = setTimeout(() => {
+            setFilteredMarkers(memoizedFilteredMarkers); // Update markers
+
+            // Now wait 10 seconds before setting loading to false
+            if (numMarkers > 500) {
+                const loadingTimeout = setTimeout(() => {
+                    setLoading(false); // Stop loading after 10 seconds
+                }, 5000);
+            }
+
+            return () => clearTimeout(loadingTimeout); // Cleanup loading timeout
+
+        }, 0); // Small debounce before filtering
+
+        return () => clearTimeout(timeout); // Cleanup initial debounce timeout
+    }, [memoizedFilteredMarkers]);
 
     return (
         <Router>
@@ -320,8 +364,8 @@ function App() {
                             >
                                 <input
                                     type="text"
-                                    value={searchInput}
-                                    onChange={(e) => setSearchInput(e.target.value)}
+                                    // value={searchInput}
+                                    onChange={(e) => handleSearchChange(e)}
                                     placeholder="Search..."
                                     style={{
                                         width: "250px", fontSize: "16px",
