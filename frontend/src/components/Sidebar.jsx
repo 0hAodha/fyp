@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import PropTypes from 'prop-types';
 import Cookies from "js-cookie";
 
@@ -131,9 +131,10 @@ const CheckboxItem = ({ item, selectedSources, setSelectedSources, enabledSource
     );
 };
 
-const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setClusteringEnabled, fetchData }) => {
+const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setClusteringEnabled, fetchData, userLocationAvailable }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [enabledSources, setEnabledSources] = useState([]);  // New state to track enabled sources
+    const [numberInputValue, setNumberInputValue] = useState("");  // State to manage number input value
 
     // Load selected sources from cookies or set all as default checked
     useEffect(() => {
@@ -144,11 +145,18 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
             const allDefaultChecked = getAllDefaultCheckedIds(menuData);
             setSelectedSources(allDefaultChecked);
         }
+
+        // Load numberInputValue from cookie
+        const savedNumberInputValue = Cookies.get("numberInputValue");
+        if (savedNumberInputValue) {
+            setNumberInputValue(savedNumberInputValue);
+        }
     }, [setSelectedSources]);
 
     const handleSubmit = () => {
-        Cookies.set("selectedSources", JSON.stringify(selectedSources), { expires: 7 });
-        fetchData(enabledSources);  // Use enabledSources for data fetching
+        Cookies.set("selectedSources", JSON.stringify(selectedSources));
+        Cookies.set("numberInputValue", numberInputValue);  // Save numberInputValue to cookie
+        fetchData(enabledSources, numberInputValue);  // Use enabledSources for data fetching
     };
 
     return (
@@ -184,6 +192,18 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
                         />
                         <label htmlFor="toggleClustering">Cluster overlapping icons</label>
                     </div>
+                    {userLocationAvailable && (
+                        <div style={{marginTop: "10px", display: "flex", alignItems: "center", gap: "8px"}}>
+                            <label htmlFor="numberInput" style={{maxWidth: "40%"}}>Within KM:</label>
+                            <input
+                                type="number"
+                                id="numberInput"
+                                value={numberInputValue}
+                                onChange={(e) => setNumberInputValue(e.target.value)}
+                                style={{maxWidth: "40%"}}
+                            />
+                        </div>
+                    )}
                     <button onClick={handleSubmit} style={{marginTop: "10px", color: "white"}}>Submit</button>
                 </div>
             )}
@@ -197,6 +217,7 @@ Sidebar.propTypes = {
     clusteringEnabled: PropTypes.bool.isRequired,
     setClusteringEnabled: PropTypes.func.isRequired,
     fetchData: PropTypes.func.isRequired,
+    userLocationAvailable: PropTypes.bool.isRequired,
 };
 
-export default Sidebar;
+export default Sidebar

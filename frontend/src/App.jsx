@@ -34,22 +34,66 @@ function App() {
     const [filteredMarkers, setFilteredMarkers] = useState([]);
     const [numMarkers, setNumMarkers] = useState(0);
 
+    const [userLocation, setUserLocation] = useState(null);
+    const [userLocationAvailable, setUserLocationAvailable] = useState(false);
+
+    useEffect(() => {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setUserLocation([position.coords.latitude, position.coords.longitude]);
+                    setUserLocationAvailable(true);
+                },
+                (error) => {
+                    console.error("Error getting location:", error);
+                    setUserLocation([53.4494762, -7.5029786]);
+                    setUserLocationAvailable(false);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 2000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            setUserLocation([53.4494762, -7.5029786]);
+            setUserLocationAvailable(false);
+        }
+    }, []);
+
     const handleSearchChange = (e) => {
         const value = e.target.value;
 
-        // Clear any existing timeout to reset the debounce timer
         if (debounceTimeout.current) {
             clearTimeout(debounceTimeout.current);
         }
 
-        // Set a new timeout to update the state only after 300ms of inactivity
         debounceTimeout.current = setTimeout(() => {
-            setSearchTerm(value); // Only update state after delay
+            setSearchTerm(value);
         }, 300);
     };
 
+    // calculate distance between 2 points
+    function haversineDistance(coord1, coord2) {
+        const R = 6371; // Radius of the Earth in km
+        const toRad = (angle) => angle * (Math.PI / 180);
 
-    const fetchData = async (enabledSources) => {
+        const [lat1, lon1] = coord1;
+        const [lat2, lon2] = coord2;
+
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c; // Distance in km
+    }
+
+    const fetchData = async (enabledSources, numberInputValue) => {
         setLoading(true);
         try {
             const transientTypes = dataSources.filter(({ id, api }) => enabledSources.includes(id) && api === "transient").map(({ objectType }) => objectType);
@@ -141,7 +185,6 @@ function App() {
                                 punctualityStr = "N/A";
                             }
 
-                            // set icon depending on lateness of train and type
                             if (punctualityStr === "early") {
                                 latenessMessage = -punctuality + " minute" + (punctuality === -1 ? "" : "s") + " early";
                                 icon += "OnTime";
@@ -181,11 +224,12 @@ function App() {
 
                             markerText = item.trainPublicMessage + " " +  item.trainDirection;
                             display =
-                                ((item.latitude !== "0" && item.longitude !== "0") && // filter out trains with no location data
-                                ((showMainline && trainType == "Mainline") || (showSuburban && trainType == "Suburban") || (showDart && trainType == "DART")) &&
-                                ((showRunning && trainStatus == "Running") || (showNotYetRunning && trainStatus == "Not yet running") || (showTerminated && trainStatus == "Terminated")) &&
-                                ((trainStatus == "Running" && showEarly && punctualityStr == "early") || (trainStatus == "Running" && showOnTime && punctualityStr == "On time") || (trainStatus == "Running" && showLate && punctualityStr == "late")
-                                    || (trainStatus == "Not yet running" && showNotYetRunning) || (trainStatus == "Terminated" && showTerminated)));
+                                ((item.latitude !== "0" && item.longitude !== "0") &&
+                                    ((showMainline && trainType == "Mainline") || (showSuburban && trainType == "Suburban") || (showDart && trainType == "DART")) &&
+                                    ((showRunning && trainStatus == "Running") || (showNotYetRunning && trainStatus == "Not yet running") || (showTerminated && trainStatus == "Terminated")) &&
+                                    ((trainStatus == "Running" && showEarly && punctualityStr == "early") || (trainStatus == "Running" && showOnTime && punctualityStr == "On time") || (trainStatus == "Running" && showLate && punctualityStr == "late")
+                                        || (trainStatus == "Not yet running" && showNotYetRunning) || (trainStatus == "Terminated" && showTerminated))) &&
+                                    (userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
 
                             break;
 
@@ -196,7 +240,8 @@ function App() {
                             );
 
                             markerText = item.trainStationCode + " " + item.trainStationDesc;
-                            display = (item.latitude !== "0" && item.longitude !== "0");
+                            display = (item.latitude !== "0" && item.longitude !== "0") &&
+                                (userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
 
                             break;
 
@@ -216,7 +261,8 @@ function App() {
                             );
 
                             markerText = item.busRouteAgencyName + " " + item.busRouteShortName + " " + item.busRouteLongName;
-                            display = (item.latitude !== "0" && item.longitude !== "0");
+                            display = (item.latitude !== "0" && item.longitude !== "0") &&
+                                (userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
 
                             break;
 
@@ -234,7 +280,8 @@ function App() {
                             );
 
                             markerText = item.busStopName;
-                            display = (item.latitude !== "0" && item.longitude !== "0");
+                            display = (item.latitude !== "0" && item.longitude !== "0") &&
+                                (userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
 
                             break;
 
@@ -264,7 +311,8 @@ function App() {
                                 (showGreenLine && luasLine === "Green Line" || showRedLine && luasLine === "Red Line") &&
                                 (showEnabled && item.luasStopIsEnabled === "1" || showDisabled && item.luasStopIsEnabled === "0") &&
                                 (!showCycleAndRide || (showCycleAndRide && item.luasStopIsCycleAndRide === "1")) &&
-                                (!showParkAndRide || (showParkAndRide && item.luasStopIsParkAndRide === "1"))
+                                (!showParkAndRide || (showParkAndRide && item.luasStopIsParkAndRide === "1")) &&
+                                (userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true)
                             );
 
                             break;
@@ -296,25 +344,6 @@ function App() {
         setLoading(false);
     };
 
-    // 2. Memoize the filtered markers so it recalculates only if `searchTerm` or `markers` changes
-    // const filteredMarkers = useMemo(() => {
-    //     setLoading(true);
-    //     console.log("set loading true");
-    //
-    //     if (!searchTerm.trim()) {
-    //         setLoading(false);
-    //         return markers;
-    //     }
-    //     const newMarkers = markers.filter((marker) =>
-    //         marker.markerText.includes(searchTerm.toLowerCase())
-    //     );
-    //
-    //     setLoading(false);
-    //     console.log("set loading false");
-    //     return newMarkers;
-    //
-    // }, [searchTerm, markers]);
-
     const memoizedFilteredMarkers = useMemo(() => {
         return markers.filter(marker =>
             marker.markerText.includes(searchTerm.toLowerCase())
@@ -323,24 +352,23 @@ function App() {
 
     useEffect(() => {
         if (numMarkers > 500) {
-            setLoading(true); // Start loading immediately
+            setLoading(true);
         }
 
         const timeout = setTimeout(() => {
-            setFilteredMarkers(memoizedFilteredMarkers); // Update markers
+            setFilteredMarkers(memoizedFilteredMarkers);
 
-            // Now wait 10 seconds before setting loading to false
             if (numMarkers > 500) {
                 const loadingTimeout = setTimeout(() => {
-                    setLoading(false); // Stop loading after 10 seconds
-                }, 5000);
+                    setLoading(false);
+                }, 3000);
             }
 
-            return () => clearTimeout(loadingTimeout); // Cleanup loading timeout
+            return () => clearTimeout(loadingTimeout);
 
-        }, 0); // Small debounce before filtering
+        }, 0);
 
-        return () => clearTimeout(timeout); // Cleanup initial debounce timeout
+        return () => clearTimeout(timeout);
     }, [memoizedFilteredMarkers]);
 
     return (
@@ -351,30 +379,29 @@ function App() {
                     path="/"
                     element={
                         <div style={{ height: "100vh", width: "100vw", display: "flex", position: "relative", paddingTop: "5vh" }}>
-                        {loading && <LoadingOverlay message={"Loading data..."} />} <div
+                            {loading && <LoadingOverlay message={"Loading data..."} />} <div
+                            style={{
+                                position: "absolute",
+                                top: "1vh",
+                                height: "5vh",
+                                width: "250px", minWidth: "50px",
+                                left: "50%",
+                                transform: "translateX(-50%)",
+                                zIndex: 1000
+                            }}
+                        >
+                            <input
+                                type="text"
+                                onChange={(e) => handleSearchChange(e)}
+                                placeholder="Search..."
                                 style={{
-                                    position: "absolute",
-                                    top: "1vh",
-                                    height: "5vh",
-                                    width: "250px", minWidth: "50px",
-                                    left: "50%",
-                                    transform: "translateX(-50%)",
-                                    zIndex: 1000
+                                    width: "250px", fontSize: "16px",
+                                    top: "6vh", marginTop: "5vh",
+                                    padding: "10px", background: "rgba(255, 255, 255, 0.9)", color: "black",
+                                    borderRadius: "10px", overflow: "hidden"
                                 }}
-                            >
-                                <input
-                                    type="text"
-                                    // value={searchInput}
-                                    onChange={(e) => handleSearchChange(e)}
-                                    placeholder="Search..."
-                                    style={{
-                                        width: "250px", fontSize: "16px",
-                                        top: "6vh", marginTop: "5vh",
-                                        padding: "10px", background: "rgba(255, 255, 255, 0.9)", color: "black",
-                                        borderRadius: "10px", overflow: "hidden"
-                                    }}
-                                />
-                            </div>
+                            />
+                        </div>
 
                             <Sidebar
                                 selectedSources={selectedSources}
@@ -382,9 +409,10 @@ function App() {
                                 clusteringEnabled={clusteringEnabled}
                                 setClusteringEnabled={setClusteringEnabled}
                                 fetchData={fetchData}
+                                userLocationAvailable={userLocationAvailable}
                             />
                             <div style={{ flex: 1 }}>
-                                <MapComponent markers={filteredMarkers} clusteringEnabled={clusteringEnabled} />
+                                <MapComponent markers={filteredMarkers} clusteringEnabled={clusteringEnabled} userLocationAvailable={userLocationAvailable} />
                             </div>
                         </div>
                     }
