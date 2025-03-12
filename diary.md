@@ -1,3 +1,8 @@
+## Wed 12 Mar 2025
+- Fix search input freezing when there's a large number of data.
+  - Basically just works by using a debounce function and setting a loading screen if there's more than 500 items to filter.
+  - Furthermore, if there's more than 500 items to filter, it'll wait 5 seconds after filtering the data to disable the loading screen, as it takes about that long to plot everything on the map.
+
 ## Tue 11 Mar 2025
 - Fix spacing of Statistics page
 - Add ObjectTypeProportionPieChart.
