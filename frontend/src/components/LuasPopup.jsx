@@ -1,16 +1,21 @@
 import React, { useState } from "react";
+import { useMap } from "react-leaflet";
 
 const LuasPopup = ({ item, objectTitle, luasLine }) => {
     const [luasInfo, setLuasInfo] = useState("");
+    const map = useMap(); // Access the Leaflet map instance
 
     const fetchLuasData = async () => {
+        let luasInfoHtml = "";
+
         try {
-            const response = await fetch(`https://3fzg2hdskc.execute-api.us-east-1.amazonaws.com/return_luas_data?luasStopCode=${item.luasStopCode}`);
+            const response = await fetch(
+                `https://3fzg2hdskc.execute-api.us-east-1.amazonaws.com/return_luas_data?luasStopCode=${item.luasStopCode}`
+            );
             const data = await response.json();
 
             if (!data.stopInfo || !data.stopInfo.direction) {
-                setLuasInfo("No tram data available");
-                return;
+                throw new Error("No tram data available");
             }
 
             const tramInfo = data.stopInfo.direction.map(direction => {
@@ -21,26 +26,29 @@ const LuasPopup = ({ item, objectTitle, luasLine }) => {
                 trams.forEach(tram => {
                     if (tram["@dueMins"] === "DUE") {
                         tramDetails += `<br>Destination: ${tram["@destination"]}; Arrival: DUE NOW.`;
-                    }
-                    else if (tram["@dueMins"] === "1") {
+                    } else if (tram["@dueMins"] === "1") {
                         tramDetails += `<br>Destination: ${tram["@destination"]}; Arrival: 1 minute.`;
-                    }
-                    else if (tram["@destination"] == "No trams forecast") {
+                    } else if (tram["@destination"] === "No trams forecast") {
                         tramDetails += "<br>No trams forecast";
-                    }
-                    else {
+                    } else {
                         tramDetails += `<br>Destination: ${tram["@destination"]}; Arrival: ${tram["@dueMins"]} minutes.`;
                     }
                 });
 
-
                 return `<b>${direction["@name"]}:</b> ${tramDetails}`;
             }).join("<br><br>");
 
-            setLuasInfo(tramInfo);
+            luasInfoHtml = tramInfo;
         } catch (error) {
-            setLuasInfo("Failed to fetch Luas data");
+            luasInfoHtml = "Failed to fetch Luas data or no trams available.";
         }
+
+        setLuasInfo(luasInfoHtml);
+
+        // Ensure the map pans to keep the popup in view even if an error occurs
+        setTimeout(() => {
+            map.panTo([item.latitude, item.longitude], { animate: true });
+        }, 300);
     };
 
     return (
@@ -50,14 +58,32 @@ const LuasPopup = ({ item, objectTitle, luasLine }) => {
                 <li><b>Luas Stop Name:</b> {item.luasStopName} / {item.luasStopIrishName}</li>
                 <li><b>Line:</b> {luasLine}</li>
                 <li><b>Stop ID:</b> {item.luasStopID}</li>
-                <li><b>Park & ride?:</b> {(item.luasStopIsParkAndRide === "1") ? "Yes" : "No"}</li>
-                <li><b>Cycle & ride?:</b> {(item.luasStopIsCycleAndRide === "1") ? "Yes" : "No"}</li>
-                <li><b>Operational?:</b> {(item.luasStopIsEnabled === "1") ? "Yes" : "No"}</li>
+                <li><b>Park & Ride?:</b> {item.luasStopIsParkAndRide === "1" ? "Yes" : "No"}</li>
+                <li><b>Cycle & Ride?:</b> {item.luasStopIsCycleAndRide === "1" ? "Yes" : "No"}</li>
+                <li><b>Operational?:</b> {item.luasStopIsEnabled === "1" ? "Yes" : "No"}</li>
             </ul>
-            <button onClick={fetchLuasData} style={{ padding: "5px", marginTop: "5px", cursor: "pointer", color: "white" }}>
-                Load Luas Schedule
+            <button
+                onClick={fetchLuasData}
+                style={{
+                    padding: "5px",
+                    marginTop: "5px",
+                    cursor: "pointer",
+                    color: "white",
+                    background: "black",
+                    border: "none",
+                    borderRadius: "4px"
+                }}
+            >
+                Load incoming trams
             </button>
-            <div dangerouslySetInnerHTML={{ __html: luasInfo }} style={{ marginTop: "10px" }}></div>
+            <div
+                dangerouslySetInnerHTML={{ __html: luasInfo }}
+                style={{
+                    marginTop: "10px",
+                    maxHeight: "200px",   // Limit popup height
+                    overflowY: "auto"     // Enable scrolling
+                }}
+            ></div>
         </div>
     );
 };
