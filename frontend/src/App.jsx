@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Cookies from "js-cookie";
 
 import Navbar from "./components/Navbar";
 import Statistics from "./components/Statistics.jsx";
@@ -22,7 +23,45 @@ const dataSources = [
     { id: "buses", name: "Buses", api: "transient", objectType: "Bus" },
 ];
 
+const defaultFavourites = {
+    IrishRailTrain: [],
+    Bus: [],
+    LuasStop: [],
+    BusStop: [],
+    IrishRailStation: []
+};
+
 function App() {
+    const [favourites, setFavourites] = useState(defaultFavourites);
+
+    useEffect(() => {
+        try {
+            const savedFavourites = Cookies.get("favourites");
+            if (savedFavourites) {
+                const parsedFavourites = JSON.parse(savedFavourites);
+                setFavourites({ ...defaultFavourites, ...parsedFavourites });
+            }
+        } catch (error) {
+            console.error("Error loading favourites from cookies:", error);
+            setFavourites(defaultFavourites);
+        }
+    }, []);
+
+    const toggleFavourite = (type, id) => {
+        setFavourites((prev) => {
+            const updatedFavourites = {
+                ...defaultFavourites,
+                ...prev,
+                [type]: prev[type]?.includes(id)
+                    ? prev[type].filter((fav) => fav !== id)
+                    : [...(prev[type] || []), id]
+            };
+
+            Cookies.set("favourites", JSON.stringify(updatedFavourites), { expires: 365 });
+            return updatedFavourites;
+        });
+    };
+
     const [selectedSources, setSelectedSources] = useState([]);
     const [markers, setMarkers] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -302,7 +341,13 @@ function App() {
                                     luasLine = "N/A";
                             }
                             popupContent = (
-                                <LuasPopup item={item} objectTitle={objectTitle} luasLine={luasLine} />
+                                <LuasPopup
+                                    item={item}
+                                    objectTitle={objectTitle}
+                                    luasLine={luasLine}
+                                    toggleFavourite={toggleFavourite}
+                                    favourites={favourites}
+                                />
                             );
 
                             markerText = item.luasStopIrishName + " " + item.luasStopName + " " + luasLine;
@@ -413,7 +458,11 @@ function App() {
                                 userLocationAvailable={userLocationAvailable}
                             />
                             <div style={{ flex: 1 }}>
-                                <MapComponent markers={filteredMarkers} clusteringEnabled={clusteringEnabled} userLocationAvailable={userLocationAvailable} />
+                                <MapComponent
+                                    markers={filteredMarkers}
+                                    clusteringEnabled={clusteringEnabled}
+                                    userLocationAvailable={userLocationAvailable}
+                                    />
                             </div>
                         </div>
                     }

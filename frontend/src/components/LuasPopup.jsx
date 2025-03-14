@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 import { useMap } from "react-leaflet";
 
-const LuasPopup = ({ item, objectTitle, luasLine }) => {
+const LuasPopup = ({ item, objectTitle, luasLine, toggleFavourite, favourites }) => {
+    const [isFavourite, setIsFavourite] = useState(favourites.LuasStop?.includes(item.luasStopID));
+
+    const handleToggleFavourite = () => {
+        toggleFavourite("LuasStop", item.luasStopID);
+        setIsFavourite((prev) => !prev);
+    };
+
     const [luasInfo, setLuasInfo] = useState("");
     const map = useMap(); // Access the Leaflet map instance
 
@@ -53,7 +60,15 @@ const LuasPopup = ({ item, objectTitle, luasLine }) => {
 
     return (
         <div>
-            <h3>{objectTitle}</h3>
+            <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+                <h3>{objectTitle}</h3>
+                <button
+                    onClick={handleToggleFavourite}
+                    style={{background: "white", border: "none", fontSize: "20px", cursor: "pointer"}}
+                >
+                    {isFavourite ? "⭐" : "☆"}
+                </button>
+            </div>
             <ul>
                 <li><b>Luas Stop Name:</b> {item.luasStopName} / {item.luasStopIrishName}</li>
                 <li><b>Line:</b> {luasLine}</li>
@@ -77,7 +92,7 @@ const LuasPopup = ({ item, objectTitle, luasLine }) => {
                 Load incoming trams
             </button>
             <div
-                dangerouslySetInnerHTML={{ __html: luasInfo }}
+                dangerouslySetInnerHTML={{__html: luasInfo}}
                 style={{
                     marginTop: "10px",
                     maxHeight: "200px",   // Limit popup height
