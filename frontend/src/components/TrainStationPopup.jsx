@@ -1,7 +1,14 @@
 import React, { useState, useRef } from "react";
 import { useMap } from "react-leaflet";
 
-const TrainStationPopup = ({ item, objectTitle }) => {
+const TrainStationPopup = ({ item, objectTitle, toggleFavourite, favourites }) => {
+    const [isFavourite, setIsFavourite] = useState(favourites.IrishRailStation?.includes(item.trainStationCode));
+
+    const handleToggleFavourite = () => {
+        toggleFavourite("IrishRailStation", item.trainStationCode);
+        setIsFavourite((prev) => !prev);
+    };
+
     const [trainInfo, setTrainInfo] = useState("");
     const map = useMap(); // Access the Leaflet map instance
 
@@ -62,7 +69,15 @@ const TrainStationPopup = ({ item, objectTitle }) => {
 
     return (
         <div>
-            <h3>{objectTitle}</h3>
+            <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+                <h3>{objectTitle}</h3>
+                <button
+                    onClick={handleToggleFavourite}
+                    style={{background: "white", border: "none", fontSize: "20px", cursor: "pointer"}}
+                >
+                    {isFavourite ? "⭐" : "☆"}
+                </button>
+            </div>
             <ul>
                 <li><b>Train Station Name:</b> {item.trainStationDesc}</li>
                 <li><b>Train Station ID:</b> {item.trainStationID}</li>
@@ -83,7 +98,7 @@ const TrainStationPopup = ({ item, objectTitle }) => {
                 Load incoming trains
             </button>
             <div
-                dangerouslySetInnerHTML={{ __html: trainInfo }}
+                dangerouslySetInnerHTML={{__html: trainInfo}}
                 style={{
                     marginTop: "10px",
                     maxHeight: "200px",   // limit popup height

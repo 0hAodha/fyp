@@ -275,7 +275,12 @@ function App() {
                         case "IrishRailStation":
                             objectTitle = item.trainStationDesc + " Train Station";
                             popupContent = (
-                                <TrainStationPopup item={item} objectTitle={objectTitle} />
+                                <TrainStationPopup
+                                    item={item}
+                                    objectTitle={objectTitle}
+                                    toggleFavourite={toggleFavourite}
+                                    favourites={favourites}
+                                />
                             );
 
                             markerText = item.trainStationCode + " " + item.trainStationDesc;
