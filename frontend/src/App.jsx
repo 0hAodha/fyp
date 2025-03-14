@@ -11,6 +11,7 @@ import LoadingOverlay from "./components/LoadingOverlay";
 
 import LuasPopup from "./components/LuasPopup";
 import TrainStationPopup from "./components/TrainStationPopup";
+import IrishRailTrainPopup from "./components/IrishRailTrainPopup";
 
 const TRANSIENT_DATA_API = "https://281bc6mcm5.execute-api.us-east-1.amazonaws.com/transient_data";
 const PERMANENT_DATA_API = "https://a6y312dpuj.execute-api.us-east-1.amazonaws.com/permanent_data";
@@ -247,18 +248,32 @@ function App() {
                                 icon += "NotRunning";
                             }
 
+                            // popupContent = (
+                            //     <div>
+                            //         <h3>{objectTitle}</h3>
+                            //         <ul>
+                            //             <li><b>Train Details:</b> {splitMessage[1].split("(")[0]}</li>
+                            //             <li><b>Train Type:</b> {trainType}</li>
+                            //             <li><b>Status:</b> {trainStatus}</li>
+                            //             <li><b>Direction:</b> {item.trainDirection}</li>
+                            //             <li><b>Update:</b> {splitMessage[2]}</li>
+                            //             <li><b>Punctuality:</b> {latenessMessage}</li>
+                            //         </ul>
+                            //     </div>
+                            // );
+
                             popupContent = (
-                                <div>
-                                    <h3>{objectTitle}</h3>
-                                    <ul>
-                                        <li><b>Train Details:</b> {splitMessage[1].split("(")[0]}</li>
-                                        <li><b>Train Type:</b> {trainType}</li>
-                                        <li><b>Status:</b> {trainStatus}</li>
-                                        <li><b>Direction:</b> {item.trainDirection}</li>
-                                        <li><b>Update:</b> {splitMessage[2]}</li>
-                                        <li><b>Punctuality:</b> {latenessMessage}</li>
-                                    </ul>
-                                </div>
+                                <IrishRailTrainPopup
+                                    item={item}
+                                    objectTitle={objectTitle}
+                                    splitMessage={splitMessage}
+                                    trainType={trainType}
+                                    trainStatus={trainStatus}
+                                    latenessMessage={latenessMessage}
+
+                                    toggleFavourite={toggleFavourite}
+                                    favourites={favourites}
+                                />
                             );
 
                             markerText = item.trainPublicMessage + " " +  item.trainDirection;
