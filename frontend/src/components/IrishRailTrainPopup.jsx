@@ -17,7 +17,7 @@ const IrishRailTrainPopup = ({ item, objectTitle, trainStatus, trainType, latene
                 <h3>{objectTitle}</h3>
                 <button
                     onClick={handleToggleFavourite}
-                    style={{ background: "white", border: "none", fontSize: "20px", cursor: "pointer" }}
+                    style={{background: "white", border: "none", fontSize: "1.1em", cursor: "pointer"}}
                 >
                     {isFavourite ? "⭐" : "☆"}
                 </button>
