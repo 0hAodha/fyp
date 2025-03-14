@@ -4,6 +4,7 @@
 - Create `IrishRailTrainPopup` with favourite button.
 - Create `BusPopup` with favourite button.
 - Create `BusStopPopup` with favourite button.
+- Add ability to restrict filters to only favourites.
 
 ## Wed 12 Mar 2025
 - Fix search input freezing when there's a large number of data.
