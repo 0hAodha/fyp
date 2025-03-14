@@ -13,6 +13,7 @@ import LuasPopup from "./components/LuasPopup";
 import TrainStationPopup from "./components/TrainStationPopup";
 import IrishRailTrainPopup from "./components/IrishRailTrainPopup";
 import BusPopup from "./components/BusPopup.jsx";
+import BusStopPopup from "./components/BusStopPopup.jsx";
 
 const TRANSIENT_DATA_API = "https://281bc6mcm5.execute-api.us-east-1.amazonaws.com/transient_data";
 const PERMANENT_DATA_API = "https://a6y312dpuj.execute-api.us-east-1.amazonaws.com/permanent_data";
@@ -35,6 +36,7 @@ const defaultFavourites = {
 
 function App() {
     const [favourites, setFavourites] = useState(defaultFavourites);
+    const [showFaovouritesOnly, setShowFavouritesOnly] = useState(false);
 
     useEffect(() => {
         try {
@@ -270,7 +272,8 @@ function App() {
                                     ((showRunning && trainStatus == "Running") || (showNotYetRunning && trainStatus == "Not yet running") || (showTerminated && trainStatus == "Terminated")) &&
                                     ((trainStatus == "Running" && showEarly && punctualityStr == "early") || (trainStatus == "Running" && showOnTime && punctualityStr == "On time") || (trainStatus == "Running" && showLate && punctualityStr == "late")
                                         || (trainStatus == "Not yet running" && showNotYetRunning) || (trainStatus == "Terminated" && showTerminated))) &&
-                                    (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
+                                    (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true) &&
+                                    (showFaovouritesOnly ? favourites.IrishRailTrain.includes(item.trainCode) : true);
 
                             break;
 
@@ -287,7 +290,8 @@ function App() {
 
                             markerText = item.trainStationCode + " " + item.trainStationDesc;
                             display = (item.latitude !== "0" && item.longitude !== "0") &&
-                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
+                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true) &&
+                                (showFaovouritesOnly ? favourites.IrishRailStation.includes(item.trainStationCode) : true);
 
                             break;
 
@@ -300,40 +304,30 @@ function App() {
                                     toggleFavourite={toggleFavourite}
                                     favourites={favourites}
                                 />
-                                // <div>
-                                //     <h3>{objectTitle}</h3>
-                                //     <ul>
-                                //         <li><b>Bus ID:</b> {item.busID}</li>
-                                //         <li><b>Bus Route ID:</b> {item.busRoute}</li>
-                                //         <li><b>Bus Route Short Name:</b> {item.busRouteShortName}</li>
-                                //         <li><b>Bus Route Long Name:</b> {item.busRouteLongName}</li>
-                                //         <li><b>Agency: </b> {item.busRouteAgencyName}</li>
-                                //     </ul>
-                                // </div>
                             );
 
                             markerText = item.busRouteAgencyName + " " + item.busRouteShortName + " " + item.busRouteLongName;
                             display = (item.latitude !== "0" && item.longitude !== "0") &&
-                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
+                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true) &&
+                                (showFaovouritesOnly ? favourites.Bus.includes(item.busRoute) : true);
 
                             break;
 
                         case "BusStop":
                             objectTitle = item.busStopName + " Bus Stop";
                             popupContent = (
-                                <div>
-                                    <h3>{objectTitle}</h3>
-                                    <ul>
-                                        <li><b>Bus Stop ID:</b> {item.busStopID}</li>
-                                        <li><b>Bus Stop Name:</b> {item.busStopName}</li>
-                                        <li><b>Bus Stop Code:</b> {item.busStopCode || "N/A"}</li>
-                                    </ul>
-                                </div>
+                                <BusStopPopup
+                                    item={item}
+                                    objectTitle={objectTitle}
+                                    toggleFavourite={toggleFavourite}
+                                    favourites={favourites}
+                                />
                             );
 
                             markerText = item.busStopName;
                             display = (item.latitude !== "0" && item.longitude !== "0") &&
-                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true);
+                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true) &&
+                                (showFaovouritesOnly ? favourites.BusStop.includes(item.busStopID) : true);
 
                             break;
 
@@ -370,7 +364,8 @@ function App() {
                                 (showEnabled && item.luasStopIsEnabled === "1" || showDisabled && item.luasStopIsEnabled === "0") &&
                                 (!showCycleAndRide || (showCycleAndRide && item.luasStopIsCycleAndRide === "1")) &&
                                 (!showParkAndRide || (showParkAndRide && item.luasStopIsParkAndRide === "1")) &&
-                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true)
+                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true) &&
+                                (showFaovouritesOnly ? favourites.LuasStop.includes(item.luasStopID) : true)
                             );
 
                             break;
@@ -469,6 +464,8 @@ function App() {
                                 setClusteringEnabled={setClusteringEnabled}
                                 fetchData={fetchData}
                                 userLocationAvailable={userLocationAvailable}
+                                showFavouritesOnly={showFaovouritesOnly}
+                                setShowFavouritesOnly={setShowFavouritesOnly}
                             />
                             <div style={{ flex: 1 }}>
                                 <MapComponent

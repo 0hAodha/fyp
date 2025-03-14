@@ -131,7 +131,7 @@ const CheckboxItem = ({ item, selectedSources, setSelectedSources, enabledSource
     );
 };
 
-const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setClusteringEnabled, fetchData, userLocationAvailable }) => {
+const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setClusteringEnabled, fetchData, userLocationAvailable, showFavouritesOnly, setShowFavouritesOnly }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [enabledSources, setEnabledSources] = useState([]);  // New state to track enabled sources
     const [numberInputValue, setNumberInputValue] = useState("");  // State to manage number input value
@@ -183,41 +183,54 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
                             setEnabledSources={setEnabledSources}
                         />
                     ))}
-                    <div style={{marginTop: "10px", display: "flex", alignItems: "center", gap: "8px"}}>
+
+                    <div style={{marginTop: "10px", display: "flex", alignItems: "center", gap: "4px"}}>
                         <input
                             type="checkbox"
-                            id="toggleClustering"
-                            checked={clusteringEnabled}
-                            onChange={() => setClusteringEnabled(!clusteringEnabled)}
+                            id="showFavouritesOnly"
+                            checked={showFavouritesOnly}
+                            onChange={() => setShowFavouritesOnly(!showFavouritesOnly)}
                         />
-                        <label htmlFor="toggleClustering">Cluster overlapping icons</label>
+                        <label htmlFor={"showFavouritesOnly"}>Show Favourites Only</label>
                     </div>
-                    {userLocationAvailable && (
-                        <div style={{marginTop: "10px", display: "flex", alignItems: "center", gap: "8px"}}>
-                            <label htmlFor="numberInput" style={{maxWidth: "40%"}}>Within KM:</label>
+
+                        <div style={{marginTop: "10px", display: "flex", alignItems: "center", gap: "4px"}}>
                             <input
-                                type="number"
-                                id="numberInput"
-                                value={numberInputValue}
-                                onChange={(e) => setNumberInputValue(e.target.value)}
-                                style={{maxWidth: "40%"}}
+                                type="checkbox"
+                                id="toggleClustering"
+                                checked={clusteringEnabled}
+                                onChange={() => setClusteringEnabled(!clusteringEnabled)}
                             />
+                            <label htmlFor="toggleClustering">Cluster overlapping icons</label>
                         </div>
+                        {userLocationAvailable && (
+                            <div style={{marginTop: "10px", display: "flex", alignItems: "center", gap: "8px"}}>
+                                <label htmlFor="numberInput" style={{maxWidth: "40%"}}>Within KM:</label>
+                                <input
+                                    type="number"
+                                    id="numberInput"
+                                    value={numberInputValue}
+                                    onChange={(e) => setNumberInputValue(e.target.value)}
+                                    style={{maxWidth: "40%"}}
+                                />
+                            </div>
+                        )}
+                        <button onClick={handleSubmit} style={{marginTop: "10px", color: "white"}}>Submit</button>
+                    </div>
                     )}
-                    <button onClick={handleSubmit} style={{marginTop: "10px", color: "white"}}>Submit</button>
                 </div>
-            )}
-        </div>
-    );
-};
+            );
+            };
 
-Sidebar.propTypes = {
-    selectedSources: PropTypes.array.isRequired,
-    setSelectedSources: PropTypes.func.isRequired,
-    clusteringEnabled: PropTypes.bool.isRequired,
-    setClusteringEnabled: PropTypes.func.isRequired,
-    fetchData: PropTypes.func.isRequired,
-    userLocationAvailable: PropTypes.bool.isRequired,
-};
+            Sidebar.propTypes = {
+            selectedSources: PropTypes.array.isRequired,
+            setSelectedSources: PropTypes.func.isRequired,
+            clusteringEnabled: PropTypes.bool.isRequired,
+            setClusteringEnabled: PropTypes.func.isRequired,
+            fetchData: PropTypes.func.isRequired,
+            userLocationAvailable: PropTypes.bool.isRequired,
+            showFavouritesOnly: PropTypes.bool.isRequired,
+            setShowFavouritesOnly: PropTypes.func.isRequired,
+        };
 
-export default Sidebar
+            export default Sidebar
