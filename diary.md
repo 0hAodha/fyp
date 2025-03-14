@@ -2,6 +2,7 @@
 - Add 'favourite' button to Luas pop-up. 
 - Add 'favourite' button to train station pop-up. 
 - Create `IrishRailTrainPopup` with favourite button.
+- Create `BusPopup` with favourite button.
 
 ## Wed 12 Mar 2025
 - Fix search input freezing when there's a large number of data.
