@@ -1,3 +1,6 @@
+## Fri 14 Mar 2025
+- Add 'favourite' button to Luas pop-up. 
+
 ## Wed 12 Mar 2025
 - Fix search input freezing when there's a large number of data.
   - Basically just works by using a debounce function and setting a loading screen if there's more than 500 items to filter.
