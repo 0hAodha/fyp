@@ -12,6 +12,7 @@ import LoadingOverlay from "./components/LoadingOverlay";
 import LuasPopup from "./components/LuasPopup";
 import TrainStationPopup from "./components/TrainStationPopup";
 import IrishRailTrainPopup from "./components/IrishRailTrainPopup";
+import BusPopup from "./components/BusPopup.jsx";
 
 const TRANSIENT_DATA_API = "https://281bc6mcm5.execute-api.us-east-1.amazonaws.com/transient_data";
 const PERMANENT_DATA_API = "https://a6y312dpuj.execute-api.us-east-1.amazonaws.com/permanent_data";
@@ -248,20 +249,6 @@ function App() {
                                 icon += "NotRunning";
                             }
 
-                            // popupContent = (
-                            //     <div>
-                            //         <h3>{objectTitle}</h3>
-                            //         <ul>
-                            //             <li><b>Train Details:</b> {splitMessage[1].split("(")[0]}</li>
-                            //             <li><b>Train Type:</b> {trainType}</li>
-                            //             <li><b>Status:</b> {trainStatus}</li>
-                            //             <li><b>Direction:</b> {item.trainDirection}</li>
-                            //             <li><b>Update:</b> {splitMessage[2]}</li>
-                            //             <li><b>Punctuality:</b> {latenessMessage}</li>
-                            //         </ul>
-                            //     </div>
-                            // );
-
                             popupContent = (
                                 <IrishRailTrainPopup
                                     item={item}
@@ -307,16 +294,22 @@ function App() {
                         case "Bus":
                             objectTitle = item.busRouteAgencyName + ": " + item.busRouteShortName;
                             popupContent = (
-                                <div>
-                                    <h3>{objectTitle}</h3>
-                                    <ul>
-                                        <li><b>Bus ID:</b> {item.busID}</li>
-                                        <li><b>Bus Route ID:</b> {item.busRoute}</li>
-                                        <li><b>Bus Route Short Name:</b> {item.busRouteShortName}</li>
-                                        <li><b>Bus Route Long Name:</b> {item.busRouteLongName}</li>
-                                        <li><b>Agency: </b> {item.busRouteAgencyName}</li>
-                                    </ul>
-                                </div>
+                                <BusPopup
+                                    item={item}
+                                    objectTitle={objectTitle}
+                                    toggleFavourite={toggleFavourite}
+                                    favourites={favourites}
+                                />
+                                // <div>
+                                //     <h3>{objectTitle}</h3>
+                                //     <ul>
+                                //         <li><b>Bus ID:</b> {item.busID}</li>
+                                //         <li><b>Bus Route ID:</b> {item.busRoute}</li>
+                                //         <li><b>Bus Route Short Name:</b> {item.busRouteShortName}</li>
+                                //         <li><b>Bus Route Long Name:</b> {item.busRouteLongName}</li>
+                                //         <li><b>Agency: </b> {item.busRouteAgencyName}</li>
+                                //     </ul>
+                                // </div>
                             );
 
                             markerText = item.busRouteAgencyName + " " + item.busRouteShortName + " " + item.busRouteLongName;
