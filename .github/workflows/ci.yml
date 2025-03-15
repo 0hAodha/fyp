@@ -86,23 +86,35 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.13.1'
+          python-version: '3.13'
 
+      # Install AWS CLI manually
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+
+      # Configure AWS credentials
+      - name: Configure AWS CLI
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set region ${{ secrets.AWS_REGION }}
+
+      # Install dependencies for Lambda function
       - name: Install dependencies
         run: |
+          mkdir -p package/
           pip install -r server/src/requirements.txt -t package/
           cp -r package/* server/src/functions/${{ matrix.function_name }}/
 
+      # Zip each Lambda function separately
       - name: Zip Lambda function
         run: |
           cd server/src/functions/${{ matrix.function_name }}/
           zip -r ../../../../${{ matrix.function_name }}.zip . -x "*.git*" "*tests*" "*.github*" "*README.md*" "requirements.txt"
 
+      # Deploy Lambda function using AWS CLI
       - name: Deploy to AWS Lambda
-        uses: aws-actions/aws-cli-action@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          command: |
-            aws lambda update-function-code --function-name ${{ matrix.function_name }} --zip-file fileb://${{ matrix.function_name }}.zip
+        run: |
+          aws lambda update-function-code --function-name ${{ matrix.function_name }} --zip-file fileb://${{ matrix.function_name }}.zip
