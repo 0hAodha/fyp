@@ -4,9 +4,13 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - "**.py"
   push:
     branches:
       - main
+    paths:
+      - "**.py"
 
 jobs:
   check_python_changes:
@@ -18,22 +22,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Determine Previous Commit
-        id: get_previous_commit
-        run: |
-          if [ -z "${{ github.event.before }}" ] || [ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]; then
-            echo "No previous commit found. Assuming first commit."
-            echo "PREV_COMMIT=$(git rev-list --max-parents=0 HEAD)" >> $GITHUB_ENV
-          else
-            echo "Using previous commit from GitHub event."
-            echo "PREV_COMMIT=${{ github.event.before }}" >> $GITHUB_ENV
-          fi
-
       - name: Check if Python files changed
         id: check_files
         run: |
-          git fetch origin $PREV_COMMIT
-          if git diff --name-only $PREV_COMMIT ${{ github.sha }} | grep -q '\.py$'; then
+          git fetch origin ${{ github.event.before }}
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q '\.py$'; then
             echo "Python files changed"
             echo "run_tests=true" >> $GITHUB_ENV
             echo "::set-output name=run_tests::true"
@@ -89,7 +82,7 @@ jobs:
 
   deploy:
     needs: test
-    if: success() || needs.check_python_changes.outputs.run_tests == 'false'
+    if: success() || needs.check_python_changes.outputs.run_tests == 'false'  # Deploy if tests pass OR no Python changes
     runs-on: ubuntu-latest
 
     strategy:
