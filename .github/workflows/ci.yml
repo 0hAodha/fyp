@@ -79,12 +79,15 @@ jobs:
         with:
           python-version: '3.13'
 
-      # ✅ Correct AWS CLI installation
-      - name: Install AWS CLI (Official AWS Method)
+      # ✅ Check if AWS CLI is installed and update it instead of reinstalling
+      - name: Check AWS CLI version
+        run: aws --version || echo "AWS CLI not found"
+
+      - name: Update AWS CLI
         run: |
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install
+          unzip -o awscliv2.zip
+          sudo ./aws/install --update
 
       - name: Verify AWS CLI installation
         run: aws --version
