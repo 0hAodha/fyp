@@ -1,3 +1,7 @@
+## Sat 15 Mar 2025
+- Add CD pipeline.
+  - Amazed it worked tbh.
+
 ## Fri 14 Mar 2025
 - Add 'favourite' button to Luas pop-up. 
 - Add 'favourite' button to train station pop-up. 
