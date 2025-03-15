@@ -10,14 +10,12 @@ def lambda_handler(event, context):
     table = dynamodb.Table(os.environ['TABLE_NAME'])
 
     try:
-        # Check if objectType is present in query string parameters
         if 'queryStringParameters' in event and event['queryStringParameters'] and 'objectType' in event[
             'queryStringParameters']:
-            # Get objectType values and split by comma if multiple values are present
+
             objectType = event['queryStringParameters']['objectType']
             object_types = objectType.split(',')
 
-            # Fetch items matching any of the object types using a scan with FilterExpression
             items = []
             response = table.scan(
                 FilterExpression=Attr('objectType').is_in(object_types)
