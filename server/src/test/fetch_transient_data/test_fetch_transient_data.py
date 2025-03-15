@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 import os
-from functions.transient_data.transient_data import (
+from functions.fetch_transient_data.lambda_function import (
     fetch_trains,
     fetch_buses
 )
@@ -12,7 +12,7 @@ class TestTransientData(unittest.TestCase):
     """
 
     @patch.dict(os.environ, {"PERMANENT_DATA_API": "http://mockapi.com"})
-    @patch('functions.transient_data.transient_data.session.get')
+    @patch('functions.fetch_transient_data.lambda_function.session.get')
     def test_fetch_buses(self, mock_get):
         """
         Test the fetch_buses function to ensure it returns the correct data.
@@ -54,8 +54,8 @@ class TestTransientData(unittest.TestCase):
         self.assertEqual(result[0]['busID'], 'bus1')
         self.assertEqual(result[0]['busRouteAgencyName'], 'Dublin Bus')
 
-    @patch('functions.transient_data.transient_data.session.get')
-    @patch('functions.transient_data.transient_data.timestamp', '1234567890')
+    @patch('functions.fetch_transient_data.lambda_function.session.get')
+    @patch('functions.fetch_transient_data.lambda_function.timestamp', '1234567890')
     def test_fetch_trains(self, mock_get):
         """
         Test the fetch_trains function to ensure it returns the correct data.
@@ -89,7 +89,7 @@ class TestTransientData(unittest.TestCase):
         '''
         mock_get.return_value = mock_response
 
-        with patch('functions.transient_data.transient_data.xmltodict.parse') as mock_parse:
+        with patch('functions.fetch_transient_data.lambda_function.xmltodict.parse') as mock_parse:
             # Mock xmltodict to return a dictionary directly
             mock_parse.return_value = {
                 "ArrayOfObjTrainPositions": {

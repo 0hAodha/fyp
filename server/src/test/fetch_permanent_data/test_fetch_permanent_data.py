@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 import json
 import os
-from functions.permanent_data.permanent_data import (
+from functions.fetch_permanent_data.lambda_function import (
     fetch_train_stations_with_type,
     fetch_train_stations,
     fetch_luas,
@@ -15,8 +15,8 @@ from functions.permanent_data.permanent_data import (
 
 class TestPermanentData(unittest.TestCase):
 
-    @patch('functions.permanent_data.permanent_data.session.get')
-    @patch('functions.permanent_data.permanent_data.xmltodict.parse')
+    @patch('functions.fetch_permanent_data.lambda_function.session.get')
+    @patch('functions.fetch_permanent_data.lambda_function.xmltodict.parse')
     def test_fetch_train_stations_with_type(self, mock_parse, mock_get):
         # Mock API response and xmltodict parsing
         mock_get.return_value.text = '<xml></xml>'
@@ -39,8 +39,8 @@ class TestPermanentData(unittest.TestCase):
         self.assertEqual(len(result), 3)  # Three types: M, S, D
         self.assertEqual(result[0]['trainStationCode'], 'DUB')
 
-    @patch('functions.permanent_data.permanent_data.session.get')
-    @patch('functions.permanent_data.permanent_data.xmltodict.parse')
+    @patch('functions.fetch_permanent_data.lambda_function.session.get')
+    @patch('functions.fetch_permanent_data.lambda_function.xmltodict.parse')
     def test_fetch_train_stations(self, mock_parse, mock_get):
         # Mock API response and xmltodict parsing
         mock_get.return_value.text = '<xml></xml>'
@@ -63,7 +63,7 @@ class TestPermanentData(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['trainStationCode'], 'DUB')
 
-    @patch('functions.permanent_data.permanent_data.session.get')
+    @patch('functions.fetch_permanent_data.lambda_function.session.get')
     def test_fetch_luas(self, mock_get):
         # Mock API response for Luas stops
         mock_get.return_value.content = 'Abbreviation\tName\tIrishName\tLatitude\tLongitude\tStopID\tLineID\tSortOrder\tIsEnabled\tIsParkAndRide\tIsCycleAndRide\tZoneCountA\tZoneCountB\nABB\tAbbey Street\tSráid na Mainistreach\t53.0\t-6.0\t1\t1\t1\ttrue\tfalse\tfalse\t1\t2'.encode('utf-8-sig')
@@ -72,8 +72,8 @@ class TestPermanentData(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['luasStopName'], 'Abbey Street')
 
-        @patch('functions.permanent_data.permanent_data.session.get')
-        @patch('functions.permanent_data.permanent_data.zipfile.ZipFile')
+        @patch('functions.fetch_permanent_data.lambda_function.session.get')
+        @patch('functions.fetch_permanent_data.lambda_function.zipfile.ZipFile')
         def test_fetch_gtfs(self, mock_zip, mock_get):
             # Mock API response for the GTFS zip file
             mock_get.return_value.content = b'zipfilecontent'
@@ -118,7 +118,7 @@ class TestPermanentData(unittest.TestCase):
             self.assertEqual(result[1]['busRouteLongName'], 'Ballinteer to Phoenix Park')
             self.assertEqual(result[2]['busStopName'], 'Stop 1')
 
-    @patch('functions.permanent_data.permanent_data.table')
+    @patch('functions.fetch_permanent_data.lambda_function.table')
     def test_batch_upload_to_dynamodb(self, mock_table):
         # Mock DynamoDB batch_writer
         mock_batch_writer = MagicMock()
@@ -129,10 +129,10 @@ class TestPermanentData(unittest.TestCase):
 
         mock_batch_writer.put_item.assert_called_once_with(Item=data[0])
 
-    @patch('functions.permanent_data.permanent_data.fetch_train_stations')
-    @patch('functions.permanent_data.permanent_data.fetch_luas')
-    @patch('functions.permanent_data.permanent_data.fetch_gtfs')
-    @patch('functions.permanent_data.permanent_data.batch_upload_to_dynamodb')
+    @patch('functions.fetch_permanent_data.lambda_function.fetch_train_stations')
+    @patch('functions.fetch_permanent_data.lambda_function.fetch_luas')
+    @patch('functions.fetch_permanent_data.lambda_function.fetch_gtfs')
+    @patch('functions.fetch_permanent_data.lambda_function.batch_upload_to_dynamodb')
     def test_lambda_handler(self, mock_upload, mock_gtfs, mock_luas, mock_stations):
         # Mock data fetching functions
         mock_stations.return_value = [{"objectID": "station1", "objectType": "IrishRailStation"}]
