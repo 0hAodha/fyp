@@ -66,13 +66,13 @@ jobs:
 
 
   deploy:
-    needs: test  # Ensures deployment happens only if tests pass
+    needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # Deploy only from main branch
+    if: github.ref == 'refs/heads/main'
 
     strategy:
       matrix:
-        function_name: [fetch_permanent_data, return_luas_data, return_station_data, fetch_transient_data  __pycache__  return_permanent_data  return_transient_data]
+        function_name: [fetch_permanent_data, return_luas_data, return_station_data, fetch_transient_data, return_permanent_data, return_transient_data]
 
     steps:
       - name: Checkout repository
@@ -83,7 +83,6 @@ jobs:
         with:
           python-version: '3.13'
 
-      # ✅ Check if AWS CLI is installed and update it instead of reinstalling
       - name: Check AWS CLI version
         run: aws --version || echo "AWS CLI not found"
 
