@@ -17,23 +17,19 @@ jobs:
         python-version: [3.13]
 
     steps:
-      # Checkout the code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Set up Python
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r server/src/requirements.txt
 
-      # Set AWS region and mock credentials
       - name: Configure AWS Credentials for Tests
         run: |
           echo "Setting AWS region and mock credentials..."
@@ -42,13 +38,11 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=fake_secret_key
           export AWS_DEFAULT_REGION=us-east-1
 
-      # Run tests and generate coverage report
       - name: Run tests with coverage
         run: |
           export PYTHONPATH=$(pwd)/server/src
           pytest --cov=src/functions --cov=server/src --cov-report=term-missing --cov-report=xml --cov-report=html
 
-      # Upload coverage report as an artifact
       - name: Upload coverage report (HTML)
         if: always()
         uses: actions/upload-artifact@v4
@@ -56,7 +50,6 @@ jobs:
           name: coverage-report-html
           path: htmlcov/
 
-      # Upload XML coverage report for CI tools
       - name: Upload coverage report (XML)
         if: always()
         uses: actions/upload-artifact@v4
@@ -64,12 +57,10 @@ jobs:
           name: coverage-report-xml
           path: coverage.xml
 
-      # Show coverage summary in logs
       - name: Show coverage summary
         run: cat coverage.xml
 
 
-  # Step 2: Continuous Deployment (CD) - Deploy multiple AWS Lambda functions
   deploy:
     needs: test  # Ensures deployment happens only if tests pass
     runs-on: ubuntu-latest
@@ -88,33 +79,33 @@ jobs:
         with:
           python-version: '3.13'
 
-      # Install AWS CLI manually
-      - name: Install AWS CLI
+      # ✅ Correct AWS CLI installation
+      - name: Install AWS CLI (Official AWS Method)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y awscli
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
 
-      # Configure AWS credentials
+      - name: Verify AWS CLI installation
+        run: aws --version
+
       - name: Configure AWS CLI
         run: |
           aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws configure set region ${{ secrets.AWS_REGION }}
 
-      # Install dependencies for Lambda function
-      - name: Install dependencies
+      - name: Install dependencies for Lambda function
         run: |
           mkdir -p package/
           pip install -r server/src/requirements.txt -t package/
           cp -r package/* server/src/functions/${{ matrix.function_name }}/
 
-      # Zip each Lambda function separately
       - name: Zip Lambda function
         run: |
           cd server/src/functions/${{ matrix.function_name }}/
           zip -r ../../../../${{ matrix.function_name }}.zip . -x "*.git*" "*tests*" "*.github*" "*README.md*" "requirements.txt"
 
-      # Deploy Lambda function using AWS CLI
       - name: Deploy to AWS Lambda
         run: |
           aws lambda update-function-code --function-name ${{ matrix.function_name }} --zip-file fileb://${{ matrix.function_name }}.zip
