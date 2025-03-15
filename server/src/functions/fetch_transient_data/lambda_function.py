@@ -204,9 +204,7 @@ def lambda_handler(event, context):
     print(f"Retrieved {len(data)} records.")
     print("Uploading to DynamoDB...")
     batch_upload_to_dynamodb(data)
-    # chunk_size = 25
-    # for i in range(0, len(data), chunk_size):
-    #     batch_upload_to_dynamodb(data[i:i + chunk_size])
+
     print("Upload completed.")
 
     return {
