@@ -18,7 +18,6 @@ class TestPermanentData(unittest.TestCase):
     @patch('functions.fetch_permanent_data.lambda_function.session.get')
     @patch('functions.fetch_permanent_data.lambda_function.xmltodict.parse')
     def test_fetch_train_stations_with_type(self, mock_parse, mock_get):
-        # Mock API response and xmltodict parsing
         mock_get.return_value.text = '<xml></xml>'
         mock_parse.return_value = {
             "ArrayOfObjStation": {
@@ -42,7 +41,6 @@ class TestPermanentData(unittest.TestCase):
     @patch('functions.fetch_permanent_data.lambda_function.session.get')
     @patch('functions.fetch_permanent_data.lambda_function.xmltodict.parse')
     def test_fetch_train_stations(self, mock_parse, mock_get):
-        # Mock API response and xmltodict parsing
         mock_get.return_value.text = '<xml></xml>'
         mock_parse.return_value = {
             "ArrayOfObjStation": {
@@ -65,7 +63,6 @@ class TestPermanentData(unittest.TestCase):
 
     @patch('functions.fetch_permanent_data.lambda_function.session.get')
     def test_fetch_luas(self, mock_get):
-        # Mock API response for Luas stops
         mock_get.return_value.content = 'Abbreviation\tName\tIrishName\tLatitude\tLongitude\tStopID\tLineID\tSortOrder\tIsEnabled\tIsParkAndRide\tIsCycleAndRide\tZoneCountA\tZoneCountB\nABB\tAbbey Street\tSráid na Mainistreach\t53.0\t-6.0\t1\t1\t1\ttrue\tfalse\tfalse\t1\t2'.encode('utf-8-sig')
 
         result = fetch_luas()
@@ -75,27 +72,21 @@ class TestPermanentData(unittest.TestCase):
         @patch('functions.fetch_permanent_data.lambda_function.session.get')
         @patch('functions.fetch_permanent_data.lambda_function.zipfile.ZipFile')
         def test_fetch_gtfs(self, mock_zip, mock_get):
-            # Mock API response for the GTFS zip file
             mock_get.return_value.content = b'zipfilecontent'
 
-            # Create a mock zip file object
             mock_zip_file = MagicMock()
             mock_zip.return_value.__enter__.return_value = mock_zip_file
 
-            # Mock the file list inside the zip
             mock_zip_file.namelist.return_value = ['agency.txt', 'routes.txt', 'stops.txt']
 
-            # Create separate mocks for each file's content
             agency_file = MagicMock()
             route_file = MagicMock()
             stop_file = MagicMock()
 
-            # Mock file reading for each file
             agency_file.read.return_value = b'agency_id,agency_name,agency_url\n1,Dublin Bus,http://dublinbus.ie'
             route_file.read.return_value = b'route_id,agency_id,route_short_name,route_long_name\n1,1,46A,Ballinteer to Phoenix Park'
             stop_file.read.return_value = b'stop_id,stop_code,stop_name,stop_lat,stop_lon\n1,123,Stop 1,53.0,-6.0'
 
-            # Mock open() based on file name
             def mock_open(name, *args, **kwargs):
                 if name == 'agency.txt':
                     return agency_file
@@ -106,13 +97,10 @@ class TestPermanentData(unittest.TestCase):
                 else:
                     raise FileNotFoundError
 
-            # Set the side effect for open()
             mock_zip_file.open.side_effect = mock_open
 
-            # Call the function
             result = fetch_gtfs()
 
-            # Validate the result
             self.assertEqual(len(result), 3)
             self.assertEqual(result[0]['busAgencyName'], 'Dublin Bus')
             self.assertEqual(result[1]['busRouteLongName'], 'Ballinteer to Phoenix Park')
@@ -120,7 +108,6 @@ class TestPermanentData(unittest.TestCase):
 
     @patch('functions.fetch_permanent_data.lambda_function.table')
     def test_batch_upload_to_dynamodb(self, mock_table):
-        # Mock DynamoDB batch_writer
         mock_batch_writer = MagicMock()
         mock_table.batch_writer.return_value.__enter__.return_value = mock_batch_writer
 
@@ -134,7 +121,6 @@ class TestPermanentData(unittest.TestCase):
     @patch('functions.fetch_permanent_data.lambda_function.fetch_gtfs')
     @patch('functions.fetch_permanent_data.lambda_function.batch_upload_to_dynamodb')
     def test_lambda_handler(self, mock_upload, mock_gtfs, mock_luas, mock_stations):
-        # Mock data fetching functions
         mock_stations.return_value = [{"objectID": "station1", "objectType": "IrishRailStation"}]
         mock_luas.return_value = [{"objectID": "luas1", "objectType": "LuasStop"}]
         mock_gtfs.return_value = [{"objectID": "bus1", "objectType": "BusStop"}]
