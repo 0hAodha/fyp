@@ -97,4 +97,16 @@ class TestReturnAllCoordinates(unittest.TestCase):
     @patch('functions.return_all_coordinates.lambda_function.dynamodb.Table')
     def test_lambda_handler_error(self, mock_table):
         """Test function when DynamoDB scan raises an exception."""
-        mock_table.retur
+        mock_table.return_value.scan.side_effect = Exception('DynamoDB error')
+
+        event = {}
+        result = lambda_handler(event, {})
+        self.assertEqual(result['statusCode'], 500)
+
+        body = json.loads(result['body'])
+        self.assertIn('error', body)
+        self.assertEqual(body['error'], 'DynamoDB error')
+
+
+if __name__ == "__main__":
+    unittest.main()
