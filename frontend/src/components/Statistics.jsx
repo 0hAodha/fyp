@@ -14,21 +14,21 @@ const Statistics = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch("https://281bc6mcm5.execute-api.us-east-1.amazonaws.com/transient_data");
-                if (!response.ok) throw new Error("Network response was not ok");
-
-                const transientData = await response.json();
+                const transientResponse = await fetch("https://281bc6mcm5.execute-api.us-east-1.amazonaws.com/transient_data");
+                if (!transientResponse.ok) throw new Error("Network response was not ok");
+                const transientData = await transientResponse.json();
 
                 let transientTypes = [];
                 let trainTypes = [];
                 let trainStatuses = [];
-                let coords = [];
+
+                const coordsResponse = await fetch("https://kc0re7ep0b.execute-api.us-east-1.amazonaws.com/return_all_coordinates");
+                if (!coordsResponse.ok) throw new Error("Network response was not ok");
+                const coordsData = await coordsResponse.json();
+                const coords = await coordsData["coordinates"]
 
                 for (const item of transientData) {
                     transientTypes.push(item.objectType.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/([A-Z])([A-Z][a-z])/g, '$1 $2'));
-                    if (item.latitude && item.longitude) {
-                        coords.push([item.latitude, item.longitude]);
-                    }
 
                     if (item.objectType === "IrishRailTrain") {
                         let trainType = item.trainType === "M" ? "Mainline" : item.trainType === "S" ? "Suburban" : item.trainType === "D" ? "DART" : "Unknown";
