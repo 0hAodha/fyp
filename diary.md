@@ -1,5 +1,6 @@
 ## Mon 17 Mar 2025
 - Add services heatmap.
+- Add `return_all_coordinates` lambda function.
 
 ## Sat 15 Mar 2025
 - Add CD pipeline.
