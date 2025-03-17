@@ -1,3 +1,6 @@
+## Mon 17 Mar 2025
+- Add services heatmap.
+
 ## Sat 15 Mar 2025
 - Add CD pipeline.
   - Amazed it worked tbh.
