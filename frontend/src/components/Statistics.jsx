@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import ObjectTypeProportionPieChart from "./charts/ObjectTypeProportionPieChart";
 import LoadingOverlay from "./LoadingOverlay.jsx";
+import HeatmapContainer from "./charts/HeatmapContainer";
 
 const Statistics = () => {
     const [transientTypes, setTransientTypes] = useState([]);
     const [trainTypes, setTrainTypes] = useState([]);
     const [trainStatuses, setTrainStatuses] = useState([]);
+    const [coordinates, setCoordinates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -20,55 +22,27 @@ const Statistics = () => {
                 let transientTypes = [];
                 let trainTypes = [];
                 let trainStatuses = [];
+                let coords = [];
 
                 for (const item of transientData) {
                     transientTypes.push(item.objectType.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/([A-Z])([A-Z][a-z])/g, '$1 $2'));
+                    if (item.latitude && item.longitude) {
+                        coords.push([item.latitude, item.longitude]);
+                    }
 
-                    switch (item.objectType) {
-                        case "IrishRailTrain":
-                            let trainType;
-                            switch (item.trainType) {
-                                case "M":
-                                    trainType = "Mainline";
-                                    break;
-                                case "S":
-                                    trainType = "Suburban";
-                                    break;
-                                case "D":
-                                    trainType = "DART";
-                                    break;
-                                default:
-                                    trainType = "Unknown";
-                            }
-                            trainTypes.push(trainType);
+                    if (item.objectType === "IrishRailTrain") {
+                        let trainType = item.trainType === "M" ? "Mainline" : item.trainType === "S" ? "Suburban" : item.trainType === "D" ? "DART" : "Unknown";
+                        trainTypes.push(trainType);
 
-                            let trainStatus;
-                            switch (item.trainStatus) {
-                                case "R":
-                                    trainStatus = "Running";
-                                    break;
-
-                                case "T":
-                                    trainStatus = "Terminated";
-                                    break;
-
-                                case "N":
-                                    trainStatus = "Not yet running";
-                                    break;
-
-                                default:
-                                    trainStatus = "Unknown";
-                            }
-                            trainStatuses.push(trainStatus);
-
-                            break;
+                        let trainStatus = item.trainStatus === "R" ? "Running" : item.trainStatus === "T" ? "Terminated" : item.trainStatus === "N" ? "Not yet running" : "Unknown";
+                        trainStatuses.push(trainStatus);
                     }
                 }
 
                 setTransientTypes(transientTypes);
                 setTrainStatuses(trainStatuses);
                 setTrainTypes(trainTypes);
-
+                setCoordinates(coords);
             } catch (err) {
                 setError("Failed to fetch data");
             } finally {
@@ -98,23 +72,28 @@ const Statistics = () => {
         >
             <div
                 className="mx-auto px-4 flex flex-wrap gap-4 pt-[4vh] justify-center">
+
+                <div className="bg-white shadow-md rounded-lg p-4">
+                    <HeatmapContainer coordinates={coordinates}/>
+                </div>
+
                 <div className="bg-white shadow-md rounded-lg p-4">
                     <ObjectTypeProportionPieChart
-                        label={`Transport Types`}
+                        label={`Live Transport Types`}
                         dataList={transientTypes}
                     />
                 </div>
 
                 <div className="bg-white shadow-md rounded-lg p-4">
                     <ObjectTypeProportionPieChart
-                        label={`Train Types`}
+                        label={`Live Train Types`}
                         dataList={trainTypes}
                     />
                 </div>
 
                 <div className="bg-white shadow-md rounded-lg p-4">
                     <ObjectTypeProportionPieChart
-                        label={`Train Statuses`}
+                        label={`Live Train Statuses`}
                         dataList={trainStatuses}
                     />
                 </div>
