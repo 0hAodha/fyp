@@ -1,9 +1,10 @@
 ## Tue 18 Mar 2025
 - Add report headings.
+- Add `return_historical_data` lambda function + tests + API.
 
 ## Mon 17 Mar 2025
 - Add services heatmap.
-- Add `return_all_coordinates` lambda function + tests.
+- Add `return_all_coordinates` lambda function + tests + API.
 
 ## Sat 15 Mar 2025
 - Add CD pipeline.
