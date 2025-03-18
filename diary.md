@@ -1,3 +1,6 @@
+## Tue 18 Mar 2025
+- Add report headings.
+
 ## Mon 17 Mar 2025
 - Add services heatmap.
 - Add `return_all_coordinates` lambda function + tests.
