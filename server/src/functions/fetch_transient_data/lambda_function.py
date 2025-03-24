@@ -14,7 +14,7 @@ session = requests.Session()
 # Setup DynamoDB client
 os.environ.setdefault('AWS_DEFAULT_REGION', 'us-east-1')
 dynamodb = boto3.resource("dynamodb")
-table_name = os.environ.get("DYNAMODB_TABLE", "transient_data")
+table_name = os.environ.get("DYNAMODB_TABLE", "transient_data2")
 table = dynamodb.Table(table_name)
 
 timestamp = str(int(time.time()))
