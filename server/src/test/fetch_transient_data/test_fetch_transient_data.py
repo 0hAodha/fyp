@@ -16,17 +16,6 @@ class TestTransientData(unittest.TestCase):
     def test_fetch_buses(self, mock_get):
         """
         Test the fetch_buses function to ensure it returns the correct data.
-
-        Mocks the network requests to avoid real API calls and sets up the
-        expected responses for bus data and bus routes.
-
-        Args:
-            mock_get (MagicMock): Mocked session.get method.
-
-        Asserts:
-            The length of the result is 1.
-            The busID of the first result is 'bus1'.
-            The busRouteAgencyName of the first result is 'Dublin Bus'.
         """
         # Mock response for bus data
         mock_response_1 = MagicMock()
@@ -59,30 +48,18 @@ class TestTransientData(unittest.TestCase):
     def test_fetch_trains(self, mock_get):
         """
         Test the fetch_trains function to ensure it returns the correct data.
-
-        Mocks the network requests to avoid real API calls and sets up the
-        expected response for train data.
-
-        Args:
-            mock_get (MagicMock): Mocked session.get method.
-
-        Asserts:
-            The length of the result is 3.
-            The trainCode of the first result is 'A123'.
-            The trainStatus of the first result is 'Running'.
         """
         # Mock response for train API
         mock_response = MagicMock()
-        # Fix: Ensure xmltodict.parse() returns a proper dictionary
         mock_response.text = '''
         <ArrayOfObjTrainPositions>
             <objTrainPositions>
                 <TrainCode>A123</TrainCode>
                 <TrainLatitude>53.0</TrainLatitude>
                 <TrainLongitude>-6.0</TrainLongitude>
-                <TrainStatus>Running</TrainStatus>
+                <TrainStatus>R</TrainStatus>
                 <TrainDate>2025-03-09</TrainDate>
-                <PublicMessage>On time</PublicMessage>
+                <PublicMessage>5 mins late</PublicMessage>
                 <Direction>Northbound</Direction>
             </objTrainPositions>
         </ArrayOfObjTrainPositions>
@@ -98,9 +75,9 @@ class TestTransientData(unittest.TestCase):
                             "TrainCode": "A123",
                             "TrainLatitude": "53.0",
                             "TrainLongitude": "-6.0",
-                            "TrainStatus": "Running",
+                            "TrainStatus": "R",
                             "TrainDate": "2025-03-09",
-                            "PublicMessage": "On time",
+                            "PublicMessage": "5 mins late",
                             "Direction": "Northbound"
                         }
                     ]
@@ -110,7 +87,11 @@ class TestTransientData(unittest.TestCase):
             result = fetch_trains()
             self.assertEqual(len(result), 3)  # 3 train types: M, S, D
             self.assertEqual(result[0]['trainCode'], 'A123')
-            self.assertEqual(result[0]['trainStatus'], 'Running')
+            self.assertEqual(result[0]['trainStatus'], 'R')
+            self.assertEqual(result[0]['trainStatusFull'], 'Running')
+            self.assertEqual(result[0]['trainPunctuality'], 5)
+            self.assertEqual(result[0]['trainPunctualityStatus'], 'late')
+            self.assertEqual(result[0]['latenessMessage'], '5 minutes late')
 
 if __name__ == "__main__":
     unittest.main()

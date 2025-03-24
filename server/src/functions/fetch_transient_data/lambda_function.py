@@ -7,7 +7,7 @@ import boto3
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dotenv import load_dotenv
-
+import re
 # Create a reusable session for requests
 session = requests.Session()
 
@@ -24,10 +24,10 @@ irishrail_url = "http://api.irishrail.ie/realtime/realtime.asmx/"
 
 def fetch_trains():
     """
-    Fetches train data from the Irish Rail API.
+    Fetches train data from the Irish Rail API and parses additional attributes.
 
     Returns:
-        list: A list of dictionaries containing train data.
+        list: A list of dictionaries containing processed train data.
     """
     print("Fetching Irish Rail data.")
     api_function = "getCurrentTrainsXML_WithTrainType?TrainType="
@@ -42,74 +42,57 @@ def fetch_trains():
         trains_json = xmltodict.parse(trains_xml)
 
         for train in trains_json["ArrayOfObjTrainPositions"]["objTrainPositions"]:
+            train_code = str(train["TrainCode"])
+            train_status = train["TrainStatus"]
+            public_message = train["PublicMessage"]
+
+            # Regex to extract punctuality: Matches positive/negative number followed by "mins late"
+            match = re.search(r"(-?\d+)\s+mins\s+late", public_message)
+            punctuality = int(match.group(1)) if match else 0  # Default to 0 if no match
+
+            if punctuality < 0:
+                punctuality_status = "early"
+                lateness_message = f"{-punctuality} minute{'s' if punctuality != -1 else ''} early"
+            elif punctuality == 0:
+                punctuality_status = "on-time"
+                lateness_message = "On time"
+            else:
+                punctuality_status = "late"
+                lateness_message = f"{punctuality} minute{'s' if punctuality != 1 else ''} late"
+
+            train_type_full = {
+                "M": "Mainline",
+                "S": "Suburban",
+                "D": "DART"
+            }.get(train_type, "Unknown")
+
+            train_status_full = {
+                "R": "Running",
+                "T": "Terminated",
+                "N": "Not yet running"
+            }.get(train_status, "Unknown")
+
             trains.append({
-                "objectID": "IrishRailTrain-" + train["TrainCode"],
+                "objectID": "IrishRailTrain-" + train_code,
                 "objectType": "IrishRailTrain",
                 "timestamp": timestamp,
                 "latitude": str(train["TrainLatitude"]),
                 "longitude": str(train["TrainLongitude"]),
-                "trainCode": str(train["TrainCode"]),
+                "trainCode": train_code,
                 "trainType": train_type,
-                "trainStatus": train["TrainStatus"],
+                "trainTypeFull": train_type_full,
+                "trainStatus": train_status,
+                "trainStatusFull": train_status_full,
                 "trainDate": str(train["TrainDate"]),
-                "trainPublicMessage": train["PublicMessage"],
-                "trainDirection": train["Direction"]
+                "trainPublicMessage": public_message,
+                "trainDirection": train["Direction"],
+                "trainPunctuality": punctuality,
+                "trainPunctualityStatus": punctuality_status,
+                "latenessMessage": lateness_message
             })
 
     return trains
 
-def fetch_luas():
-    """
-    Fetches Luas stop and forecast data.
-
-    Returns:
-        list: A list of dictionaries containing Luas stop and forecast data.
-    """
-    print("Fetching Luas data.")
-    stops = []
-
-    stops_tsv = session.get("https://data.tii.ie/Datasets/Luas/StopLocations/luas-stops.txt").content.decode('utf-8-sig')
-    tsv_reader = csv.DictReader(stops_tsv.splitlines(), delimiter="\t")
-
-    def fetch_forecast(stop):
-        """
-        Fetches forecast data for a given Luas stop.
-
-        Args:
-            stop (dict): A dictionary containing Luas stop information.
-
-        Returns:
-            dict: A dictionary containing Luas stop and forecast data.
-        """
-        response = session.get(f"https://luasforecasts.rpa.ie/xml/get.ashx?action=forecast&stop={stop['Abbreviation']}&encrypt=false")
-        response.raise_for_status()
-        trams_xml = response.text
-        trams_json = xmltodict.parse(trams_xml)
-        return {
-            "objectID": "LuasStop-" + stop["Abbreviation"],
-            "objectType": "LuasStop",
-            "timestamp": timestamp,
-            "latitude": str(stop["Latitude"]),
-            "longitude": str(stop["Longitude"]),
-            "luasStopName": stop["Name"],
-            "luasStopIrishName": stop["IrishName"],
-            "luasStopID": str(stop["StopID"]),
-            "luasStopCode": stop["Abbreviation"],
-            "luasStopLineID": str(stop["LineID"]),
-            "luasStopSortOrder": str(stop["SortOrder"]),
-            "luasStopIsEnabled": str(stop["IsEnabled"]),
-            "luasStopIsParkAndRide": str(stop["IsParkAndRide"]),
-            "luasStopIsCycleAndRide": str(stop["IsCycleAndRide"]),
-            "luasStopZoneCountA": str(stop["ZoneCountA"]),
-            "luasStopZoneCountB": str(stop["ZoneCountB"]),
-            "luasStopMessage": str(trams_json["stopInfo"]["message"]),
-            "luasStopTrams": str(trams_json["stopInfo"]["direction"])
-        }
-
-    with ThreadPoolExecutor() as executor:
-        stops = list(executor.map(fetch_forecast, tsv_reader))
-
-    return stops
 
 def fetch_bus_routes():
     """
