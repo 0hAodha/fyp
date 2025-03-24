@@ -176,90 +176,16 @@ function App() {
                     switch (item.objectType) {
                         case "IrishRailTrain":
                             objectTitle = "Irish Rail Train: " + item.trainCode;
-                            let trainType;
-                            switch (item.trainType) {
-                                case "M":
-                                    trainType = "Mainline";
-                                    icon = "mainline";
-                                    break;
-                                case "S":
-                                    trainType = "Suburban";
-                                    icon = "suburban";
-                                    break;
-                                case "D":
-                                    trainType = "DART";
-                                    icon = "dart";
-                                    break;
-                                default:
-                                    trainType = "Unknown";
-                            }
+                            icon = item.trainTypeFull + item.trainPunctualityStatus;
 
-                            let trainStatus;
-                            switch (item.trainStatus) {
-                                case "R":
-                                    trainStatus = "Running";
-                                    break;
-
-                                case "T":
-                                    trainStatus = "Terminated";
-                                    break;
-
-                                case "N":
-                                    trainStatus = "Not yet running";
-                                    break;
-
-                                default:
-                                    trainStatus = "Unknown";
-                            }
-
-                            const splitMessage = item.trainPublicMessage.split("\\n");
-                            const match = splitMessage[1].match(/(-?\d+)\s+mins\s+late/);
-                            const punctuality = match ? parseInt(match[1], 10) : NaN;
-                            let latenessMessage;
-                            let punctualityStr;
-
-                            if (punctuality < 0) {
-                                punctualityStr = "early";
-                            } else if (punctuality === 0) {
-                                punctualityStr = "On time";
-                            } else if (punctuality > 0) {
-                                punctualityStr = "late";
-                            } else {
-                                punctualityStr = "N/A";
-                            }
-
-                            if (punctualityStr === "early") {
-                                latenessMessage = -punctuality + " minute" + (punctuality === -1 ? "" : "s") + " early";
-                                icon += "OnTime";
-                            }
-                            else if (punctualityStr === "On time") {
-                                latenessMessage = punctualityStr;
-                                icon += "OnTime";
-                            }
-                            else if (punctualityStr === "late") {
-                                latenessMessage = punctuality + " minute" + (punctuality === 1 ? "" : "s") + " late";
-
-                                if (trainStatus === "Running") {
-                                    icon += "Late";
-                                }
-                                else {
-                                    icon += "NotRunning";
-                                }
-                            }
-                            else {
-                                latenessMessage = "On time";
-                                icon += "NotRunning";
+                            if (item.trainStatusFull == "Terminated" || item.trainStatusFull == "Not yet running") {
+                                icon = item.trainTypeFull + "NotRunning";
                             }
 
                             popupContent = (
                                 <IrishRailTrainPopup
                                     item={item}
                                     objectTitle={objectTitle}
-                                    splitMessage={splitMessage}
-                                    trainType={trainType}
-                                    trainStatus={trainStatus}
-                                    latenessMessage={latenessMessage}
-
                                     toggleFavourite={toggleFavourite}
                                     favourites={favourites}
                                 />
@@ -268,10 +194,10 @@ function App() {
                             markerText = item.trainPublicMessage + " " +  item.trainDirection;
                             display =
                                 ((item.latitude !== "0" && item.longitude !== "0") &&
-                                    ((showMainline && trainType == "Mainline") || (showSuburban && trainType == "Suburban") || (showDart && trainType == "DART")) &&
-                                    ((showRunning && trainStatus == "Running") || (showNotYetRunning && trainStatus == "Not yet running") || (showTerminated && trainStatus == "Terminated")) &&
-                                    ((trainStatus == "Running" && showEarly && punctualityStr == "early") || (trainStatus == "Running" && showOnTime && punctualityStr == "On time") || (trainStatus == "Running" && showLate && punctualityStr == "late")
-                                        || (trainStatus == "Not yet running" && showNotYetRunning) || (trainStatus == "Terminated" && showTerminated))) &&
+                                    ((showMainline && item.trainTypeFull == "Mainline") || (showSuburban && item.trainTypeFull == "Suburban") || (showDart && item.trainTypeFull == "DART")) &&
+                                    ((showRunning && item.trainStatusFull == "Running") || (showNotYetRunning && item.trainStatusFull == "Not yet running") || (showTerminated && item.trainStatusFull == "Terminated")) &&
+                                    ((item.trainStatusFull == "Running" && showEarly && item.trainPunctualityStatus == "early") || (item.trainStatusFull == "Running" && showOnTime && item.trainPunctualityStatus == "On time") || (item.trainStatusFull == "Running" && showLate && item.trainPunctualityStatus == "late")
+                                        || (item.trainStatusFull == "Not yet running" && showNotYetRunning) || (item.trainStatusFull == "Terminated" && showTerminated))) &&
                                     (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true) &&
                                     (showFaovouritesOnly ? favourites.IrishRailTrain.includes(item.trainCode) : true);
 

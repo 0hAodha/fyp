@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useMap } from "react-leaflet";
 
-const IrishRailTrainPopup = ({ item, objectTitle, trainStatus, trainType, latenessMessage, splitMessage, toggleFavourite, favourites }) => {
+const IrishRailTrainPopup = ({ item, objectTitle, toggleFavourite, favourites }) => {
     const [isFavourite, setIsFavourite] = useState(favourites.IrishRailTrain?.includes(item.trainCode));
 
     const handleToggleFavourite = () => {
@@ -23,12 +23,12 @@ const IrishRailTrainPopup = ({ item, objectTitle, trainStatus, trainType, latene
                 </button>
             </div>
             <ul>
-                <li><b>Train Details:</b> {splitMessage[1].split("(")[0]}</li>
-                <li><b>Train Type:</b> {trainType}</li>
-                <li><b>Status:</b> {trainStatus}</li>
+                <li><b>Train Details:</b> {item.trainDetails}</li>
+                <li><b>Train Type:</b> {item.trainTypeFull}</li>
+                <li><b>Status:</b> {item.trainStatusFull}</li>
                 <li><b>Direction:</b> {item.trainDirection}</li>
-                <li><b>Update:</b> {splitMessage[2]}</li>
-                <li><b>Punctuality:</b> {latenessMessage}</li>
+                <li><b>Update:</b> {item.trainUpdate}</li>
+                <li><b>Punctuality:</b> {item.latenessMessage}</li>
             </ul>
 
         </div>
