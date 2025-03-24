@@ -97,7 +97,7 @@ def lambda_handler(event, context):
 
         return {
             'statusCode': 200,
-            'body': json.dumps(items_with_latest_timestamp)
+            'body': json.dumps(items_with_latest_timestamp, default=str)
         }
 
     except Exception as e:

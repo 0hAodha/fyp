@@ -177,7 +177,6 @@ def lambda_handler(event, context):
     with ThreadPoolExecutor() as executor:
         futures = [
             executor.submit(fetch_trains),
-            executor.submit(fetch_luas),
             executor.submit(fetch_buses)
         ]
         data = []
