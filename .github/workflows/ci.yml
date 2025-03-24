@@ -72,7 +72,7 @@ jobs:
 
     strategy:
       matrix:
-        function_name: [fetch_permanent_data, return_luas_data, return_station_data, fetch_transient_data, return_permanent_data, return_transient_data]
+        function_name: [fetch_permanent_data, fetch_transient_data, return_all_coordinates, return_historical_data, return_luas_data, return_permanent_data, return_station_data, return_transient_data, update_average_punctuality]
 
     steps:
       - name: Checkout repository
