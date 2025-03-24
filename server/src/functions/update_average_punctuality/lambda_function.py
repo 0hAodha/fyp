@@ -22,18 +22,15 @@ def update_punctuality(objectID, new_punctuality):
         old_avg = float(item["average_punctuality"])
         count = int(item["count"])
 
-        # Calculate new average
         new_avg = ((old_avg * count) + new_punctuality) / (count + 1)
         count += 1
 
-        # Update the DynamoDB table
         table.update_item(
             Key={"objectID": objectID},
             UpdateExpression="SET average_punctuality = :avg, count = :cnt",
             ExpressionAttributeValues={":avg": new_avg, ":cnt": count}
         )
     else:
-        # Insert new train punctuality record
         table.put_item(
             Item={"objectID": objectID, "average_punctuality": new_punctuality, "count": 1}
         )
