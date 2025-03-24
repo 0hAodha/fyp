@@ -10,11 +10,19 @@ API_URL = "https://281bc6mcm5.execute-api.us-east-1.amazonaws.com/transient_data
 
 
 def fetch_train_data():
-    response = requests.get(API_URL)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Failed to fetch data: {response.status_code}")
+    try:
+        response = requests.get(API_URL)
+        response.raise_for_status()  # Raise an error for bad status codes
+        if response.text.strip():  # Ensure response is not empty
+            return response.json()
+        else:
+            print("Error: Empty response from API")
+            return []
+    except requests.exceptions.RequestException as e:
+        print(f"API request failed: {e}")
+        return []
+    except json.JSONDecodeError as e:
+        print(f"JSON decoding failed: {e}")
         return []
 
 
@@ -30,11 +38,12 @@ def update_punctuality(objectID, new_punctuality):
         new_avg = ((old_avg * count) + new_punctuality) / (count + 1)
         count += 1
 
-        # Update the DynamoDB table
+        # Update the DynamoDB table, renaming 'count' to avoid using a reserved keyword
         table.update_item(
             Key={"objectID": objectID},
-            UpdateExpression="SET average_punctuality = :avg, count = :cnt",
-            ExpressionAttributeValues={":avg": new_avg, ":cnt": count}
+            UpdateExpression="SET average_punctuality = :avg, #cnt = :cnt",
+            ExpressionAttributeValues={":avg": new_avg, ":cnt": count},
+            ExpressionAttributeNames={"#cnt": "count"}  # Alias 'count' to avoid reserved keyword issue
         )
     else:
         # Insert new train punctuality record
@@ -56,3 +65,4 @@ def lambda_handler(event, context):
         "statusCode": 200,
         "body": json.dumps("Punctuality data updated successfully")
     }
+
