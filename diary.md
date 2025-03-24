@@ -1,6 +1,7 @@
 ## Mon 24 Mar 2025
 - Update `fetch_transient_data` to parse & store the data that is parsed on the frontend to save computation.
 - Update frontend to use the data directly from the response rather than parse it on the frontend.
+- Add `update_average_punctuality`.
 
 ## Tue 18 Mar 2025
 - Add report headings.
