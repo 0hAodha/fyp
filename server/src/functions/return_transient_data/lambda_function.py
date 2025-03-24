@@ -69,28 +69,28 @@ def lambda_handler(event, context):
 
         if object_types:
             response = table.scan(
-                FilterExpression=Attr('objectType').is_in(object_types) & Attr('timestamp').eq(str(newest_timestamp))
+                FilterExpression=Attr('objectType').is_in(object_types) & Attr('timestamp').eq(newest_timestamp)
             )
             items_with_latest_timestamp.extend(response.get('Items', []))
 
             # Handle pagination if necessary
             while 'LastEvaluatedKey' in response:
                 response = table.scan(
-                    FilterExpression=Attr('objectType').is_in(object_types) & Attr('timestamp').eq(str(newest_timestamp)),
+                    FilterExpression=Attr('objectType').is_in(object_types) & Attr('timestamp').eq(newest_timestamp),
                     ExclusiveStartKey=response['LastEvaluatedKey']
                 )
                 items_with_latest_timestamp.extend(response.get('Items', []))
         else:
             # Scan the entire table for the latest timestamp if no object types are specified
             response = table.scan(
-                FilterExpression=Attr('timestamp').eq(str(newest_timestamp))
+                FilterExpression=Attr('timestamp').eq(newest_timestamp)
             )
             items_with_latest_timestamp.extend(response.get('Items', []))
 
             # Handle pagination if necessary
             while 'LastEvaluatedKey' in response:
                 response = table.scan(
-                    FilterExpression=Attr('timestamp').eq(str(newest_timestamp)),
+                    FilterExpression=Attr('timestamp').eq(newest_timestamp),
                     ExclusiveStartKey=response['LastEvaluatedKey']
                 )
                 items_with_latest_timestamp.extend(response.get('Items', []))
