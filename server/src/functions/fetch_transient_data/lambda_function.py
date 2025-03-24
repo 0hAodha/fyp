@@ -17,7 +17,7 @@ dynamodb = boto3.resource("dynamodb")
 table_name = os.environ.get("DYNAMODB_TABLE", "transient_data2")
 table = dynamodb.Table(table_name)
 
-timestamp = str(int(time.time()))
+timestamp = int(time.time())
 
 # API URLs
 irishrail_url = "http://api.irishrail.ie/realtime/realtime.asmx/"
