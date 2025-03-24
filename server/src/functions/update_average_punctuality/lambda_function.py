@@ -6,7 +6,7 @@ from decimal import Decimal
 
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table("punctuality_by_objectID")
-API_URL = "https://your-api-endpoint.com"  # Replace with your actual API URL
+API_URL = "https://281bc6mcm5.execute-api.us-east-1.amazonaws.com/transient_data?objectType=IrishRailTrain"
 
 
 def fetch_train_data():
