@@ -46,6 +46,10 @@ def fetch_trains():
             train_status = train["TrainStatus"]
             public_message = train["PublicMessage"]
 
+            split_message = public_message.split("\\n")
+            trainDetails = split_message[1].split("(")[0]
+            trainUpdate = split_message[2]
+
             # Regex to extract punctuality: Matches positive/negative number followed by "mins late"
             match = re.search(r"(-?\d+)\s+mins\s+late", public_message)
             punctuality = int(match.group(1)) if match else 0  # Default to 0 if no match
@@ -88,7 +92,9 @@ def fetch_trains():
                 "trainDirection": train["Direction"],
                 "trainPunctuality": punctuality,
                 "trainPunctualityStatus": punctuality_status,
-                "latenessMessage": lateness_message
+                "latenessMessage": lateness_message,
+                "trainDetails":  trainDetails,
+                "trainUpdate": trainUpdate
             })
 
     return trains

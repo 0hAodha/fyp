@@ -59,7 +59,7 @@ class TestTransientData(unittest.TestCase):
                 <TrainLongitude>-6.0</TrainLongitude>
                 <TrainStatus>R</TrainStatus>
                 <TrainDate>2025-03-09</TrainDate>
-                <PublicMessage>5 mins late</PublicMessage>
+                <PublicMessage>P322\\n17:10 - M3 Parkway to Docklands (1 mins late)\\nArrived Castleknock next stop Navan Road Parkway</PublicMessage>
                 <Direction>Northbound</Direction>
             </objTrainPositions>
         </ArrayOfObjTrainPositions>
@@ -77,7 +77,7 @@ class TestTransientData(unittest.TestCase):
                             "TrainLongitude": "-6.0",
                             "TrainStatus": "R",
                             "TrainDate": "2025-03-09",
-                            "PublicMessage": "5 mins late",
+                            "PublicMessage": "P322\\n17:10 - M3 Parkway to Docklands (1 mins late)\\nArrived Castleknock next stop Navan Road Parkway",
                             "Direction": "Northbound"
                         }
                     ]
@@ -89,9 +89,9 @@ class TestTransientData(unittest.TestCase):
             self.assertEqual(result[0]['trainCode'], 'A123')
             self.assertEqual(result[0]['trainStatus'], 'R')
             self.assertEqual(result[0]['trainStatusFull'], 'Running')
-            self.assertEqual(result[0]['trainPunctuality'], 5)
+            self.assertEqual(result[0]['trainPunctuality'], 1)
             self.assertEqual(result[0]['trainPunctualityStatus'], 'late')
-            self.assertEqual(result[0]['latenessMessage'], '5 minutes late')
+            self.assertEqual(result[0]['latenessMessage'], '1 minute late')
 
 if __name__ == "__main__":
     unittest.main()
