@@ -1,3 +1,6 @@
+## Mon 24 Mar 2025
+- Update `fetch_transient_data` to parse & store the data that is parsed on the frontend to save computation.
+
 ## Tue 18 Mar 2025
 - Add report headings.
 - Add `return_historical_data` lambda function + tests + API.
