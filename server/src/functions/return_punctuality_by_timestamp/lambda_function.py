@@ -1,7 +1,6 @@
 import json
 import os
 import boto3
-from boto3.dynamodb.conditions import Key, Attr
 
 os.environ.setdefault('AWS_DEFAULT_REGION', 'us-east-1')
 dynamodb = boto3.resource('dynamodb')
