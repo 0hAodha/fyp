@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ObjectTypeProportionPieChart from "./charts/ObjectTypeProportionPieChart";
 import LoadingOverlay from "./LoadingOverlay.jsx";
 import HeatmapContainer from "./charts/HeatmapContainer";
+import PunctualityLineChart from "./charts/PunctualityLineChart.jsx";
 
 const Statistics = () => {
     const [transientTypes, setTransientTypes] = useState([]);
@@ -9,8 +10,11 @@ const Statistics = () => {
     const [trainStatuses, setTrainStatuses] = useState([]);
     const [trainLatenesses, setTrainLatenesses] = useState([]);
     const [coordinates, setCoordinates] = useState([]);
+    const [punctualityData, setPunctualityData] = useState([]);
+
     const [loading, setLoading] = useState(true);
     const [heatmapLoading, setHeatmapLoading] = useState(true);
+    const [punctualityLoading, setPunctualityLoading] = useState(true);
     const [error, setError] = useState("");
 
     // Fetch transient data separately
@@ -68,6 +72,30 @@ const Statistics = () => {
         fetchCoordinates();
     }, []);
 
+    // Fetch punctuality data
+    useEffect(() => {
+        const fetchPunctualityData = async () => {
+            try {
+                const response = await fetch("https://z3o9pdmy8g.execute-api.us-east-1.amazonaws.com/return_punctuality_by_timestamp");
+                if (!response.ok) throw new Error("Network response was not ok");
+                const data = await response.json();
+
+                const formattedData = data.map(item => ({
+                    time: new Date(parseInt(item.timestamp) * 1000).toLocaleString(),
+                    punctuality: parseFloat(item.average_punctuality)
+                }));
+
+                setPunctualityData(formattedData);
+            } catch (error) {
+                setError("Failed to fetch punctuality data");
+            } finally {
+                setPunctualityLoading(false);
+            }
+        };
+
+        fetchPunctualityData();
+    }, []);
+
     if (loading) return <LoadingOverlay message={"Fetching data..."} />;
     if (error) return <p className="text-center text-red-500">{error}</p>;
 
@@ -120,9 +148,18 @@ const Statistics = () => {
 
                 <div className="bg-white shadow-md rounded-lg p-4">
                     <ObjectTypeProportionPieChart
-                        label={`Live Train Latenesses`}
+                        label={`Live Punctuality`}
                         dataList={trainLatenesses}
                     />
+                </div>
+
+                <div className="bg-white shadow-md rounded-lg p-4"
+                     style={{width: "400px", height: "400px"}}>
+                    {punctualityLoading ? (
+                        <p className="text-center text-gray-500">Loading Punctuality Data...</p>
+                    ) : (
+                        <PunctualityLineChart data={punctualityData}/>
+                    )}
                 </div>
             </div>
         </div>
