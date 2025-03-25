@@ -32,7 +32,7 @@ def fetch_punctuality_data():
     response = session.get(punctuality_api_url)
     response.raise_for_status()
     punctuality_data = response.json()
-    return {item["objectID"]: int(item["average_punctuality"]) for item in punctuality_data}
+    return {item["objectID"]: round(float(item["average_punctuality"])) for item in punctuality_data}
 
 def fetch_trains():
     """
