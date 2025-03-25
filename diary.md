@@ -2,6 +2,7 @@
 - Add step function to run `fetch_transient_data` and then `update_average_punctuality`.
 - Add average punctuality to train popups.
 - Optimise statistics page loading.
+- Add `return_punctuality_by_timestamp` and associated DynamoDB table, and API endpoint.
 
 ## Mon 24 Mar 2025
 - Update `fetch_transient_data` to parse & store the data that is parsed on the frontend to save computation.
