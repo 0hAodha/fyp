@@ -1,3 +1,7 @@
+## Tue 25 Mar 2025
+- Add step function to run `fetch_transient_data` and then `update_average_punctuality`.
+- Add average punctuality to train popups.
+
 ## Mon 24 Mar 2025
 - Update `fetch_transient_data` to parse & store the data that is parsed on the frontend to save computation.
 - Update frontend to use the data directly from the response rather than parse it on the frontend.
