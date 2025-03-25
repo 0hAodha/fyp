@@ -9,10 +9,12 @@ const Statistics = () => {
     const [trainStatuses, setTrainStatuses] = useState([]);
     const [coordinates, setCoordinates] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [heatmapLoading, setHeatmapLoading] = useState(true);
     const [error, setError] = useState("");
 
+    // Fetch transient data separately
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchTransientData = async () => {
             try {
                 const transientResponse = await fetch("https://281bc6mcm5.execute-api.us-east-1.amazonaws.com/transient_data");
                 if (!transientResponse.ok) throw new Error("Network response was not ok");
@@ -22,35 +24,44 @@ const Statistics = () => {
                 let trainTypes = [];
                 let trainStatuses = [];
 
-                const coordsResponse = await fetch("https://kc0re7ep0b.execute-api.us-east-1.amazonaws.com/return_all_coordinates");
-                if (!coordsResponse.ok) throw new Error("Network response was not ok");
-                const coordsData = await coordsResponse.json();
-                const coords = await coordsData["coordinates"]
-
                 for (const item of transientData) {
                     transientTypes.push(item.objectType.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/([A-Z])([A-Z][a-z])/g, '$1 $2'));
 
                     if (item.objectType === "IrishRailTrain") {
-                        let trainType = item.trainType === "M" ? "Mainline" : item.trainType === "S" ? "Suburban" : item.trainType === "D" ? "DART" : "Unknown";
-                        trainTypes.push(trainType);
-
-                        let trainStatus = item.trainStatus === "R" ? "Running" : item.trainStatus === "T" ? "Terminated" : item.trainStatus === "N" ? "Not yet running" : "Unknown";
-                        trainStatuses.push(trainStatus);
+                        trainTypes.push(item.trainTypeFull);
+                        trainStatuses.push(item.trainStatusFull);
                     }
                 }
 
                 setTransientTypes(transientTypes);
-                setTrainStatuses(trainStatuses);
                 setTrainTypes(trainTypes);
-                setCoordinates(coords);
+                setTrainStatuses(trainStatuses);
             } catch (err) {
-                setError("Failed to fetch data");
+                setError("Failed to fetch transient data");
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchData();
+        fetchTransientData();
+    }, []);
+
+    // Fetch heatmap coordinates separately
+    useEffect(() => {
+        const fetchCoordinates = async () => {
+            try {
+                const coordsResponse = await fetch("https://kc0re7ep0b.execute-api.us-east-1.amazonaws.com/return_all_coordinates");
+                if (!coordsResponse.ok) throw new Error("Network response was not ok");
+                const coordsData = await coordsResponse.json();
+                setCoordinates(coordsData["coordinates"]);
+            } catch (err) {
+                setError("Failed to fetch heatmap data");
+            } finally {
+                setHeatmapLoading(false);
+            }
+        };
+
+        fetchCoordinates();
     }, []);
 
     if (loading) return <LoadingOverlay message={"Fetching data..."} />;
@@ -70,12 +81,17 @@ const Statistics = () => {
             }}
             className="min-h-screen w-full flex flex-col bg-white pt-[7vh] px-4"
         >
-            <div
-                className="mx-auto px-4 flex flex-wrap gap-4 pt-[4vh] justify-center">
+            <div className="mx-auto px-4 flex flex-wrap gap-4 pt-[4vh] justify-center">
 
-                <div className="bg-white shadow-md rounded-lg p-4">
-                    <HeatmapContainer coordinates={coordinates}/>
+                <div className="bg-white shadow-md rounded-lg p-4 flex items-center justify-center"
+                     style={{width: "420px", height: "420px"}}>
+                    {heatmapLoading ? (
+                        <p className="text-center text-gray-500">Loading Heatmap...</p>
+                    ) : (
+                        <HeatmapContainer coordinates={coordinates}/>
+                    )}
                 </div>
+
 
                 <div className="bg-white shadow-md rounded-lg p-4">
                     <ObjectTypeProportionPieChart
