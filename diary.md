@@ -3,6 +3,7 @@
 - Add average punctuality to train popups.
 - Optimise statistics page loading.
 - Add `return_punctuality_by_timestamp` and associated DynamoDB table, and API endpoint.
+- Add unit tests for `return_punctuality_by_objectID`, `return_punctuality_by_timestamp`, and `update_average_punctuality`.
 
 ## Mon 24 Mar 2025
 - Update `fetch_transient_data` to parse & store the data that is parsed on the frontend to save computation.
