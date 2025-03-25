@@ -21,6 +21,18 @@ timestamp = int(time.time())
 
 # API URLs
 irishrail_url = "http://api.irishrail.ie/realtime/realtime.asmx/"
+punctuality_api_url = "https://fv7l6v5he4.execute-api.us-east-1.amazonaws.com/return_punctuality_by_objectID"
+
+def fetch_punctuality_data():
+    """
+    Fetches punctuality data for trains from an external API.
+    Returns:
+        dict: A dictionary mapping objectID to average punctuality.
+    """
+    response = session.get(punctuality_api_url)
+    response.raise_for_status()
+    punctuality_data = response.json()
+    return {item["objectID"]: int(item["average_punctuality"]) for item in punctuality_data}
 
 def fetch_trains():
     """
@@ -41,10 +53,13 @@ def fetch_trains():
         trains_xml = response.text
         trains_json = xmltodict.parse(trains_xml)
 
+        punctuality_data = fetch_punctuality_data()
+
         for train in trains_json["ArrayOfObjTrainPositions"]["objTrainPositions"]:
             train_code = str(train["TrainCode"])
             train_status = train["TrainStatus"]
             public_message = train["PublicMessage"]
+            avg_punctuality = punctuality_data.get("IrishRailTrain-" + train_code, 0)  # Default to 0 if not found
 
             split_message = public_message.split("\\n")
             trainDetails = split_message[1].split("(")[0]
@@ -94,7 +109,8 @@ def fetch_trains():
                 "trainPunctualityStatus": punctuality_status,
                 "latenessMessage": lateness_message,
                 "trainDetails":  trainDetails,
-                "trainUpdate": trainUpdate
+                "trainUpdate": trainUpdate,
+                "averagePunctuality": avg_punctuality
             })
 
     return trains
