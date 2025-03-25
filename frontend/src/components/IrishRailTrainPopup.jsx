@@ -11,6 +11,23 @@ const IrishRailTrainPopup = ({ item, objectTitle, toggleFavourite, favourites })
 
     const map = useMap(); // Access the Leaflet map instance
 
+    let averagePunctuality = "";
+    if (item.averagePunctuality > 1) {
+        averagePunctuality = item.averagePunctuality + " minutes late";
+    }
+    else if (item.averagePunctuality == 1) {
+        averagePunctuality = item.averagePunctuality + " minute late";
+    }
+    else if (item.averagePunctuality == 0) {
+        averagePunctuality = "On time";
+    }
+    else if (item.averagePunctuality < -1) {
+        averagePunctuality = - item.averagePunctuality + " minutes early";
+    }
+    else if (item.averagePunctuality == -1) {
+        averagePunctuality = - item.averagePunctuality + " minute late";
+    }
+
     return (
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -29,6 +46,7 @@ const IrishRailTrainPopup = ({ item, objectTitle, toggleFavourite, favourites })
                 <li><b>Direction:</b> {item.trainDirection}</li>
                 <li><b>Update:</b> {item.trainUpdate}</li>
                 <li><b>Punctuality:</b> {item.latenessMessage}</li>
+                <li><b>Average Punctuality:</b> {averagePunctuality}</li>
             </ul>
 
         </div>
