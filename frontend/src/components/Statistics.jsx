@@ -7,6 +7,7 @@ const Statistics = () => {
     const [transientTypes, setTransientTypes] = useState([]);
     const [trainTypes, setTrainTypes] = useState([]);
     const [trainStatuses, setTrainStatuses] = useState([]);
+    const [trainLatenesses, setTrainLatenesses] = useState([]);
     const [coordinates, setCoordinates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [heatmapLoading, setHeatmapLoading] = useState(true);
@@ -23,6 +24,7 @@ const Statistics = () => {
                 let transientTypes = [];
                 let trainTypes = [];
                 let trainStatuses = [];
+                let trainLatenesses = [];
 
                 for (const item of transientData) {
                     transientTypes.push(item.objectType.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/([A-Z])([A-Z][a-z])/g, '$1 $2'));
@@ -30,12 +32,14 @@ const Statistics = () => {
                     if (item.objectType === "IrishRailTrain") {
                         trainTypes.push(item.trainTypeFull);
                         trainStatuses.push(item.trainStatusFull);
+                        trainLatenesses.push(item.trainPunctualityStatus);
                     }
                 }
 
                 setTransientTypes(transientTypes);
                 setTrainTypes(trainTypes);
                 setTrainStatuses(trainStatuses);
+                setTrainLatenesses(trainLatenesses);
             } catch (err) {
                 setError("Failed to fetch transient data");
             } finally {
@@ -114,6 +118,12 @@ const Statistics = () => {
                     />
                 </div>
 
+                <div className="bg-white shadow-md rounded-lg p-4">
+                    <ObjectTypeProportionPieChart
+                        label={`Live Train Latenesses`}
+                        dataList={trainLatenesses}
+                    />
+                </div>
             </div>
         </div>
     );
