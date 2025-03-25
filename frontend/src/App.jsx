@@ -330,14 +330,14 @@ function App() {
     }, [searchTerm, markers]);
 
     useEffect(() => {
-        if (numMarkers > 500) {
+        if (numMarkers > 5000) {
             setLoading(true);
         }
 
         const timeout = setTimeout(() => {
             setFilteredMarkers(memoizedFilteredMarkers);
 
-            if (numMarkers > 500) {
+            if (numMarkers > 5000) {
                 const loadingTimeout = setTimeout(() => {
                     setLoading(false);
                 }, 3000);
