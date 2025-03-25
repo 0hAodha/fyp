@@ -62,7 +62,8 @@ def update_punctuality_by_timestamp(timestamp, punctualities):
     if not punctualities:
         return
 
-    avg_punctuality = sum(punctualities) / len(punctualities)
+    avg_punctuality = Decimal(str(sum(punctualities) / len(punctualities)))  # Ensure Decimal type
+    timestamp = Decimal(str(timestamp))  # Ensure Decimal type
 
     # Insert or update record in DynamoDB
     table_timestamp.put_item(
