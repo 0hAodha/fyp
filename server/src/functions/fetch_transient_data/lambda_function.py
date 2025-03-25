@@ -55,8 +55,8 @@ def fetch_trains():
 
         punctuality_data = fetch_punctuality_data()
 
-        for train in trains_json["ArrayOfObjTrainPositions"]["objTrainPositions"]:
-            train_code = str(train["TrainCode"])
+        for train in trains_json["ArrayOfObjTrainPositions"].get("objTrainPositions", []):
+                train_code = str(train["TrainCode"])
             train_status = train["TrainStatus"]
             public_message = train["PublicMessage"]
             avg_punctuality = punctuality_data.get("IrishRailTrain-" + train_code, 0)  # Default to 0 if not found
