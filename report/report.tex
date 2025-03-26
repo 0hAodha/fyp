@@ -1,5 +1,5 @@
 %! TeX program = lualatex
-\documentclass[a4paper,11pt]{report} 
+\documentclass[a4paper,11pt]{report}
 % packages
 \usepackage{censor}
 \StopCensoring
@@ -30,6 +30,10 @@
 \newcommand{\secref}[1]{\textbf{§\ref{#1}~\nameref{#1}}}
 
 \usepackage{changepage}     % adjust margins on the fly
+
+\usepackage[backend=biber, style=numeric, date=iso, urldate=iso]{biblatex}
+\addbibresource{references.bib}
+\DeclareFieldFormat{urldate}{Accessed on: #1}
 
 \usepackage{minted}
 \usemintedstyle{algol_nu}
@@ -117,8 +121,53 @@
 
 \chapter{Design}
 \section{Backend Design}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{./images/diagram_all.png}
+    \caption{Backend architecture}
+\end{figure}
+
 \subsection{Database Design}
+Since the chosen database system was DynamoDB, a No-SQL database, the question of how best to separate the data is more open-ended: unlike a relational database, there is no provably correct, optimised structure of separated tables upon which to base the database design.
+The decision was made that data would be separated into tables according to the type of data, how its used, and how its updated, thus allowing separation of concerns for functions which update the data and allowing different primary keys and indices to be used for different querying patterns.
+
+\subsubsection{Permanent Data Table}
+The permanent data table holds the application data which is unchanging and needs to be updated only rarely, if ever.
+This includes information about bus stops, train stations, Luas stops, and bus routes.
+The primary key of this table is the \verb|objectID|, necessarily unique to each record in the table.
+This is constructed as a combination of the \verb|objectType| (e.g., \verb|BusStop|, \verb|IrishRailStation|) and the unique identifier for that object returned by the API from which the data was retrieved.
+The prefix of the \verb|objectType| is used here to guarantee uniqueness of the primary key in the case that two objects in the table of differing types have the same ID given to them by their respective source APIs.
+\\\\
+There are two ways in which a primary key can be created for a DynamoDB table\supercite{choosing-the-right-key}:
+\begin{itemize}
+    \item   A simple primary key, consisting solely of a \textbf{partition key}: the attribute which uniquely identifies an item, analogous to simple primary keys in relational database systems.
+
+    \item   A composite primary key, consisting of a partition key and a \textbf{sort key}, analogous to composite primary keys in relational database systems.
+            Here, the partition key determines the partition in which an item's data is stored, and the sort key is used to organise the data within that partition.
+\end{itemize}
+
+Instead of constructing a new attribute \verb|objectID| for an item, it would also be possible to avoid creating a new attribute by instead using a composite primary key, with the partition key being the item's unique identifier in the system from which it came and the sort key being the \verb|objectType|.
+This was rejected in favour of constructing a new attribute, \verb|objectID| to serve as the simple primary key for this table for a number of reasons:
+\begin{itemize}
+    \item   The uniquely identifying attribute for each item given to it by the API from which said item was sourced has a different attribute name for every API;
+            the unique identifier for bus stops is \verb|busStopID|, for train stations is \verb|trainStationCode|, et cetera.
+            To use these values as the primary key in the table, each of these attributes would have to be re-named to some single, unifying title, creating additional parsing overhead when the data is being uploaded to the table, and making the item information more difficult to read for humans.
+
+    \item   Having a single uniquely identifying attribute for each item is useful on the frontend, allowing items to be easily uniquely identified without additional processing, useful for user functionality such as adding an item to the user's ``favourites''.
+
+    \item   The query efficiency improvements typically associated with a DynamoDB composite key would not apply to the type of queries this table is designed for with such a composite key structure.
+            The data from this table will most often be queried by \verb|objectType| in this application, such as in the event that a user wants to see bus stops or train stations or both on a map.
+            The composite key would only speed up querying in the event that, for a number of different items with the same unique identifier, a query was ran on based on the type of those objects sharing an identifier, which is not a situation that is likely to arise for this application.
+\end{itemize}
+
+As mentioned in the final bullet-point above, this table is only intended for a single type of query:
+queries which seek to return all the items in the table of a certain \verb|objectType| or \verb|objectType|s, such as when a frontend user requests to see bus stops, or train stations, or Luas stops, or some combination of the three.
+Therefore, it is imperative that such queries are efficient \& fast. 
+Since we cannot partition the data 
+
 \subsection{API Design}
+\subsection{Serverless Functions}
+
 \section{Frontend Design}
 
 \chapter{Development}
@@ -141,7 +190,7 @@
 \section{Reflection on Skill Development}
 \section{Potential Future Work}
 
-
+\printbibliography
 
 
 \end{document}
