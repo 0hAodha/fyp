@@ -64,6 +64,9 @@ const getAllDefaultCheckedIds = (data) => {
 };
 
 const CheckboxItem = ({ item, selectedSources, setSelectedSources, enabledSources, setEnabledSources, level = 0, parentChecked = true }) => {
+    console.log("item id: " + item.id);
+    console.log(selectedSources.includes(item.id));
+
     const isChecked = selectedSources.includes(item.id);
     const isDisabled = !parentChecked;  // Disable if any parent is not checked
     const isEnabled = isChecked && parentChecked;  // Only enabled if checked and parent is checked
@@ -154,8 +157,8 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
     }, [setSelectedSources]);
 
     const handleSubmit = () => {
-        Cookies.set("selectedSources", JSON.stringify(selectedSources));
-        Cookies.set("numberInputValue", numberInputValue);  // Save numberInputValue to cookie
+        Cookies.set("selectedSources", JSON.stringify(selectedSources), { expires: 365 });
+        Cookies.set("numberInputValue", numberInputValue, { expires: 365 });  // Save numberInputValue to cookie
         fetchData(enabledSources, numberInputValue);  // Use enabledSources for data fetching
     };
 
