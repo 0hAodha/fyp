@@ -25,7 +25,7 @@
 \usepackage[english]{babel} % Language hyphenation and typographical rules
 \usepackage{xcolor}
 \definecolor{linkblue}{RGB}{0, 64, 128}
-\usepackage[final, colorlinks = false, urlcolor = linkblue]{hyperref} 
+\usepackage[final, hidelinks, colorlinks = false, urlcolor = linkblue]{hyperref} 
 % \newcommand{\secref}[1]{\textbf{§~\nameref{#1}}}
 \newcommand{\secref}[1]{\textbf{§\ref{#1}~\nameref{#1}}}
 
@@ -430,6 +430,73 @@ Unlike the punctuality by \verb|objectID| table, however, the average punctualit
 The partition key for this table is the \verb|timestamp| value, and there is no need for a sort key or secondary index.
 
 \subsection{API Design}
+To make the data available to the frontend application, a number of API endpoints are required so that the necessary data can be requested as needed by the client.
+AWS offers two main types of API functionality with Amazon API Gateway\supercite{awsapi}:
+\begin{itemize}
+    \item   \textbf{RESTful APIs:} for a request/response model wherein the client sends a request and the server responds, stateless with no session information stored between calls, and supporting common HTTP methods \& CRUD operations.
+          AWS API Gateway supports two types of RESTful APIs\supercite{httpvsrest}:
+          \begin{itemize}
+              \item   \textbf{HTTP APIs:} low latency, fast, \& cost-effective APIs with support for various AWS microservices such as AWS Lambda, and native CORS support, but with limited support for usage plans and caching.
+                      Despite what the name may imply, these APIs default to HTTPS and are RESTful in nature.
+              \item   \textbf{REST APIs:} older \& more fully-featured, suitable for legacy or complex APIs requiring fine-grained control, such as throttling, caching, API keys, and detailed monitoring \& logging, but with higher latency, cost, and more complex set-up \& maintenance.
+          \end{itemize}
+
+    \item   \textbf{WebSocket APIs:} for real-time full-duplex communication between client \& server, using a stateful session to maintain the connection \& context.
+\end{itemize}
+
+It was decided that a HTTP API would be more suitable for this application for the low latency and cost-effectiveness.
+The API functions needed for this application consist only of requests for data and data responses, so the complex feature set of AWS REST APIs is not necessary.
+The primary drawback of not utilising the more complex REST APIs is that HTTP APIs do not natively support caching;
+this means that every request must be processed in the backend and a data response generated, meaning potentially slower throughput over time.
+However, the fact that this application relies on the newest data available to give accurate \& up-to-date location information about public transport, so the utility of caching is somewhat diminished, as the cache will expire and become out of date within minutes or even seconds of its creation.
+This combined with the fact that HTTP APIs are 3.5$\times$ cheaper\supercite{apipricing} than REST APIs resulted in the decision that a HTTP API would be more suitable.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{./images/api_cors_configuration.png}
+    \caption{CORS configuration for the HTTP API}
+\end{figure}
+
+The Cross-Origin Resource Sharing (CORS) policy accepts only \verb|GET| requests which originate from \url{http://localhost:5173} (the URL of the locally hosted frontend application) to prevent malicious websites from making unauthorised requests on behalf of users to the API.
+While the API handles no sensitive data, it is nonetheless best practice to enforce a CORS policy and a ``security-by-default'' approach so that the application does not need to be secured retroactively as its functionality expands.
+If the frontend application were moved to a publicly available domain, the URL for this new domain would need to be added to the CORS policy, or else all requests would be blocked.
+
+\subsubsection{\texttt{/return\_permanent\_data[?objectType=IrishRailStation,BusStop,LuasStop]}}
+The \verb|/return_permanent_data| endpoint accepts a comma-separated list of \verb|objectType| query parameters, and returns a JSON response consisting of all items in the permanent data table which match those parameters.
+If no query parameters are supplied, it defaults to returning \textit{all} items in the permanent data table.
+
+\subsubsection{\texttt{/return\_transient\_data[?objectType=IrishRailTrain,Bus]}}
+The \verb|/return_transient_data| endpoint accepts a comma-separated list of \verb|objectType| query parameters, and returns a JSON response consisting of all the items in the transient data table which match those parameters \textit{and} were uploaded to the transient data table most recently, i.e., the items which have the newest \verb|timestamp| field in the table.
+Since the \verb|timestamp| pertains to the batch of data uploaded to the table in a single run, each item in the response will have the same \verb|timestamp| as all the others.
+If no \verb|objectType| parameter is supplied, it defaults to returning all items from the newest upload batch. 
+
+\subsubsection{\texttt{/return\_historical\_data[?objectType=IrishRailTrain,Bus]}}
+The \verb|/return_historical_data| endpoint functions in the same manner as the \verb|/return_transient_data| endpoint, with the exception that it returns matching items for \textit{all} \verb|timestamp| values in the table, i.e., it returns all items of the given \verb|objectTypes| in the transient data table. 
+
+\subsubsection{\texttt{/return\_luas\_data?luasStopCode=<luas\_stop\_code>}}
+The \verb|/return_luas_data| returns incoming / outgoing tram data for a given Luas stop, and is just a proxy for the Luas real-time API.
+Since the Luas API returns data only for a queried station and does not give information about individual vehicles, the Luas data for a given station is only fetched on the frontend when a user requests it, as there is no information to plot on the map beyond a station's location.
+However, this request cannot be made from the client to the Luas API, as the Luas API's CORS policy blocks requests from unauthorised domains for security purposes;
+this API endpoint acts as a proxy, accepting API requests from the \verb|localhost| domain and forwarding them to the Luas API, and subsequently forwarding the Luas API's response back to the client.
+\\\\
+This endpoint requires a single \verb|luasStopCode| query parameter for each query to identify the Luas stop for which incoming / outgoing tram data is being requested.
+
+\subsubsection{\texttt{/return\_station\_data?stationCode=<station\_code>}}
+The \verb|return_station_data| returns information about the trains due into a given station in the next 90 minutes.
+This data is only shown to a user if requested for a specific station, so it is not stored in a DynamoDB table.
+Like the \verb|/return_luas_data| endpoint, it too is just a proxy for an (Irish Rail) API, the CORS policy of which blocks requests from any unauthorised domain for security purposes.
+It requires a single \verb|stationCode| query parameter for each query to identify the train station for which the incoming train data is being requested.
+
+\subsubsection{\texttt{/return\_punctuality\_by\_objectID[?objectID=<object\_id1>,<object\_id2>]}}
+The \verb|/return_punctuality_by_objectID| endpoint returns the contents of the \verb|punctuality_by_objectID| DynamoDB table. 
+It accepts a comma-separated list of \verb|objectID|s as query parameters, and defaults to returning the average punctuality for \textit{all} items in the table if no \verb|objectID| is specified.
+
+\subsubsection{\texttt{/return\_punctuality\_by\_timestamp[?timestamp=<timestamp>]}}
+Like the \verb|/return_punctuality_by_objectID| endpoint,  the \verb|/return_punctuality_by_timestamp| returns the contents of the \verb|punctuality_by_timestamp| DynamoDB table.
+It accepts a comma-separated list of \verb|timestamp|s, and defaults to returning the average punctuality for \textit{all} \verb|timestamp|s in the table if no \verb|timestamp| is specified. 
+
+\subsubsection{\texttt{/return\_all\_coordinates}}
+The \verb|/return_all_coordinates| endpoint returns a JSON array of every historical co-ordinate stored in the transient data table, for use in statistical analysis.
 
 
 \subsection{Serverless Functions}
