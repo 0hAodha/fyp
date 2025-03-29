@@ -35,7 +35,7 @@
 
 \usepackage[backend=biber, style=numeric, date=iso, urldate=iso]{biblatex}
 \addbibresource{references.bib}
-\DeclareFieldFormat{urldate}{Accessed on: #1}
+\DeclareFieldFormat{urldate}{Accessed #1}
 
 \usepackage{minted}
 \usemintedstyle{algol_nu}
@@ -121,7 +121,7 @@
 \section{Use Cases}
 \section{Constraints}
 
-\chapter{Design}
+\chapter{Design \& Implementation}
 \section{Backend Design}
 \begin{figure}[H]
     \centering
@@ -350,8 +350,8 @@ A \textbf{Global Secondary Index (GSI)} allows querying on non-primary key attri
 Unlike a primary key, there is no requirement for a GSI to uniquely identify each record in the table;
 a GSI can be defined on any attributes upon which queries will be made.
 The addition of GSIs to a table to facilitate faster queries is analogous to \mintinline{sql}{SELECT} queries on non-primary key columns in a relational database (and the specification of a sort key is analogous to a relational \mintinline{sql}{ORDER BY} statement);
-the structured nature of a relational database means that such queries are relatively efficient by default as each column in the table functions as an index itself.
-In a No-SQL database, this functionality does not come for free, and instead must be manually specified.
+the structured nature of a relational database means that such queries are possible by default, although an index must be created on the column in question for querying on that column to be \textit{efficient} (such as with the SQL \mintinline{sql}{CREATE INDEX} statement).
+In a No-SQL database like DynamoDB, this functionality does not come for free, and instead must be manually specified.
 \\\\
 To facilitate efficient querying of items in the table by \verb|objectType| and \verb|timestamp|, a GSI was created with partition key \verb|objectType| and sort key \verb|timestamp|, thus making queries for the newest data on a public transport type as efficient as querying on primary key attributes.
 The downside of creating a GSI is the additional storage requirements, as DynamoDB implements GSIs by duplicating the data into a separate index: efficient for querying, but less so in terms of storage usage.
@@ -366,7 +366,7 @@ Instead, it was decided that the average punctuality for an item would be stored
 By storing the \verb|objectID|, the \verb|average_punctuality|, and the \verb|count| of the number of records upon which this average is based, the mean punctuality for an item can be updated on an as-needed basis in an efficient manner.
 The new mean value for an item can be calculated as:
 \[
-  \bar{x}_{\text{new}} = \frac{(\bar{x}_\text{old} \times c) + x}{c+1}
+  \bar{x}_{\text{new}} = \frac{\left( \bar{x}_\text{old} \times c \right) + x}{c+1}
 \]
 where $x$ is the punctuality value for a given item, $\bar{x}_{\text{old}}$ is the previous mean punctuality value for that item, $c$ is the count of records upon which that mean was based, and $\bar{x}_{\text{new}}$ is the new mean punctuality value.
 By calculating the average punctuality in this way, the operation is $O(1)$ instead of $O(n)$, thus greatly improving efficiency. 
@@ -500,7 +500,117 @@ The \verb|/return_all_coordinates| endpoint returns a JSON array of every histor
 
 
 \subsection{Serverless Functions}
+All the backend code \& logic is implemented in a number of serverless functions, triggered as needed.
 
+\subsubsection{\mintinline{python}{fetch_permanent_data}}
+The \verb|fetch_permanent_data| Lambda function is used to populate the permanent data table.
+As the data in question changes rarely if ever, this function really need only ever be triggered manually, such as when a new train station is opened or a new bus route created.
+However, for the sake of completeness and to avoid the data being out of date, a schedule was created with \textbf{Amazon EventBridge} to run the function every 28 days to ensure that no changes to the data are missed.
+Like all other schedules created for this application, the schedule is actually disabled at present to avoid incurring unnecessary AWS bills, but can be enabled at any time with the click of a button.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{./images/fetch_permanent_data_schedule.png}
+    \caption{Screenshot of the Amazon EventBridge schedule to run the \mintinline{python}{fetch_permanent_data} Lambda function}
+\end{figure}
+
+The \verb|fetch_permanent_data| function retrieves Irish Rail Station data directly from the Irish Rail API, but Luas stop data and bus data are not made available through an API;
+instead, the Luas stop data is made available online in a tab-separated \verb|TXT| file, and the bus stop \& bus route data are available online in comma-separated \verb|TXT| files distributed as a single ZIP file.
+This makes little difference to the data processing however, as downloading a file from a server and parsing its contents is little different in practice from downloading an API response from a server and parsing its contents.
+The function runs asynchronously with a thread per type of data being fetched (train station data, Luas stop data, and bus stop \& route data), and once each thread has completed, batch uploads the data to the permanent data table, overwriting its existing contents.
+
+\subsubsection{\mintinline{python}{fetch_transient_data}}
+The \verb|fetch_transient_data| function operates much like the \verb|fetch_transient_data| function, but instead updates the contents of the transient data table.
+It runs asynchronously, with a thread per API being accessed to speed up execution;
+repeated requests to an API within a thread are made synchronously to avoid overloading the API.
+For example, retrieving the type (e.g., Mainline, Suburban, Commuter) of the trains returned by the Irish Rail API requires three API calls:
+the Irish Rail API allows the user to query for all trains or for trains of a specific type but it does not return the type of the train in the API response.
+Therefore, if a query is submitted for all trains, there is no way of knowing which train is of which type.
+Instead, the function queries each type of train individually, and adds the type into the parsed response data.
+\\\\
+Additionally, the \verb|return_punctuality_by_objectID| function is called when processing the train data so that each train's average punctuality can be added to its data for upload.
+Somewhat unintuitively, it transpired that the most efficient way to request this data was to request all data from the punctuality by \verb|objectID| data table rather than individually request each necessary \verb|objectID|;
+this means that much of the data returned is redundant, as many of the trains whose punctualities are returned are not running at the time and so will not be uploaded, but it means that the function is only ran once, and so only one function invocation, start-up, database connection, and database query have to be created.
+It's likely that if bus punctuality data were to become available in the future, this approach would no longer be the most efficient way of doing things, and instead a \verb|return_punctuality_by_objectType| function would be the optimal solution.
+\\\\
+The bus data API doesn't return any information about the bus route beyond a bus route identifier, so the permanent data table is queried on each run to create a dictionary (essentially a Python hash table\supercite{pythondict}) linking bus route identifiers to information about said bus route (such as the name of the route).
+As the bus data is being parsed, the relevant bus route data for each vehicle is inserted.
+Once all the threads have finished executing, the data is uploaded in a batch to the transient data table, with each item timestamped to indicate which function run it was retrieved on.
+\\\\
+This function is ran as part of an \textbf{AWS Step Function} with a corresponding Amazon EventBridge schedule (albeit disabled at present).
+A step function is an AWS service which facilitates the creation of state machines consisting of various AWS microservices to act as a single workflow.
+The state machine allows multiple states and transitions to be defined, with each state representing a step in the workflow and the transitions representing how the workflow moves from one state to another and what data is transferred.
+Step functions have built-in error handling and retry functionality, making them extremely fault-tolerant for critical workflows.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{./images/get_live_data_definiton.png}
+    \caption{Screenshot of the \texttt{get\_live\_data} step function definition}
+\end{figure}
+
+The step function runs the \verb|fetch_transient_data| function and then runs the \verb|update_average_punctuality| function, if and only if the \verb|fetch_transient_data| function has completed successfully.
+This allows the average punctuality data to be kept up to date and in sync with the transient data, and ensures that they do not become decoupled and therefore incorrect.
+This step function is triggered by a (currently disabled) Amazon EventBridge schedule which runs the function once a minute, which is the maximum frequency possible to specify within a cron schedule, and suitable for this application as the APIs from which the data is sourced don't update much more frequently than that.
+Furthermore, the data from which bus data is sourced will time out if requests are made too frequently, so this value was determined to be appropriate after testing to avoid overwhelming the API or getting timed-out. 
+It is possible to run EventBridge schedules even more frequently using the \textit{rate-based schedule} schedule type instead of the \textit{cron-based schedule} schedule type but a more frequent schedule would be inappropriate for this application.
+
+\subsubsection{\mintinline{python}{update_average_punctuality}}
+The \verb|update_average_punctuality| function runs after \verb|fetch_transient_data| in a step function and populates the average punctuality by \verb|objectID| and average punctuality by \verb|timestamp| tables to reflect the new data collected by \verb|fetch_transient_data|.
+For each item in the new data, it updates the average punctuality in the average punctuality by \verb|objectID| table according to the aforementioned formula:
+\[
+  \bar{x}_{\text{new}} = \frac{\left( \bar{x}_\text{old} + c \right) + x}{c + 1}
+\]
+
+As the function iterates over each item, it adds up the total punctuality and then divides this by the total number of items processed before adding it to the average punctuality by \verb|timestamp| table, where the \verb|timestamp| in question is the \verb|timestamp| that the items were uploaded with (the \verb|timestamp| of the \verb|fetch_transient_data| run which created them).
+\\\\
+There are a number of concerns that one might reasonably have about using the mean punctuality for the average displayed to users:
+\begin{itemize}
+  \item   Means are sensitive to outliers, meaning that if, for example, a train is very late just once but very punctual the rest of the time, its average punctuality could be misleading.
+  \item   The punctuality variable is an integer that can be positive or negative, which could have the result that the positive \& negative values could cancel each other out for a train that is usually either very late or very early, giving the misleading impression of an average punctuality close to zero.
+  \item   Considering the entire history of a train for its average punctuality may not be reflective of recent trends:
+          a train may historically have been consistently late, but become more punctual as of late and therefore the average punctuality may not be reflective of its recent average punctuality. 
+\end{itemize}
+
+These questions were carefully considered when deciding how to calculate the average punctuality, but it was decided that the mean would nonetheless be the most appropriate for various reasons:
+\begin{itemize}
+  \item   The mean lends itself to efficient calculation with the $O(1)$ formula described above.
+          No other average can be calculated in so efficient a manner:
+          the median requires the full list of punctualities to be considered to determine the new median, and the mode requires at the very least a frequency table of all the punctualities over time to determine the new mode, which requires both additional computation and another DynamoDB table.
+
+  \item   Similarly, considering only recent data would destroy the possibility for efficient calculation:
+          the mean could not be updated incrementally, and instead a subset of the historic punctualities would have to be stored and queried for each update.
+
+  \item   The outlier sensitivity is addressed by the sheer number of items that are considered for the mean:
+          since this will be updated every minute of every day, an outlier will quickly be drowned out with time.
+
+  \item   Finally, the average is being calculated so that it can be shown to the user and so that they can make decisions based off it.
+          The average person from a non-technical or non-mathematical background tends to assume that any average value is a mean value, and so it would only serve to confuse users if they were given some value that did not mean what they imagined it to mean.
+          While calculating additional different measures of averages would be possible, displaying them to the user would likely be at best not useful and at worst confusing, while also greatly increasing the computation and storage costs.
+          This aligns with the second of Nielsen's famous \textit{10 Usability Heuristics for User Interface Design}, which were consulted throughout the design process: ``\textbf{Match between the System and the Real World:} The design should speak the users' language. Use words, phrases, and concepts familiar to the user, rather than internal jargon''\supercite{nielsenheuristics}.
+\end{itemize}
+
+For these reasons, it was decided that the mean was the most suitable average to use.
+
+\subsubsection{\mintinline{python}{return_permanent_data}}
+The \verb|return_permanent_data| function is the function which is called when a request is made to the \verb|/return_permanent_data| API endpoint.
+It checks for a comma-separated list of \verb|objectType| parameters in the query parameters passed from the API event to the Lambda function, and scans the permanent data table for every item matching those \verb|objectType|s.
+If none are provided, it returns every item in the table, regardless of type.
+It returns this data as a JSON string.
+\\\\
+When this function was first being developed, the permanent data table was partitioned by \verb|objectID| alone with no sort key, meaning that querying was very inefficient.
+When the table was re-structured to have a composite primary key consisting of the \verb|objectType| as the partition key and the \verb|objectID| as the sort key, the \verb|return_permanent_data| function was made 10$\times$ faster:
+the average execution time was reduced from $\sim$10 seconds to $\sim$1 second, demonstrating the critical importance of choosing the right primary key for the table.
+
+
+\subsubsection{\mintinline{python}{return_transient_data}}
+
+\subsubsection{\mintinline{python}{return_punctuality_by_objectID}}
+\subsubsection{\mintinline{python}{return_all_coordinates}}
+\subsubsection{\mintinline{python}{return_historical_data}}
+\subsubsection{\mintinline{python}{return_luas_data}}
+\subsubsection{\mintinline{python}{return_permanent_data}}
+\subsubsection{\mintinline{python}{return_punctuality_by_timestamp}}
+\subsubsection{\mintinline{python}{return_station_data}}
 \section{Frontend Design}
 
 \chapter{Development}

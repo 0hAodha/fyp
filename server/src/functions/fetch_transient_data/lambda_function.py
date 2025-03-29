@@ -55,7 +55,6 @@ def fetch_trains():
 
         punctuality_data = fetch_punctuality_data()
 
-
         for train in trains_json["ArrayOfObjTrainPositions"].get("objTrainPositions", []):
             train_code = str(train["TrainCode"])
             train_status = train["TrainStatus"]
