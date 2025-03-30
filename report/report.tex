@@ -62,8 +62,9 @@
 \begin{titlepage}
     \begin{center}
 
+        \vfill
         % University Logo
-        \includegraphics[width=0.8\textwidth]{./images/Logo-UGalway-2-3166136658.jpg} \\[1cm]
+        \includegraphics[width=\textwidth]{./images/Logo-UGalway-2-3166136658.jpg} \\[1cm]
 
         % Title
         {\Huge \textbf{Iompar: Live Public Transport Tracking}} \\[0.5cm]
@@ -85,7 +86,7 @@
 
         % Date
         {\Large \today}
-
+        \vfill
     \end{center}
 \end{titlepage}
 
@@ -450,6 +451,12 @@ The primary drawback of not utilising the more complex REST APIs is that HTTP AP
 this means that every request must be processed in the backend and a data response generated, meaning potentially slower throughput over time.
 However, the fact that this application relies on the newest data available to give accurate \& up-to-date location information about public transport, so the utility of caching is somewhat diminished, as the cache will expire and become out of date within minutes or even seconds of its creation.
 This combined with the fact that HTTP APIs are 3.5$\times$ cheaper\supercite{apipricing} than REST APIs resulted in the decision that a HTTP API would be more suitable.
+\\\\
+It is important to consider the security of public-facing APIs, especially ones which accept query parameters: a malicious attacker could craft a payload to either divert the control flow of the program or simply sabotage functionality.
+For this reason, no query parameter is ever evaluated as code or blindly inserted into a database query;
+any interpolation of query parameters is done in such a way that they are not used in raw query strings but in parameterised expressions using the \mintinline{python}{boto3} library\supercite{boto3query}.
+The AWS documentation emphasises the use of parameterised queries for database operations, in particular for SQL databases which are more vulnerable, but such attacks can be applied to any database architecture\supercite{useparameterisedqueries}. 
+This, combined with unit testing of invalid API query parameters means that the risk of malicious parameter injection is greatly mitigated (although never zero), as each API endpoint simply returns an error if the parameters are invalid.
 
 \begin{figure}[H]
     \centering
@@ -487,17 +494,16 @@ This data is only shown to a user if requested for a specific station, so it is 
 Like the \verb|/return_luas_data| endpoint, it too is just a proxy for an (Irish Rail) API, the CORS policy of which blocks requests from any unauthorised domain for security purposes.
 It requires a single \verb|stationCode| query parameter for each query to identify the train station for which the incoming train data is being requested.
 
-\subsubsection{\texttt{/return\_punctuality\_by\_objectID[?objectID=<object\_id1>,<object\_id2>]}}
-The \verb|/return_punctuality_by_objectID| endpoint returns the contents of the \verb|punctuality_by_objectID| DynamoDB table. 
-It accepts a comma-separated list of \verb|objectID|s as query parameters, and defaults to returning the average punctuality for \textit{all} items in the table if no \verb|objectID| is specified.
+% \subsubsection{\texttt{/return\_punctuality\_by\_objectID[?objectID=<object\_id1>,<object\_id2>]}}
+% The \verb|/return_punctuality_by_objectID| endpoint returns the contents of the \verb|punctuality_by_objectID| DynamoDB table. 
+% It accepts a comma-separated list of \verb|objectID|s as query parameters, and defaults to returning the average punctuality for \textit{all} items in the table if no \verb|objectID| is specified.
 
 \subsubsection{\texttt{/return\_punctuality\_by\_timestamp[?timestamp=<timestamp>]}}
-Like the \verb|/return_punctuality_by_objectID| endpoint,  the \verb|/return_punctuality_by_timestamp| returns the contents of the \verb|punctuality_by_timestamp| DynamoDB table.
+The \verb|/return_punctuality_by_timestamp| returns the contents of the \verb|punctuality_by_timestamp| DynamoDB table.
 It accepts a comma-separated list of \verb|timestamp|s, and defaults to returning the average punctuality for \textit{all} \verb|timestamp|s in the table if no \verb|timestamp| is specified. 
 
 \subsubsection{\texttt{/return\_all\_coordinates}}
-The \verb|/return_all_coordinates| endpoint returns a JSON array of every historical co-ordinate stored in the transient data table, for use in statistical analysis.
-
+The \verb|/return_all_coordinates| endpoint returns a JSON array of all current location co-ordinates in the transient data table for use in statistical analysis.
 
 \subsection{Serverless Functions}
 All the backend code \& logic is implemented in a number of serverless functions, triggered as needed.
@@ -592,7 +598,7 @@ These questions were carefully considered when deciding how to calculate the ave
 For these reasons, it was decided that the mean was the most suitable average to use.
 
 \subsubsection{\mintinline{python}{return_permanent_data}}
-The \verb|return_permanent_data| function is the function which is called when a request is made to the \verb|/return_permanent_data| API endpoint.
+The \verb|return_permanent_data| function is the Lambda function which is called when a request is made from the client to the \verb|/return_permanent_data| API endpoint.
 It checks for a comma-separated list of \verb|objectType| parameters in the query parameters passed from the API event to the Lambda function, and scans the permanent data table for every item matching those \verb|objectType|s.
 If none are provided, it returns every item in the table, regardless of type.
 It returns this data as a JSON string.
@@ -601,16 +607,39 @@ When this function was first being developed, the permanent data table was parti
 When the table was re-structured to have a composite primary key consisting of the \verb|objectType| as the partition key and the \verb|objectID| as the sort key, the \verb|return_permanent_data| function was made 10$\times$ faster:
 the average execution time was reduced from $\sim$10 seconds to $\sim$1 second, demonstrating the critical importance of choosing the right primary key for the table.
 
-
 \subsubsection{\mintinline{python}{return_transient_data}}
+The \verb|return_transient_data| function is the Lambda function which is called when a request is made from the client to the \verb|/return_transient_data| API endpoint.
+Like \verb|return_permanent_data|, it checks for a comma-separated list of \verb|objectType| parameters in the query parameters passed from the API event to the Lambda function, and scans the permanent data table for every item matching those \verb|objectType|s.
+If none are provided, it returns every item in the table, regardless of type.
+\\\\
+Similar to \verb|return_permanent_data|, when this function was originally being developed, there was no GSI on the transient data table to facilitate efficient queries by \verb|objectType| and \verb|timestamp|;
+the addition of the GSI and updating the code to exploit the GSI resulted in an average improvement in run time of $\sim$8$\times$, thus demonstrating the utility which GSIs can provide.
 
 \subsubsection{\mintinline{python}{return_punctuality_by_objectID}}
-\subsubsection{\mintinline{python}{return_all_coordinates}}
-\subsubsection{\mintinline{python}{return_historical_data}}
-\subsubsection{\mintinline{python}{return_luas_data}}
-\subsubsection{\mintinline{python}{return_permanent_data}}
+The \verb|return_punctuality_by_objectID| function is invoked by the \verb|fetch_transient_data| function to return the contents of the punctuality by \verb|objectID| table. 
+It accepts a list of \verb|objectID|s and defaults to returning all items in the table if no parameters are provided.
+
 \subsubsection{\mintinline{python}{return_punctuality_by_timestamp}}
+The \verb|return_punctuality_by_timestamp| function is similar to \verb|return_punctuality_by_objectID| but runs when invoked by an API request to the \verb|/return_punctuality_by_timestamp| endpoint and simply returns a list of JSON objects consisting of a \verb|timestamp| and an \verb|average_punctuality|.
+It is used primarily to graph the average punctuality of services over time.
+
+\subsubsection{\mintinline{python}{return_all_coordinates}}
+The \verb|return_all_coordinates| function is used to populate the co-ordinates heatmap in the frontend application which shows the geographical density of services at the present moment.
+It accepts no parameters, and simply scans the transient data table for the newest items and returns their co-ordinates.
+
+\subsubsection{\mintinline{python}{return_historical_data}}
+The \verb|return_historical_data| function operates much like the \verb|return_transient_data| function, accepting a list of \verb|objectType|s or defaulting to all \verb|objectType|s if none are specified, with the only difference being that this function does not consider the \verb|timestamp|s of the data and just returns all data in the transient data table.
+This function, along with its corresponding API endpoint exist primarily as a debugging \& testing interface, although they also give a convenient access point for historical data analysis should that be necessary.
+
+\subsubsection{\mintinline{python}{return_luas_data}}
+The \verb|return_luas_data| function is a simple proxy for the Luas API which accepts requests from the client and forwards them to the Luas API to circumvent the Luas API's restrictive CORS policy which blocks requests from unauthorised domains.
+It simply accepts a \verb|luasStopCode| parameter, and makes a request to the Luas API with said parameter, parses the response from XML into JSON, and returns it.
+
 \subsubsection{\mintinline{python}{return_station_data}}
+Like \verb|return_luas_data|, the \verb|return_station_data| is a proxy for the Irish Rail API so that requests can be made as needed from the client's browser to get data about incoming trains due into a specific section without running afoul of Irish Rail's CORS policy.
+It also accepts a single parameter (\verb|stationCode|) and makes a request to the relevant endpoint of the Irish Rail API, and returns the response (parsed from XML to JSON).
+
+
 \section{Frontend Design}
 
 \chapter{Development}
