@@ -122,15 +122,14 @@
 \section{Use Cases}
 \section{Constraints}
 
-\chapter{Design \& Implementation}
-\section{Backend Design}
+\chapter{Backend Design \& Implementation}
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{./images/diagram_all.png}
     \caption{Backend architecture}
 \end{figure}
 
-\subsection{Database Design}
+\section{Database Design}
 Since the chosen database system was DynamoDB, a No-SQL database, the question of how best to separate the data is more open-ended: unlike a relational database, there is no provably correct, optimised structure of separated tables upon which to base the database design.
 The decision was made that data would be separated into tables according to the type of data, how its used, and how its updated, thus allowing separation of concerns for functions which update the data and allowing different primary keys and indices to be used for different querying patterns.
 
@@ -430,7 +429,7 @@ Unlike the punctuality by \verb|objectID| table, however, the average punctualit
 
 The partition key for this table is the \verb|timestamp| value, and there is no need for a sort key or secondary index.
 
-\subsection{API Design}
+\section{API Design}
 To make the data available to the frontend application, a number of API endpoints are required so that the necessary data can be requested as needed by the client.
 AWS offers two main types of API functionality with Amazon API Gateway\supercite{awsapi}:
 \begin{itemize}
@@ -505,7 +504,7 @@ It accepts a comma-separated list of \verb|timestamp|s, and defaults to returnin
 \subsubsection{\texttt{/return\_all\_coordinates}}
 The \verb|/return_all_coordinates| endpoint returns a JSON array of all current location co-ordinates in the transient data table for use in statistical analysis.
 
-\subsection{Serverless Functions}
+\section{Serverless Functions}
 All the backend code \& logic is implemented in a number of serverless functions, triggered as needed.
 
 \subsubsection{\mintinline{python}{fetch_permanent_data}}
@@ -640,29 +639,28 @@ Like \verb|return_luas_data|, the \verb|return_station_data| is a proxy for the 
 It also accepts a single parameter (\verb|stationCode|) and makes a request to the relevant endpoint of the Irish Rail API, and returns the response (parsed from XML to JSON).
 
 
-\section{Frontend Design}
+\chapter{Frontend Design \& Implementation}
+The frontend design is built following the Single-Page-Application (SPA)\supercite{spa} design pattern using the React Router\supercite{reactrouter} library, meaning that the web application loads a single HTML page and dynamically updates content as the user interacts with the application, without reloading the webpage. 
+Since there is just one initial page load, the content is dynamically updated via the DOM using JavaSript rather than by requesting new pages from the server;
+navigation between pseudo-pages is managed entirely using client-side routing for a smoother \& faster user experience since no full-page reloads are necessary.
+\\\\
+The web application is split into two ``pages'':
+\begin{itemize}
+  \item   The home (or map) page, which is the main page that displays live location data \& service information to the user.
+          This page is where the user will spend the majority of their time, and where the majority of the functionality is delivered.
+  \item   The statistics page, which is used to deliver statistical insights about the data to the user.
+          This page is for providing deeper insights into the stored data on a collective basis, rather than on a per-service basis.
+\end{itemize}
 
-\chapter{Development}
-\section{Introduction}
-\section{Backend Development}
-\section{Frontend Development}
-\section{Development Considerations}
+The web application follows the Container/Presentational Pattern\supercite{containerpresentational}, which enforces separation of concerns by separating the presentational logic from the application logic.
+This is done by separating the functionality into two classes of components:
+\begin{itemize}
+  \item   \textbf{Container Components:} those which fetch the data, process it, and pass it to the presentational components which are contained by their container components, i.e., the presentational components are children of the container components.
+  \item   \textbf{Presentational Components:} those which display the data it receives from the container components to the user as it is received.
+          This makes the components highly re-usable, as there isn't specific data processing handling logic within them.
+\end{itemize}
 
-\chapter{Code Quality}
-\section{Introduction}
-\section{Clean Coding Principles}
-\section{Unit Testing}
-\section{CI/CD}
-\subsection{Continuous Integration}
-\subsection{Continuous Deployment}
-
-\chapter{Conclusion}
-\section{Evaluation}
-\section{Reflection on Requirements}
-\section{Reflection on Skill Development}
-\section{Potential Future Work}
-
-\printbibliography
-
+React components are reusable, self-contained pieces of the UI which act as building blocks for the application\supercite{reactcomponents};
+they can receive properties from their parent components, manage their own internal state, render other components within themselves, and respond to events.
 
 \end{document}
