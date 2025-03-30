@@ -137,6 +137,10 @@ function App() {
     }
 
     const fetchData = async (enabledSources, numberInputValue) => {
+        if (numberInputValue <= 0) {
+            numberInputValue = undefined;
+        }
+
         setLoading(true);
         try {
             const transientTypes = [];
