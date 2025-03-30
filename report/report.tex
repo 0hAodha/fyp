@@ -663,4 +663,29 @@ This is done by separating the functionality into two classes of components:
 React components are reusable, self-contained pieces of the UI which act as building blocks for the application\supercite{reactcomponents};
 they can receive properties from their parent components, manage their own internal state, render other components within themselves, and respond to events.
 
+\section{Main Page}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{./images/mainpage.png}
+    \caption{Screenshot of the front page of the web application}
+\end{figure}
+
+The main page of the application contains a map upon which the live location of each public transport object is marked, a navigation bar, a search bar to filter the vehicles shown on the map, and a filters side-panel which allows the user to select what kind of objects the user wants displayed on the map.
+The location markers for each item are clickable, and when clicked, display a pop-up with relevant information about the selected item.
+In line with Container/Presentational pattern, the main \verb|App.jsx| file contains the data retrieval \& processing logic, and passes the processed data to presentational components for display. 
+
+\subsubsection{Data Retrieval \& Processing}
+The data is retrieved and processed in a function named \mintinline{javascript}{fetchData()}.
+When the ``Submit'' button is clicked in the filters side-panel, the function is triggered and sends asynchronous API requests to the \verb|/return_permanent_data| and \verb|/return_transient_data| API endpoints as necessary.
+The \verb|App.jsx| file contains a JavaScript object which identifies what checkboxes in the side-panel pertain to \verb|objectType|s in the backend, and which API endpoint they can be sourced from.
+When the function is fetching data, it constructs a comma-separated list of selected \verb|objectType|s to send to each API endpoint, thereby making only one request to each API endpoint to avoid unnecessary repeated queries.
+\\\\
+Originally, the returned data was processed using JavaScript functional array methods\supercite{arraymethods} (very superficially similar to the Java \mintinline{java}{Stream}\supercite{javastream} interface), which allow for the creation of chained operations on arrays, not dissimilar to chained shell operations using the pipe (\mintinline{shell}{|}) operator on UNIX-like systems\supercite{redhatpipe}.
+Methods like \mintinline{javascript}{.map()}, \mintinline{javascript}{.reduce()}, etc. are some of the methods covered in JavaScript functional array methods which allow data processing pipelines to be specified in a clean, elegant, \& readable manner.
+However, the price of this elegance is slower and less efficient execution:
+these array methods add extra layers of abstraction, invoke a new function per element, create intermediate arrays for each result, and (unlike their Java counterparts) do not support short-circuiting and therefore cannot break early.
+The modern JavaScript engine also is less efficient at optimising these array methods than simple \mintinline{javascript}{for}-loops.
+
+
+\printbibliography
 \end{document}
