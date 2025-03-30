@@ -139,38 +139,60 @@ function App() {
     const fetchData = async (enabledSources, numberInputValue) => {
         setLoading(true);
         try {
-            const transientTypes = dataSources.filter(({ id, api }) => enabledSources.includes(id) && api === "transient").map(({ objectType }) => objectType);
-            const permanentTypes = dataSources.filter(({ id, api }) => enabledSources.includes(id) && api === "permanent").map(({ objectType }) => objectType);
+            const transientTypes = [];
+            const permanentTypes = [];
+
+            for (let i = 0; i < dataSources.length; i++) {
+                const { id, api, objectType } = dataSources[i];
+                if (enabledSources.includes(id)) {
+                    if (api === "transient") {
+                        transientTypes.push(objectType);
+                    } else if (api === "permanent") {
+                        permanentTypes.push(objectType);
+                    }
+                }
+            }
 
             const requests = [];
-            if (transientTypes.length) requests.push(fetch(`${TRANSIENT_DATA_API}?objectType=${transientTypes.join(",")}`).then(res => res.json()));
-            if (permanentTypes.length) requests.push(fetch(`${PERMANENT_DATA_API}?objectType=${permanentTypes.join(",")}`).then(res => res.json()));
+            if (transientTypes.length) {
+                requests.push(
+                    fetch(`${TRANSIENT_DATA_API}?objectType=${transientTypes.join(",")}`).then(res => res.json())
+                );
+            }
+            if (permanentTypes.length) {
+                requests.push(
+                    fetch(`${PERMANENT_DATA_API}?objectType=${permanentTypes.join(",")}`).then(res => res.json())
+                );
+            }
 
             const responses = await Promise.all(requests);
 
-            const newMarkers = responses.flat()
-                .map((item) => {
-                    const showMainline = enabledSources.includes("mainline");
-                    const showSuburban = enabledSources.includes("suburban");
-                    const showDart = enabledSources.includes("dart");
-                    const showRunning = enabledSources.includes("running");
-                    const showNotYetRunning = enabledSources.includes("not-yet-running");
-                    const showTerminated = enabledSources.includes("terminated");
-                    const showEarly = enabledSources.includes("early");
-                    const showOnTime = enabledSources.includes("on-time");
-                    const showLate = enabledSources.includes("late");
+            const newMarkers = [];
+            const showMainline = enabledSources.includes("mainline");
+            const showSuburban = enabledSources.includes("suburban");
+            const showDart = enabledSources.includes("dart");
+            const showRunning = enabledSources.includes("running");
+            const showNotYetRunning = enabledSources.includes("not-yet-running");
+            const showTerminated = enabledSources.includes("terminated");
+            const showEarly = enabledSources.includes("early");
+            const showOnTime = enabledSources.includes("on-time");
+            const showLate = enabledSources.includes("late");
+            const showRedLine = enabledSources.includes("red-line");
+            const showGreenLine = enabledSources.includes("green-line");
+            const showParkAndRide = enabledSources.includes("park-and-ride");
+            const showCycleAndRide = enabledSources.includes("cycle-and-ride");
+            const showEnabled = enabledSources.includes("enabled");
+            const showDisabled = enabledSources.includes("disabled");
 
-                    const showRedLine = enabledSources.includes("red-line");
-                    const showGreenLine = enabledSources.includes("green-line");
-                    const showParkAndRide = enabledSources.includes("park-and-ride");
-                    const showCycleAndRide = enabledSources.includes("cycle-and-ride");
-                    const showEnabled = enabledSources.includes("enabled");
-                    const showDisabled = enabledSources.includes("disabled");
+            for (let r = 0; r < responses.length; r++) {
+                const response = responses[r];
+                for (let j = 0; j < response.length; j++) {
+                    const item = response[j];
 
                     let icon = item.objectType;
                     let popupContent;
                     let objectTitle;
-                    let display  = false;
+                    let display = false;
                     let markerText = "";
 
                     switch (item.objectType) {
@@ -178,7 +200,7 @@ function App() {
                             objectTitle = "Irish Rail Train: " + item.trainCode;
                             icon = item.trainTypeFull + item.trainPunctualityStatus;
 
-                            if (item.trainStatusFull == "Terminated" || item.trainStatusFull == "Not yet running") {
+                            if (item.trainStatusFull === "Terminated" || item.trainStatusFull === "Not yet running") {
                                 icon = item.trainTypeFull + "NotRunning";
                             }
 
@@ -191,15 +213,36 @@ function App() {
                                 />
                             );
 
-                            markerText = item.trainPublicMessage + " " +  item.trainDirection;
+                            markerText = item.trainPublicMessage + " " + item.trainDirection;
+
                             display =
-                                ((item.latitude !== "0" && item.longitude !== "0") &&
-                                    ((showMainline && item.trainTypeFull == "Mainline") || (showSuburban && item.trainTypeFull == "Suburban") || (showDart && item.trainTypeFull == "DART")) &&
-                                    ((showRunning && item.trainStatusFull == "Running") || (showNotYetRunning && item.trainStatusFull == "Not yet running") || (showTerminated && item.trainStatusFull == "Terminated")) &&
-                                    ((item.trainStatusFull == "Running" && showEarly && item.trainPunctualityStatus == "early") || (item.trainStatusFull == "Running" && showOnTime && item.trainPunctualityStatus == "On time") || (item.trainStatusFull == "Running" && showLate && item.trainPunctualityStatus == "late")
-                                        || (item.trainStatusFull == "Not yet running" && showNotYetRunning) || (item.trainStatusFull == "Terminated" && showTerminated))) &&
-                                    (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true) &&
-                                    (showFaovouritesOnly ? favourites.IrishRailTrain.includes(item.trainCode) : true);
+                                item.latitude !== "0" &&
+                                item.longitude !== "0" &&
+                                (
+                                    (showMainline && item.trainTypeFull === "Mainline") ||
+                                    (showSuburban && item.trainTypeFull === "Suburban") ||
+                                    (showDart && item.trainTypeFull === "DART")
+                                ) &&
+                                (
+                                    (showRunning && item.trainStatusFull === "Running") ||
+                                    (showNotYetRunning && item.trainStatusFull === "Not yet running") ||
+                                    (showTerminated && item.trainStatusFull === "Terminated")
+                                ) &&
+                                (
+                                    (item.trainStatusFull === "Running" &&
+                                        (
+                                            (showEarly && item.trainPunctualityStatus === "early") ||
+                                            (showOnTime && item.trainPunctualityStatus === "On time") ||
+                                            (showLate && item.trainPunctualityStatus === "late")
+                                        )
+                                    ) ||
+                                    (item.trainStatusFull === "Not yet running" && showNotYetRunning) ||
+                                    (item.trainStatusFull === "Terminated" && showTerminated)
+                                ) &&
+                                (numberInputValue && userLocationAvailable
+                                    ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue
+                                    : true) &&
+                                (showFaovouritesOnly ? favourites.IrishRailTrain.includes(item.trainCode) : true);
 
                             break;
 
@@ -213,12 +256,13 @@ function App() {
                                     favourites={favourites}
                                 />
                             );
-
                             markerText = item.trainStationCode + " " + item.trainStationDesc;
-                            display = (item.latitude !== "0" && item.longitude !== "0") &&
-                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true) &&
+                            display = item.latitude !== "0" &&
+                                item.longitude !== "0" &&
+                                (numberInputValue && userLocationAvailable
+                                    ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue
+                                    : true) &&
                                 (showFaovouritesOnly ? favourites.IrishRailStation.includes(item.trainStationCode) : true);
-
                             break;
 
                         case "Bus":
@@ -231,12 +275,13 @@ function App() {
                                     favourites={favourites}
                                 />
                             );
-
                             markerText = item.busRouteAgencyName + " " + item.busRouteShortName + " " + item.busRouteLongName;
-                            display = (item.latitude !== "0" && item.longitude !== "0") &&
-                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true) &&
+                            display = item.latitude !== "0" &&
+                                item.longitude !== "0" &&
+                                (numberInputValue && userLocationAvailable
+                                    ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue
+                                    : true) &&
                                 (showFaovouritesOnly ? favourites.Bus.includes(item.busRoute) : true);
-
                             break;
 
                         case "BusStop":
@@ -249,12 +294,13 @@ function App() {
                                     favourites={favourites}
                                 />
                             );
-
                             markerText = item.busStopName;
-                            display = (item.latitude !== "0" && item.longitude !== "0") &&
-                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true) &&
+                            display = item.latitude !== "0" &&
+                                item.longitude !== "0" &&
+                                (numberInputValue && userLocationAvailable
+                                    ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue
+                                    : true) &&
                                 (showFaovouritesOnly ? favourites.BusStop.includes(item.busStopID) : true);
-
                             break;
 
                         case "LuasStop":
@@ -273,6 +319,7 @@ function App() {
                                 default:
                                     luasLine = "N/A";
                             }
+
                             popupContent = (
                                 <LuasPopup
                                     item={item}
@@ -282,18 +329,23 @@ function App() {
                                     favourites={favourites}
                                 />
                             );
-
                             markerText = item.luasStopIrishName + " " + item.luasStopName + " " + luasLine;
-                            display = (
-                                (item.latitude !== "0" && item.longitude !== "0") &&
-                                (showGreenLine && luasLine === "Green Line" || showRedLine && luasLine === "Red Line") &&
-                                (showEnabled && item.luasStopIsEnabled === "1" || showDisabled && item.luasStopIsEnabled === "0") &&
+                            display = item.latitude !== "0" &&
+                                item.longitude !== "0" &&
+                                (
+                                    (showGreenLine && luasLine === "Green Line") ||
+                                    (showRedLine && luasLine === "Red Line")
+                                ) &&
+                                (
+                                    (showEnabled && item.luasStopIsEnabled === "1") ||
+                                    (showDisabled && item.luasStopIsEnabled === "0")
+                                ) &&
                                 (!showCycleAndRide || (showCycleAndRide && item.luasStopIsCycleAndRide === "1")) &&
                                 (!showParkAndRide || (showParkAndRide && item.luasStopIsParkAndRide === "1")) &&
-                                (numberInputValue && userLocationAvailable ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue : true) &&
-                                (showFaovouritesOnly ? favourites.LuasStop.includes(item.luasStopID) : true)
-                            );
-
+                                (numberInputValue && userLocationAvailable
+                                    ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue
+                                    : true) &&
+                                (showFaovouritesOnly ? favourites.LuasStop.includes(item.luasStopID) : true);
                             break;
 
                         default:
@@ -305,15 +357,17 @@ function App() {
                             markerText = `Unknown Object Type: ${item.objectType}`;
                     }
 
-                    return {
-                        coords: [item.latitude, item.longitude],
-                        popup: popupContent,
-                        icon: icon,
-                        markerText: markerText.toLowerCase(),
-                        display: display
-                    };
-                })
-                .filter((marker) => marker.display);
+                    if (display) {
+                        newMarkers.push({
+                            coords: [item.latitude, item.longitude],
+                            popup: popupContent,
+                            icon: icon,
+                            markerText: markerText.toLowerCase(),
+                            display: true
+                        });
+                    }
+                }
+            }
 
             setNumMarkers(newMarkers.length);
             setMarkers(newMarkers);
@@ -322,6 +376,7 @@ function App() {
         }
         setLoading(false);
     };
+
 
     const memoizedFilteredMarkers = useMemo(() => {
         return markers.filter(marker =>
