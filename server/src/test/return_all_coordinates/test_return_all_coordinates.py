@@ -5,34 +5,32 @@ import os
 from functions.return_all_coordinates.lambda_function import lambda_handler
 
 
-class TestReturnAllCoordinates(unittest.TestCase):
+class TestReturnLatestCoordinates(unittest.TestCase):
 
-    # Mock environment variable before each test
     def setUp(self):
         patch.dict(os.environ, {'TABLE_NAME': 'test-table'}).start()
 
-    # Clean up patches after each test
     def tearDown(self):
         patch.stopall()
 
     @patch('functions.return_all_coordinates.lambda_function.dynamodb.Table')
     def test_lambda_handler_with_coordinates(self, mock_table):
         """Test function when the database contains valid latitude and longitude values."""
-        # Mock scan response with items containing latitude & longitude
-        mock_table.return_value.scan.return_value = {
-            'Items': [
-                {'latitude': 53.3498, 'longitude': -6.2603},
-                {'latitude': 51.8985, 'longitude': -8.4756}
-            ]
-        }
+        # First scan returns timestamps
+        # Second scan returns matching items
+        mock_table.return_value.scan.side_effect = [
+            {'Items': [{'timestamp': '1001'}, {'timestamp': '1002'}]},  # First scan: get timestamps
+            {'Items': [  # Second scan: get items with latest timestamp
+                {'timestamp': '1002', 'latitude': 53.3498, 'longitude': -6.2603},
+                {'timestamp': '1002', 'latitude': 51.8985, 'longitude': -8.4756}
+            ]}
+        ]
 
-        event = {}  # No query parameters needed
+        event = {}
         result = lambda_handler(event, {})
         self.assertEqual(result['statusCode'], 200)
 
-        # Parse result body
         body = json.loads(result['body'])
-        self.assertIn('coordinates', body)
         self.assertEqual(len(body['coordinates']), 2)
         self.assertEqual(body['coordinates'][0], [53.3498, -6.2603])
         self.assertEqual(body['coordinates'][1], [51.8985, -8.4756])
@@ -40,11 +38,15 @@ class TestReturnAllCoordinates(unittest.TestCase):
     @patch('functions.return_all_coordinates.lambda_function.dynamodb.Table')
     def test_lambda_handler_with_pagination(self, mock_table):
         """Test function correctly handles paginated responses from DynamoDB."""
-        # Mock paginated scan responses
+        # First scan returns paginated timestamps
+        # Then paginated scan with latest timestamp
         mock_table.return_value.scan.side_effect = [
-            {'Items': [{'latitude': 53.3498, 'longitude': -6.2603}], 'LastEvaluatedKey': 'key1'},
-            {'Items': [{'latitude': 51.8985, 'longitude': -8.4756}], 'LastEvaluatedKey': 'key2'},
-            {'Items': [{'latitude': 54.5973, 'longitude': -5.9301}]}
+            {'Items': [{'timestamp': '1001'}], 'LastEvaluatedKey': 'key1'},
+            {'Items': [{'timestamp': '1002'}]},  # Final timestamp batch
+
+            {'Items': [{'timestamp': '1002', 'latitude': 53.3498, 'longitude': -6.2603}], 'LastEvaluatedKey': 'key2'},
+            {'Items': [{'timestamp': '1002', 'latitude': 51.8985, 'longitude': -8.4756}], 'LastEvaluatedKey': 'key3'},
+            {'Items': [{'timestamp': '1002', 'latitude': 54.5973, 'longitude': -5.9301}]}
         ]
 
         event = {}
@@ -60,12 +62,13 @@ class TestReturnAllCoordinates(unittest.TestCase):
     @patch('functions.return_all_coordinates.lambda_function.dynamodb.Table')
     def test_lambda_handler_with_no_coordinates(self, mock_table):
         """Test function when no items contain latitude or longitude."""
-        mock_table.return_value.scan.return_value = {
-            'Items': [
-                {'objectID': '1', 'objectType': 'Bus'},  # Missing lat/lon
-                {'name': 'Train Station'}  # Missing lat/lon
-            ]
-        }
+        mock_table.return_value.scan.side_effect = [
+            {'Items': [{'timestamp': '1001'}, {'timestamp': '1002'}]},
+            {'Items': [
+                {'timestamp': '1002', 'objectType': 'Bus'},
+                {'timestamp': '1002', 'name': 'Train Station'}
+            ]}
+        ]
 
         event = {}
         result = lambda_handler(event, {})
@@ -78,13 +81,14 @@ class TestReturnAllCoordinates(unittest.TestCase):
     @patch('functions.return_all_coordinates.lambda_function.dynamodb.Table')
     def test_lambda_handler_with_partial_data(self, mock_table):
         """Test function when some items have lat/lon while others do not."""
-        mock_table.return_value.scan.return_value = {
-            'Items': [
-                {'latitude': 53.3498, 'longitude': -6.2603},
-                {'objectID': '1', 'objectType': 'Train'},  # No lat/lon
-                {'latitude': 54.5973}  # Missing longitude
-            ]
-        }
+        mock_table.return_value.scan.side_effect = [
+            {'Items': [{'timestamp': '1002'}]},
+            {'Items': [
+                {'timestamp': '1002', 'latitude': 53.3498, 'longitude': -6.2603},
+                {'timestamp': '1002', 'objectType': 'Train'},
+                {'timestamp': '1002', 'latitude': 54.5973}
+            ]}
+        ]
 
         event = {}
         result = lambda_handler(event, {})
