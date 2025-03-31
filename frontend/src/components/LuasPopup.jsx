@@ -89,7 +89,7 @@ const LuasPopup = ({ item, objectTitle, luasLine, toggleFavourite, favourites })
                     borderRadius: "4px"
                 }}
             >
-                Load incoming trams
+                Load inbound/outbound trams
             </button>
             <div
                 dangerouslySetInnerHTML={{__html: luasInfo}}
