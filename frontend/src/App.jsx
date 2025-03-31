@@ -201,24 +201,6 @@ function App() {
 
                     switch (item.objectType) {
                         case "IrishRailTrain":
-                            objectTitle = "Irish Rail Train: " + item.trainCode;
-                            icon = item.trainTypeFull + item.trainPunctualityStatus;
-
-                            if (item.trainStatusFull === "Terminated" || item.trainStatusFull === "Not yet running") {
-                                icon = item.trainTypeFull + "NotRunning";
-                            }
-
-                            popupContent = (
-                                <IrishRailTrainPopup
-                                    item={item}
-                                    objectTitle={objectTitle}
-                                    toggleFavourite={toggleFavourite}
-                                    favourites={favourites}
-                                />
-                            );
-
-                            markerText = item.trainPublicMessage + " " + item.trainDirection;
-
                             display =
                                 item.latitude !== "0" &&
                                 item.longitude !== "0" &&
@@ -248,9 +230,42 @@ function App() {
                                     : true) &&
                                 (showFaovouritesOnly ? favourites.IrishRailTrain.includes(item.trainCode) : true);
 
+                            if (!display) {
+                                break;
+                            }
+
+                            objectTitle = "Irish Rail Train: " + item.trainCode;
+                            icon = item.trainTypeFull + item.trainPunctualityStatus;
+
+                            if (item.trainStatusFull === "Terminated" || item.trainStatusFull === "Not yet running") {
+                                icon = item.trainTypeFull + "NotRunning";
+                            }
+
+                            popupContent = (
+                                <IrishRailTrainPopup
+                                    item={item}
+                                    objectTitle={objectTitle}
+                                    toggleFavourite={toggleFavourite}
+                                    favourites={favourites}
+                                />
+                            );
+
+                            markerText = item.trainPublicMessage + " " + item.trainDirection;
+
                             break;
 
                         case "IrishRailStation":
+                            display = item.latitude !== "0" &&
+                                item.longitude !== "0" &&
+                                (numberInputValue && userLocationAvailable
+                                    ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue
+                                    : true) &&
+                                (showFaovouritesOnly ? favourites.IrishRailStation.includes(item.trainStationCode) : true);
+
+                            if (!display) {
+                                break;
+                            }
+
                             objectTitle = item.trainStationDesc + " Train Station";
                             popupContent = (
                                 <TrainStationPopup
@@ -261,15 +276,20 @@ function App() {
                                 />
                             );
                             markerText = item.trainStationCode + " " + item.trainStationDesc;
+                            break;
+
+                        case "Bus":
                             display = item.latitude !== "0" &&
                                 item.longitude !== "0" &&
                                 (numberInputValue && userLocationAvailable
                                     ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue
                                     : true) &&
-                                (showFaovouritesOnly ? favourites.IrishRailStation.includes(item.trainStationCode) : true);
-                            break;
+                                (showFaovouritesOnly ? favourites.Bus.includes(item.busRoute) : true);
 
-                        case "Bus":
+                            if (!display) {
+                                break;
+                            }
+
                             objectTitle = item.busRouteAgencyName + ": " + item.busRouteShortName;
                             popupContent = (
                                 <BusPopup
@@ -280,15 +300,20 @@ function App() {
                                 />
                             );
                             markerText = item.busRouteAgencyName + " " + item.busRouteShortName + " " + item.busRouteLongName;
+                            break;
+
+                        case "BusStop":
                             display = item.latitude !== "0" &&
                                 item.longitude !== "0" &&
                                 (numberInputValue && userLocationAvailable
                                     ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue
                                     : true) &&
-                                (showFaovouritesOnly ? favourites.Bus.includes(item.busRoute) : true);
-                            break;
+                                (showFaovouritesOnly ? favourites.BusStop.includes(item.busStopID) : true);
 
-                        case "BusStop":
+                            if (!display) {
+                                break;
+                            }
+
                             objectTitle = item.busStopName + " Bus Stop";
                             popupContent = (
                                 <BusStopPopup
@@ -299,17 +324,9 @@ function App() {
                                 />
                             );
                             markerText = item.busStopName;
-                            display = item.latitude !== "0" &&
-                                item.longitude !== "0" &&
-                                (numberInputValue && userLocationAvailable
-                                    ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue
-                                    : true) &&
-                                (showFaovouritesOnly ? favourites.BusStop.includes(item.busStopID) : true);
                             break;
 
                         case "LuasStop":
-                            objectTitle = item.luasStopName + " Luas Stop";
-
                             let luasLine;
                             switch (item.luasStopLineID) {
                                 case "1":
@@ -324,16 +341,6 @@ function App() {
                                     luasLine = "N/A";
                             }
 
-                            popupContent = (
-                                <LuasPopup
-                                    item={item}
-                                    objectTitle={objectTitle}
-                                    luasLine={luasLine}
-                                    toggleFavourite={toggleFavourite}
-                                    favourites={favourites}
-                                />
-                            );
-                            markerText = item.luasStopIrishName + " " + item.luasStopName + " " + luasLine;
                             display = item.latitude !== "0" &&
                                 item.longitude !== "0" &&
                                 (
@@ -350,15 +357,27 @@ function App() {
                                     ? haversineDistance(userLocation, [item.latitude, item.longitude]) < numberInputValue
                                     : true) &&
                                 (showFaovouritesOnly ? favourites.LuasStop.includes(item.luasStopID) : true);
+
+                            if (!display) {
+                                break;
+                            }
+
+                            objectTitle = item.luasStopName + " Luas Stop";
+
+                            popupContent = (
+                                <LuasPopup
+                                    item={item}
+                                    objectTitle={objectTitle}
+                                    luasLine={luasLine}
+                                    toggleFavourite={toggleFavourite}
+                                    favourites={favourites}
+                                />
+                            );
+                            markerText = item.luasStopIrishName + " " + item.luasStopName + " " + luasLine;
                             break;
 
                         default:
-                            popupContent = (
-                                <div>
-                                    <h3>{item.objectType}</h3>
-                                </div>
-                            );
-                            markerText = `Unknown Object Type: ${item.objectType}`;
+                            display = false;
                     }
 
                     if (display) {
