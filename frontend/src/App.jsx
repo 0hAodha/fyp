@@ -390,7 +390,7 @@ function App() {
                             coords: [item.latitude, item.longitude],
                             popup: popupContent,
                             icon: icon,
-                            markerText: markerText.toLowerCase(),
+                            markerText: markerText.toLowerCase().replace(/[^a-zA-Z0-9]/g, ''),
                             display: true
                         });
                     }
@@ -408,7 +408,7 @@ function App() {
 
     const memoizedFilteredMarkers = useMemo(() => {
         return markers.filter(marker =>
-            marker.markerText.includes(searchTerm.toLowerCase())
+            marker.markerText.includes(searchTerm.toLowerCase().replace(/[^a-zA-Z0-9]/g, ''))
         );
     }, [searchTerm, markers]);
 
