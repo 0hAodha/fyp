@@ -7,7 +7,7 @@ const LoadingOverlay = ({ message }) => (
         background: "rgba(0, 0, 0, 0.85)", display: "flex",
         alignItems: "center", justifyContent: "center", textAlign: "center",
         color: "white", fontSize: "20px", fontWeight: "bold",
-        zIndex: 1000
+        zIndex: 100000
     }}>
         {message}
     </div>
