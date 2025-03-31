@@ -279,6 +279,11 @@ function App() {
                             break;
 
                         case "Bus":
+                            if (item.busRouteAgencyName === "" || item.busRouteLongName === "" || item.busRouteShortName === "") {
+                                display = false;
+                                break;
+                            }
+
                             display = item.latitude !== "0" &&
                                 item.longitude !== "0" &&
                                 (numberInputValue && userLocationAvailable
