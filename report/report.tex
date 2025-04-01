@@ -12,6 +12,9 @@
 % % )}
 % % \setmainfont{EB Garamond}[RawFeature={fallback=emojifallback}]
 
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{graphicx}
 \setmonofont[Scale=MatchLowercase]{Deja Vu Sans Mono}
 \usepackage[a4paper,left=2cm,right=2cm,top=\dimexpr15mm+1.5\baselineskip,bottom=2cm]{geometry}
 \setlength{\parindent}{0pt}
@@ -32,6 +35,9 @@
 \usepackage{changepage}     % adjust margins on the fly
 \usepackage{amsmath}
 \usepackage{amsmath,amssymb}
+
+\usepackage{array}
+\renewcommand{\arraystretch}{1.5}
 
 \usepackage[backend=biber, style=numeric, date=iso, urldate=iso]{biblatex}
 \addbibresource{references.bib}
@@ -689,8 +695,349 @@ When the function is fetching data, it constructs a comma-separated list of sele
 Originally, the returned data was processed using JavaScript functional array methods\supercite{arraymethods} (very superficially similar to the Java \mintinline{java}{Stream}\supercite{javastream} interface), which allow for the creation of chained operations on arrays, not dissimilar to chained shell operations using the pipe (\mintinline{shell}{|}) operator on UNIX-like systems\supercite{redhatpipe}.
 Methods like \mintinline{javascript}{.map()}, \mintinline{javascript}{.reduce()}, etc. are some of the methods covered in JavaScript functional array methods which allow data processing pipelines to be specified in a clean, elegant, \& readable manner.
 However, the price of this elegance is slower and less efficient execution:
-these array methods add extra layers of abstraction, invoke a new function per element, create intermediate arrays for each result, and (unlike their Java counterparts) do not support short-circuiting and therefore cannot break early.
-The modern JavaScript engine also is less efficient at optimising these array methods than simple \mintinline{javascript}{for}-loops.
+these array methods add extra layers of abstraction, invoke a new function per element, create intermediate arrays for each result, and (unlike their Java counterparts) do not support short-circuiting and therefore cannot break early (with the exception of the \mintinline{javascript}{.some()} \& \mintinline{js}{.many()} methods)\supercite{shortcircuit}.
+The modern JavaScript engine also is less efficient at optimising these array methods than simple \mintinline{javascript}{for}-loops\supercite{jsmethodopti}.
+Indeed, re-writing the function to use a simple \mintinline{js}{for} loop resulted in an average loading speed increase of $\sim$2 seconds when all data sources were selected. 
+\\\\
+While the data is loading, a loading overlay with a ``spinner'' icon is displayed on-screen which prevents the user from interacting with the UI, keeps the user informed of what's going on (in keeping with the first of Nielsen's 10 usability heuristics\supercite{nielsenheuristics}), prevents the user from changing any settings as the data is loaded that may cause inconsistent behaviour, and gives the perception of a smoother loading experience.
+Studies have shown that displaying a loading screen to the user instead of just waiting for the UI to update gives the impression of a faster loading speed, so much so that even longer load times with a loading screen feel faster than shorter load times without one\supercite{mdnperceivedperformance, persson2019perceived, Vladic2020LoadingAnimations}.
+\\\\
+Once the JSON response is received, each item in the response is iterated over, as described above, and the marker for each item is constructed.
+The map plotting is done with Leaflet\supercite{leaflet}, and each marker on the map consists of an array of co-ordinates, some HTML pop-up content when the marker is clicked, an icon depending on the transport type, a Boolean display variable which dictates whether or not the marker is displayed, and some markup-free \mintinline{js}{markerText} which is not part of the Leaflet API\supercite{leaflet} but added to each icon to give it some text to which the search text can be compared.
+This \mintinline{js}{markerText} is never displayed to the user, and is used solely for search \& filtering purposes;
+it is created as an additional variable instead of just using the pop-up content for searching as the pop-up content contains HTML mark-up which would have to be removed at search time to make searching possible, leading to a large number of unnecessary \& costly string-processing operations.
+Each item has a colour-coded icon depending on the type of data it represents:
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|>{\centering\arraybackslash}m{1.8cm}|m{10cm}|}
+    \hline
+    \vspace{2mm}\includegraphics[width=1cm]{../frontend/src/assets/icons/train_ontime.png}\supercite{trainicon} & On-time \& early, running Irish Rail trains\\
+    \hline
+    \vspace{2mm}\includegraphics[width=1cm]{../frontend/src/assets/icons/train_late.png}\supercite{trainicon}  & Late, running Irish Rail trains\\
+    \hline
+    \vspace{2mm}\includegraphics[width=1cm]{../frontend/src/assets/icons/train.png}\supercite{trainicon}  & Not-yet running \& terminated Irish Rail trains\\
+    \hline
+
+    \vspace{2mm}\includegraphics[width=1cm]{../frontend/src/assets/icons/DARTOnTime.png}\supercite{darticon} & On-time \& early, running DARTs\\
+    \hline
+    \vspace{2mm}\includegraphics[width=1cm]{../frontend/src/assets/icons/DARTLate.png}\supercite{darticon}  & Late, running DARTs\\
+    \hline
+    \vspace{2mm}\includegraphics[width=1cm]{../frontend/src/assets/icons/DARTnotRunning.png}\supercite{darticon}  & Not-yet running \& terminated DARTs\\
+    \hline
+
+
+    \vspace{2mm}\includegraphics[width=1cm]{../frontend/src/assets/icons/train-station.png}\supercite{trainstaitionicon} & Irish Rail stations \\
+    \hline
+
+    \vspace{2mm}\includegraphics[width=1cm]{../frontend/src/assets/icons/bus.png}\supercite{busicon} & Buses \\
+    \hline
+    \vspace{2mm}\includegraphics[width=1cm]{../frontend/src/assets/icons/bus-station.png}\supercite{busstopicon} & Bus stops \\
+    \hline
+
+    \vspace{2mm}\includegraphics[width=1cm]{../frontend/src/assets/icons/luasRed.png}\supercite{tramicon} & Red line Luas stops \\
+    \hline
+    \vspace{2mm}\includegraphics[width=1cm]{../frontend/src/assets/icons/luasGreen.png}\supercite{tramicon} & Green line Luas stops \\
+    \hline
+  \end{tabular}
+  \caption{Marker icons \& their descriptions}
+\end{table}
+
+The value of the Boolean \verb|display| variable for each function is calculated before any pop-up content or \verb|markerText| is generated, so as not to waste computational time generating information that will not be shown to the user. 
+Each \verb|objectType| has its own Boolean formula that determines whether or not an item should be shown to the user, depending on what filters they have selected.
+Each formula is constructed in such a way that expensive computations are avoided if they are unnecessary, by taking advantage of JavaScript's ability to \textbf{short-circuit} logical expressions, that is, return immediately if the left-hand side of a Boolean \verb|AND| is false\supercite{logicaland} or if the left-hand side of a Boolean \verb|OR| is true\supercite{logicalor}.
+
+
+\begin{align*}
+\text{display}_{\text{train}} =\quad
+& (\text{latitude} \neq 0) \land (\text{longitude} \neq 0) \\
+& \land \big( (\text{showMainline} \land (\text{trainType} = \text{Mainline})) \\
+& \quad\ \ \lor (\text{showSuburban} \land (\text{trainType} = \text{Suburban})) \\
+& \quad\ \ \lor (\text{showDart} \land (\text{trainType} = \text{DART})) \big) \\
+& \land \big( (\text{showRunning} \land (\text{trainStatus} = \text{Running})) \\
+& \quad\ \ \lor (\text{showNotYetRunning} \land (\text{trainStatus} = \text{Not yet running})) \\
+& \quad\ \ \lor (\text{showTerminated} \land (\text{trainStatus} = \text{Terminated})) \big) \\
+& \land \big( ((\text{trainStatus} = \text{Running}) \land \\
+& \quad\ \ \ \ ((\text{showEarly} \land (\text{trainPunctualityStatus} = \text{early})) \\
+& \quad\quad\quad\ \ \lor (\text{showOnTime} \land (\text{trainPunctualityStatus} = \text{On time})) \\
+& \quad\quad\quad\ \ \lor (\text{showLate} \land (\text{trainPunctualityStatus} = \text{late})))) \\
+& \quad\ \ \lor ((\text{trainStatus} = \text{Not yet running}) \land \text{showNotYetRunning}) \\
+& \quad\ \ \lor ((\text{trainStatus} = \text{Terminated}) \land \text{showTerminated}) \big) \\
+& \land \big( (\text{withinDistance} \land \text{userLocationAvailable}) \Rightarrow \\
+& \quad\quad\ \ \text{haversineDistance}(\text{userLocation}, [\text{latitude}, \text{longitude}]) < \text{withinDistance} \big) \\
+& \land \left( \text{showFavouritesOnly} \Rightarrow \text{trainCode} \in \text{favourites} \right)
+\end{align*}
+
+\begin{align*}
+\text{display}_{\text{station}} =\quad
+& (\text{latitude} \neq 0) \land (\text{longitude} \neq 0) \\
+& \land \big( (\text{withinDistance} \land \text{userLocationAvailable}) \Rightarrow \\
+& \quad\quad\ \ \text{haversineDistance}(\text{userLocation}, [\text{latitude}, \text{longitude}]) < \text{withinDistance} \big) \\
+& \land \left( \text{showFavouritesOnly} \Rightarrow \text{trainStationCode} \in \text{favourites} \right)
+\end{align*}
+
+\begin{align*}
+\text{display}_{\text{bus}} =\quad
+& (\text{latitude} \neq 0) \land (\text{longitude} \neq 0) \\
+& \land \big( (\text{withinDistance} \land \text{userLocationAvailable}) \Rightarrow \\
+& \quad\quad\ \ \text{haversineDistance}(\text{userLocation}, [\text{latitude}, \text{longitude}]) < \text{withinDistance} \big) \\
+& \land \left( \text{showFavouritesOnly} \Rightarrow \text{busRoute} \in \text{favourites} \right)
+\end{align*}
+
+\begin{align*}
+\text{display}_{\text{bus stop}} =\quad
+& (\text{latitude} \neq 0) \land (\text{longitude} \neq 0) \\
+& \land \big( (\text{withinDistance} \land \text{userLocationAvailable}) \Rightarrow \\
+& \quad\quad\ \ \text{haversineDistance}(\text{userLocation}, [\text{latitude}, \text{longitude}]) < \text{withinDistance} \big) \\
+& \land \left( \text{showFavouritesOnly} \Rightarrow \text{busStopID} \in \text{favourites} \right)
+\end{align*}
+
+\begin{align*}
+\text{display}_{\text{Luas stop}} =\quad
+& (\text{latitude} \neq 0) \land (\text{longitude} \neq 0) \\
+& \land \big( (\text{showGreenLine} \land (\text{luasLine} = \text{Green Line})) \\
+& \quad\ \ \lor (\text{showRedLine} \land (\text{luasLine} = \text{Red Line})) \big) \\
+& \land \big( (\text{showEnabled} \land (\text{luasStopIsEnabled} = 1)) \\
+& \quad\ \ \lor (\text{showDisabled} \land (\text{luasStopIsEnabled} = 0)) \big) \\
+& \land \big( \neg \text{showCycleAndRide} \lor (\text{showCycleAndRide} \land (\text{luasStopIsCycleAndRide} = 1)) \big) \\
+& \land \big( \neg \text{showParkAndRide} \lor (\text{showParkAndRide} \land (\text{luasStopIsParkAndRide} = 1)) \big) \\
+& \land \big( (\text{withinDistance} \land \text{userLocationAvailable}) \Rightarrow \\
+& \quad\quad\ \ \text{haversineDistance}(\text{userLocation}, [\text{latitude}, \text{longitude}]) < \text{withinDistance} \big) \\
+& \land \left( \text{showFavouritesOnly} \Rightarrow \text{luasStopID} \in \text{favourites} \right)
+\end{align*}
+
+Although the formulae may appear excessively complex at first glance, they're relatively easy to understand when broken down:
+each line is essentially a conjunction of a variable that dictates whether or not a filter is applied and a check to see if that condition is fulfilled, e.g., $(\text{showMainline} \land (\text{trainType} = \text{Mainline}))$ checks if the ``Show Mainline'' filter is applied and if the item in question fulfils that criterion.
+Each line of logic is either in conjunction or disjunction with the preceding line depending on whether or not that the filter is a \textit{permissive filter} (that is, it increases the number of items shown) or if it is a \textit{restrictive filter} (that is, it decreases the number of items shown).
+\\\\
+As can be seen in the preceding formulae, if the user location is available and the user has specified that all items must be within a certain distance of their location, each marker is checked to see if it's within range by using \textbf{Haversine distance}, which calculates the shortest distance between two points on the surface of a sphere.
+The Haversine distance formula is defined as follows\supercite{chopde2013landmark}:
+\begin{align*}
+d = 2r \cdot \arcsin \left( \sqrt{ \sin^2 \left( \frac{\Delta \phi}{2} \right) + \cos \left( \phi_1 \right) \cos \left( \phi_2 \right) \sin^2 \left( \frac{\Delta \lambda}{2} \right) } \right)
+\end{align*}
+where:
+\begin{itemize}
+  \item   $d$ is the distance between the two points,
+  \item   $r$ is the radius of the Earth ($\sim$6,371 kilometres\supercite{turcotte_earths_radius_1992}),
+  \item   $\phi_1, \phi_2$ are the latitudes of each point in radians,
+  \item   $\lambda_1, \lambda_2$ are the longitudes of each point in radians,
+  \item   $\Delta \phi = \phi_2 - \phi_1$, and
+  \item   $\Delta \lambda = \lambda_2 - \lambda_1$.
+\end{itemize}
+
+This formula was chosen as a good middle ground between accurate distance calculations and efficient computation.
+There are other distance formulae, such as Vincenty's formula\supercite{vincenty1975geodesics} which is more accurate (because it considers the Earth to be an oblate spheroid rather than sphere) but slower to compute, or Euclidean distance\supercite{smith2013precalculus} which is fast to compute, but inaccurate for points on the surface of the Earth (because it considers the points to be on flat 2D grid).
+Arguably, one could get away with using Euclidean distance, as the distances considered in this application are relatively short (covering only the island of Ireland) and in general, a user will be specifying only short distances to see services in their immediate vicinity.
+However, this approach cannot be scaled if the application scope was increased to include a broader geographical area as inaccuracies would rapidly build up, and even over the island of Ireland alone, there is potential for inconsistent behaviour due to measurement inaccuracies.  
+Haversine distance is not too computationally expensive, and guarantees a reliable degree of accuracy for the user.
+
+\subsubsection{Marker Pop-Ups}
+\begin{figure}[H]
+    \centering
+    % Row 1
+    \begin{subfigure}[c]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{./images/irishrailtrainpopup.png}
+        \caption{\texttt{IrishRailTrain} pop-up}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[c]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{./images/buspopup.png}
+        \caption{\texttt{Bus} pop-up}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[c]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{./images/busstoppopup.png}
+        \caption{\texttt{BusStop} pop-up}
+    \end{subfigure}
+
+    \vspace{0.5cm} % space between rows
+
+    % Row 2
+    \begin{subfigure}[c]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{./images/irishrailstationpopup.png}
+        \caption{\texttt{IrishRailStation} pop-up}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[c]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{./images/luasstoppopup.png}
+        \caption{\texttt{LuasStop} pop-up}
+    \end{subfigure}
+    \hfill
+
+    \caption{The 5 pop-up types}
+\end{figure}
+
+When the data is being fetched, a pop-up is created for each new marker collected, to be displayed when the marker is clicked. 
+For each \verb|objectType|, there is a separate React component for its pop-up to which the item's data is passed so that it can be rendered differently depending on the service type.
+The \verb|IrishRailTrain| pop-up, \verb|Bus| pop-up, \& \verb|BusStop| are the most similar and the simplest, as they simply display information passed into their respective components, the only variance being that different \verb|objectType|s have different fields to display.
+\\\\
+Each pop-up has a ``star'' button which, when clicked, adds the selected item to a list of the user's ``favourite'' services, which is stored as a cookie in the user's browser.
+This cookie is loaded when the main page is loaded and updated every time an item is toggled to be ``starred'' or not.
+This list of favourites is used to determine whether or not the item is displayed when the user selects ``Show favourites only'', as can be seen in the Boolean display formulae previously outlined.
+Favouriting behaves differently depending on the \verb|objectType| of the item being favourited:
+notably, buses are favourited not on a per-vehicle basis using the item's \verb|objectID|, but on a per-route basis.
+This means that if a user favourites, for example, a 401 Bus Éireann bus, every bus on this route will appear when the user applies the ``Show favourites only'' filter.
+This makes the favourites feature far more useful than it would be otherwise: users are generally interested not in a specific bus vehicle, but a specific bus route.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[c]{0.35\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{./images/favouritedbus.png}
+        \caption{Bus pop-up with bus ``favourited''}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[c]{0.6\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{./images/401busesfavourited.png}
+        \caption{Buses of the same route appearing when ``favourites only'' filter applied}
+    \end{subfigure}
+    \caption{Demonstration of the ``favourite'' functionality with buses}
+\end{figure}
+
+Train station pop-ups \& Luas stop pop-ups also have an additional button which, when clicked, fetches data about the services relating to that station.
+This is necessary for Luas stops, as Luas data is only available on a per station basis, and just an extra feature for train stations, as train data is plotted on the map regardless.
+The ``Load inbound/outbound trams'' button on the Luas stop pop-up fetches data from the \verb|/return_luas_data| API endpoint which contains the inbound and outbound trams due into that stop.
+The ``Load incoming trains'' button on the train station pop-up fetches data from the \verb|/return_station_data| API endpoint which contains the trains due into that station in the next 90 minutes.
+This information is then displayed in the pop-up itself, with a scrollbar if the information is too long to display in the pop-up without it becoming unmanageably long.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[c]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{./images/loadinboundoutbound.png}
+        \caption{Results of clicking ``Load inbound/outbound trams''}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[c]{0.38\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{./images/loadstationdata.png}
+        \caption{Results of clicking ``Load incoming trains''}
+    \end{subfigure}
+    \caption{Demonstration of the ``favourite'' functionality with buses}
+\end{figure}
+
+\subsubsection{Filters Side-Panel}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{./images/filterspanel.png}
+    \caption{Screenshot of the filters side-panel}
+\end{figure}
+
+The Boolean filter variables mentioned in the display formulae above are selected by the user in the filters side-panel, implemented as a separate (presentational) component.
+The component appears in the top-right hand corner of the screen, and can be minimised while browsing the map.
+When a user clicks ``Submit'', the \mintinline{js}{fetchData()} function is invoked with the selected filters, and these selected filters are saved as a cookie to the user's browser; 
+this cookie is loaded when the main page is first loaded, so that a user's last used filters are pre-selected for them when they open the application.
+Even the value of the ``Within KM'' number is stored as a cookie and loaded in with page load so that a user's experience is a seamless as possible between uses.
+\\\\
+The first three top-level filters determine what data sources are used: Irish Rail, Bus, and/or Luas Stops.
+If a top-level or second-level filter is deselected, all its child filters are greyed out and cannot be interacted with until all its parents are selected. 
+By default, if no cookie is stored for a user, the top-level filters are all deselected and all of their children are selected, making it as easy as possible for the user to select what they want to filter by.
+The only exception to this are the ``Must be Park \& Ride'' and the ``Must be Cycle \& Ride'' filters underneath ``Luas Stops'': these filters are more restrictive, and hide any item that does not match them, and so are not selected by default.
+\\\\
+The ``Cluster overlapping icons'' option does not change what data is shown, but how it is shown;
+by default, any items whose icons overlap one another's at the current zoom level are \textit{clustered} into a single icon that displays the number of items which are contained within it using a Leaflet plug-in called \verb|Leaflet.markercluster|\supercite{leaflet_markercluster}.
+This option toggles this behaviour, which may be desirable depending on the user's preferences, especially when only few items are being displayed in a small geographical area. 
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[c]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{./images/clusteringenabled.png}
+        \caption{Screenshot of the effects of enabling clustering}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[c]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{./images/clusteringdisabled.png}
+        \caption{Screenshot of the effects of disabling clustering}
+    \end{subfigure}
+    \caption{Effects of enabling/disabling clustering}
+\end{figure}
+
+The ``Within KM'' option accepts a number input value of the range within which an item must be for it to be displayed.
+This option only appears if the user's geographical location is available: if their browser does not support the option, or if they have rejected location access to the application, the option will not appear.
+The option can be reset to showing all items regardless of range by deleting the input to the textbox;
+if the user enters a value that doesn't make sense, such as a number $\leq$ 0, the application defaults to displaying all items regardless of distance, on the assumption that the user is either attempting to reset the filter by entering ``0'' or that they have accidentally entered a nonsensical value.
+\\\\
+A subject of much deliberation in the design process was the behaviour of the ``Submit'' button.
+It's important that the map only updates when the user asks it to so as to avoid situations where the user is looking at an item, the page refreshes automatically, and it disappears from view;
+therefore, fetching new data had to be a manually-specified process, rather than occurring automatically.
+The question of whether or not the filters should be applied as soon as they are selected or only upon a ``Submit'' also received much consideration:
+automatically updating them would minimise the amount of user interactions necessary, but to re-calculate the display value for every item when there are many being displayed could take a few seconds, and make the application unresponsive as the user makes many changes to the selected filters.
+Therefore, it was decided that the filters should only be applied when the user requests that they be applied, so that they can decide what filters to apply in a convenient \& usable way.
+Finally, there was the question of optimisations:
+if the data sources selected did not change but a display filter did (for example, the user didn't change that they wanted to look at Irish Rail Trains, but added a selection to specify only Mainline trains), should another request be made to the API endpoints?
+Not requesting new data would mean a faster loading time and a more responsive program, at the cost of showing the user potentially out-of-date data.
+It was decided that each new click of ``Submit'' should always fetch new data, to align the program as much as possible with the user's mental model of the program, in keeping with the HCI principle of \textbf{conceptual model alignment}\supercite{norman_design_2013}: the behaviour of the application should match how the user imagines it to behave.
+Users are familiar with the ``make selections, then confirm'' paradigm, and will expect the submit button to do the same thing each time (which aligns with Nielsen's usability heuristic of ``Consistency \& Standards'' and of ``speaking the user's language''\supercite{nielsenheuristics}).
+
+\subsubsection{Search Bar}
+The search bar allows the user to further refine the displayed items beyond what is possible with the filters side-panel by specifying text that should be present in the marker.
+The search is based upon a \verb|markerText| variable that is constructed for each marker as the data is fetched, consisting of the pop-up content without any formatting, upper-case characters, or non-alphanumeric characters.
+Similarly, entered search terms are made lower-case and stripped of non-alphanumeric characters to facilitate searching, and an item is deemed to match the search term if the search term occurs in the \verb|markerText|.
+This approach is relatively simplistic as search algorithms go, but is fast \& efficient, and more than suitable for this application.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{./images/searchstephens.png}
+    \caption{Screenshot of the search bar being used}
+\end{figure}
+
+Unlike the filters panel, the displayed items are automatically filtered as the user enters text, which is facilitated by the search-based filtering being separated from and less computationally complex than the side-panel based filtering.
+This allows the results to be quickly filtered in a responsive manner by the user, and makes the completion of tasks generally faster \& more responsive.
+However, updating the filtered items for every keystroke that the user enters would be wasteful, as each key entry further refines their search and they would type it regardless, and constantly re-computing which items match the search term for each keypress would result in the application becoming less responsive.
+To prevent this, the search bar employs a \textbf{debounce function}\supercite{debounce} which waits for a very short interval after the user's last keypress to start searching for the entered text;
+the search will only commence once the user has finished typing.
+Experiments with different values on different users indicated that 300 milliseconds is the ideal value for this application:
+long enough that it won't be triggered until the user pauses typing, but short enough that the gap between the user stopping typing and the search being applied is nearly imperceptible.
+\\\\
+However, if very large amounts of data are being displayed, such as in the event that the user has selected all data sources, the search can take a noticeable amount of time and make the UI sluggish \& unresponsive as the search is executed.
+To address this, if the number of items being displayed is so high that it will induce noticeably slow loading times, the debounce time is increased to 400 milliseconds to be more careful in avoiding unnecessary computations, and the loading overlay is displayed as the filtering is performed to prevent the user from being exposed to a sub-optimally performant UI.
+
+\subsubsection{Map}
+The map component itself is the presentational component in which all of the mapping \& plotting functionality is performed, implemented using the Leaflet\supercite{leaflet} mapping libraries and map tiles from OpenStreetMap\supercite{osm}.
+It receives the markers to be displayed, a Boolean determining whether clustering is enabled, and the geolocation of the user, if available.
+If the user's geolocation is available, a ``You are here'' marker is added to the map and the map is centered on those co-ordinates;
+otherwise, the map centers on the geographical centre of the island of Ireland\supercite{osi} and displays no marker.
+\\\\
+Each marker variable component passed to the map component is added to the map, and if clustering is enabled, is wrapped in a \mintinline{js}{MarkerClusterGroup} to cluster the icons together if they overlap.
+
+\section{Statistics Page}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{./images/statisiticspage.png}
+    \caption{Screenshot of the statistics page}
+\end{figure}
+
+The statistics page of the application exists to give the user a deeper insight into the data than simply live data.
+The grid layout is achieved with the use of Tailwind CSS flexbox\supercite{flexbox}.
+It consists of 6 graphs, each displaying a different statistical insight about the application data:
+\begin{itemize}
+  \item   The Service Density Heatmap displays a heatmap depicting the geographical distribution of currently-running public transport services on the island of Ireland;
+  \item   The Live Transport Types pie chart displays the proportion of \verb|objectType|s for which there is currently live location data;  
+  \item The Live Train Types pie chart displays the proportion of mainline, suburban, \& DART Irish Rail Trains currently in operation;
+  \item   The Live Train Statuses pie chart displays the proportion of running, not yet running, \& terminated trains at the present moment;
+  \item   The Live Punctuality pie chart displays the proportion of late, on-time, \& early services at the present moment.
+  \item   The Average Punctuality Over Time line graph displays how the average punctuality of services varies per collected \verb|timestamp|.
+\end{itemize}
+
+Each pie chart uses the same re-usable presentation component which accepts some data and displays it.
+Pie charts are somewhat controversial in the realm of data visualisation and are often rejected in favour of bar charts, and are only recommended to be used under certain particular situations:
+when the data being illustrated is a part-to-whole representation, when there is no more than 5 categories in the pie chart, and when there are not small differences between the categories\supercite{atlassianpiechart, spotfirepie, inforirver}.
+Since the data for this application fulfils these criteria, and because testing with bar charts resulted with more difficult to understand results (as part of the proportion), pie charts were deemed acceptable for this purpose.
+
+
+
+
+
+
+
 
 
 \printbibliography
