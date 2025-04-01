@@ -75,6 +75,8 @@
         % Title
         {\Huge \textbf{Iompar: Live Public Transport Tracking}} \\[0.5cm]
         
+        \includegraphics[width=0.3\textwidth]{../frontend/dist/ticket.png} \\[1cm]
+
         % Department and Degree
         {\Large College of Science \& Engineering} \\[0.3cm]
         {\large Bachelor of Science (Computer Science \& Information Technology)} \\[0.5cm]
@@ -84,7 +86,7 @@
 
         % Author Section
         {\Large \textbf{Author:}} \\[0.2cm]
-        {\large Andrew Hayes \\ 21321503 } \\[1cm]
+        {\large Andrew Hayes \\ Student ID: 21321503 } \\[1cm]
 
         % Supervisor Section
         {\Large \textbf{Academic Supervisor:}} \\[0.2cm]
@@ -108,25 +110,37 @@
 
 \chapter{Introduction}
 \section{Project Overview}
-\subsection{Problem Statement}
+The purpose of this project is to create a useful \& user-friendly application that can be used to track the current whereabouts \& punctuality of various forms of Irish public transport, as well as access historical data on the punctuality of these forms of transport.
+In particular, this location-tracking takes the form of a live map upon which every currently active public transport service is plotted according to its current location, with relevant information about these services and filtering options available to the user.
+\\\\
+The need for this project comes from the fact that there is no extant solution for a commuter in Ireland to track the current location and whereabouts of all the different public transport services available to them.
+There are some fragmented services that purport to display the live location of one particular mode of transport, such as the Irish Rail live map\supercite{liveir}, but this can be slow to update, displays limited information about the services, and only provides information about one form of public transport.
+\\\\
+The need for an application that tracks the live location \& punctuality of buses in particular is felt here in Galway, especially amongst students, as the ongoing housing shortage drives students to live further and further away from the university and commute in, with Galway buses often being notoriously unreliable and in some cases not even showing up, many commuters could benefit from an application that tells them where their bus actually is, not where it's supposed to be.
+\\\\
+The name of the application, ``Iompar'' (IPA: /ˈʊmˠpˠəɾˠ/), comes from the Irish word for ``transport'' but also can be used to mean carriage, conveyance, transmission, and communication\supercite{iompar_teanglann};
+it was therefore thought to be an apt name for an application which conveys live Irish public transport information to a user.
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{./images/DSCF3477.JPG}
-    \caption{Photograph of the University Road Bus Éireann information display erroring due to the clocks going back [2025--03--30]}
+    \includegraphics[width=0.3\textwidth]{../frontend/dist/ticket.png}
+    \caption{Iompar project icon\supercite{trainticket}}
 \end{figure}
 
-\subsection{Background}
-\section{Document Structure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./images/DSCF3477.JPG}
+    \caption{Photograph of a TFI display erroring due to the clocks going back [Taken: 2025--03--30]}
+\end{figure}
 
 \chapter{Research}
-\section{Introduction}
 \section{Data Sources}
 \section{Similar Services}
+
 \section{Technologies}
 \subsection{Frontend Technologies}
 \subsection{Backend Technologies}
 \subsection{Project Management Technologies}
-\section{Conclusion}
 
 \chapter{Requirements}
 \section{Functional Requirements}
@@ -669,7 +683,7 @@ This is done by separating the functionality into two classes of components:
 \begin{itemize}
   \item   \textbf{Container Components:} those which fetch the data, process it, and pass it to the presentational components which are contained by their container components, i.e., the presentational components are children of the container components.
   \item   \textbf{Presentational Components:} those which display the data it receives from the container components to the user as it is received.
-          This makes the components highly re-usable, as there isn't specific data processing handling logic within them.
+          This makes the components highly re-usable, as there isn't specific data handling logic within them.
 \end{itemize}
 
 React components are reusable, self-contained pieces of the UI which act as building blocks for the application\supercite{reactcomponents};
@@ -1030,7 +1044,10 @@ It consists of 6 graphs, each displaying a different statistical insight about t
 Each pie chart uses the same re-usable presentation component which accepts some data and displays it.
 Pie charts are somewhat controversial in the realm of data visualisation and are often rejected in favour of bar charts, and are only recommended to be used under certain particular situations:
 when the data being illustrated is a part-to-whole representation, when there is no more than 5 categories in the pie chart, and when there are not small differences between the categories\supercite{atlassianpiechart, spotfirepie, inforirver}.
-Since the data for this application fulfils these criteria, and because testing with bar charts resulted with more difficult to understand results (as part of the proportion), pie charts were deemed acceptable for this purpose.
+Since the data for this application fulfils these criteria, and because testing with bar charts resulted with more difficult to understand results (as part of the proportion), pie charts were deemed suitable for this purpose.
+
+\chapter{Evaluation}
+\chapter{Conclusion}
 
 
 
@@ -1041,4 +1058,5 @@ Since the data for this application fulfils these criteria, and because testing 
 
 
 \printbibliography
+
 \end{document}
