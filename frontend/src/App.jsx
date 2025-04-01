@@ -106,6 +106,11 @@ function App() {
 
     const handleSearchChange = (e) => {
         const value = e.target.value;
+        let timeout = 300;
+
+        if (numMarkers > 5000) {
+            timeout = 400;
+        }
 
         if (debounceTimeout.current) {
             clearTimeout(debounceTimeout.current);
@@ -113,7 +118,7 @@ function App() {
 
         debounceTimeout.current = setTimeout(() => {
             setSearchTerm(value);
-        }, 300);
+        }, timeout);
     };
 
     // calculate distance between 2 points
