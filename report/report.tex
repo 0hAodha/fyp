@@ -754,12 +754,14 @@ The frontend design is built following the Single-Page-Application (SPA)\superci
 Since there is just one initial page load, the content is dynamically updated via the DOM using JavaScript rather than by requesting new pages from the server;
 navigation between pseudo-pages is managed entirely using client-side routing for a smoother \& faster user experience since no full-page reloads are necessary.
 \\\\
-The web application is split into two ``pages'':
+The web application is split into three ``pages'':
 \begin{itemize}
   \item   The home (or map) page, which is the main page that displays live location data \& service information to the user.
           This page is where the user will spend the majority of their time, and where the majority of the functionality is delivered.
   \item   The statistics page, which is used to deliver statistical insights about the data to the user.
           This page is for providing deeper insights into the stored data on a collective basis, rather than on a per-service basis.
+
+      \item   The help page, which gives some basic usage information on how to complete basic tasks within the application, in keeping with Nielsen's usability heuristic of ``Help and Documentation''\supercite{nielsenheuristics}.
 \end{itemize}
 
 The web application follows the Container/Presentational Pattern\supercite{containerpresentational}, which enforces separation of concerns by separating the presentational logic from the application logic.
@@ -1140,6 +1142,15 @@ Each pie chart uses the same re-usable presentation component which accepts some
 Pie charts are somewhat controversial in the realm of data visualisation and are often rejected in favour of bar charts, and are only recommended to be used under certain particular situations:
 when the data being illustrated is a part-to-whole representation, when there is no more than 5 categories in the pie chart, and when there are not small differences between the categories\supercite{atlassianpiechart, spotfirepie, inforirver}.
 Since the data for this application fulfils these criteria, and because testing with bar charts resulted with more difficult to understand results (as part of the proportion), pie charts were deemed suitable for this purpose.
+
+\section{Help Page}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{./images/helppage.png}
+    \caption{Screenshot of the help page}
+\end{figure}
+
+The help page is a very simple web page that just contains questions and answers on how to perform basic tasks, such as favouriting an item or viewing real-time Luas information.
 
 \chapter{Evaluation}
 \section{Objectives Fulfilled}
