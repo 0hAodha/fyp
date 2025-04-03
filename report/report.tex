@@ -130,14 +130,14 @@ it was therefore thought to be an apt name for an application which conveys live
 The core objectives of the project are as follows:
 \begin{itemize}
     \item   Create a live map of train, DART, bus, \& Luas services in Ireland, which displays the real-time whereabouts of the service, relevant information about that particular service, and the punctuality of the service, to the extent that is possible with publicly-available data.
-    \item   Make the live map searchable to facilitate easy navigation \& use, such as allowing the user to find the particular service in which they are interested..
+    \item   Make the live map searchable to facilitate easy navigation \& use, such as allowing the user to find the particular service in which they are interested.
     \item   Provide an extensive array of filters that can be applied to the map to limit what services are displayed, including filtering by transport mode \& punctuality.
     \item   Collect \& store historical data about services and make this available to the user as relevant, either via a dashboard or via relevant predictions about the punctuality of a service based off its track record.
     \item   An easy-to-use \& responsive user interface that is equally functional on both desktop \& mobile devices.
 \end{itemize}
 
-\subsection{Additional Objectives}
-In addition to the core objectives, some additional objectives include:
+\subsection{Secondary Objectives}
+In addition to the core objectives, some secondary objectives include:
 
 \begin{itemize}
     \item   Many of those who commute by bus don't have a specific service they get on as there are a number of bus routes that go from their starting point to their destination, and therefore it would be useful to have some kind of route-based information rather than just service-based information. 
@@ -149,6 +149,17 @@ In addition to the core objectives, some additional objectives include:
     \item   Make the web application publicly accessible online with a dedicated domain name.
     \item   Port the React application to React Native and make the application run natively on both Android \& iOS devices.
     \item   Publish the native applications to the relevant software distribution platforms (Apple App Store \& Google Play Store).
+\end{itemize}
+
+\subsection{Additional Objectives}
+Some additional objectives beyond the objectives that were specified before beginning development of this project were added as the project was developed, including:
+\begin{itemize}
+    \item   Remember a user's preferences the next time they visit the page.
+    \item   Optimise the performance of the frontend to process data as fast and as efficiently as possible.
+    \item   Make the UI design comply with Nielsen's 10 Usability Heuristics\supercite{nielsenheuristics}.
+    \item   Utilise the user's geographical location to allow them to filter results by proximity to them.
+    \item   Optimise the backend to stay within the limits of AWS Free Tier\supercite{awsfree}.
+    \item   Create a CI/CD pipeline to automatically test and deploy new code.
 \end{itemize}
 
 \section{Use Cases}
@@ -609,11 +620,14 @@ One common approach to tuning the configuration of AWS Lambda functions is to us
 It works by invoking the function to be tuned multiple times across various memory allocations, recording metrics such as execution duration and cost for each configuration, and visualises the trade-off between cost and performance for each tested memory configuration, allowing the user to decide the most suitable memory allocation based on minimising cost, maximising speed, or balancing the two.
 While this is a very powerful \& useful tool for Lambda function optimisation, it was not used in this project in order to (somewhat ironically) manage costs and remain with the AWS Free Tier:
 running the tuner involves several invocations of the target Lambda function at various memory levels, and a typical tuning run involves dozens of Lambda invocations.
-With the amount of data being written to the database per Lambda run (thousands of items), this would quickly exceed the Free Tier and begin incurring costs.
+With the amount of data being written to the database per Lambda run (thousands of items), this would quickly exceed the free tier and begin incurring costs.
 While these costs would not be prohibitively high, doing so would change the nature of the project from researching \& implementing the optimal approach for this application to paying for a faster \& more performant application.
 The tuner \textit{could} be run with database writes disabled, but this would not generate meaningful results for the functions as writing to the DynamoDB database is the critical choke point for functions in this application.
 \\\\
-Instead, each function was manually tuned to be consume the least amount of resources possible by gradually incrementing the memory allocation until the function could run to completion in a reasonable amount of time.
+Instead, each function was manually tuned to consume the least amount of resources (reasonably) possible by gradually incrementing the memory allocation until the function could run to completion in what was deemed to be a reasonable amount of time (somewhat subjectively) for this application;
+for this reason, the functions could almost certainly achieve superior execution times if they were allocated more resources, but this would bring the application closer and closer to exceeding the free tier limit of 400,000 GB-seconds (allocated memory in GB $\times$ execution time in seconds).
+As this is a student project, it was decided that the backend should be optimised to avoid incurring costs:
+while it wouldn't be prohibitively expensive to pay for additional resources, it was deemed inappropriate for this project as it does not demonstrate ability in the field of computer science but ability in the field of entering one's bank card details.
 In a business setting, the costs of running AWS Lambda Power Tuning would be completely negligible (in the order of fractions of cents per function invocation), and would pay for itself in the money saved via function optimisation;
 if this project were not a student project, there is no doubt that AWS Lambda Power Tuning would be the correct way to go about optimising the function configurations.
 
@@ -1151,6 +1165,8 @@ Since the data for this application fulfils these criteria, and because testing 
 \end{figure}
 
 The help page is a very simple web page that just contains questions and answers on how to perform basic tasks, such as favouriting an item or viewing real-time Luas information.
+It is intended to be user-friendly and easy to search through; 
+this is in part facilitated through its minimalist design (achieved with TailwindCSS) which attempts to prevent the user from having to sift through irrelevant information to find out how to perform a basic task.
 
 \chapter{Evaluation}
 \section{Objectives Fulfilled}
