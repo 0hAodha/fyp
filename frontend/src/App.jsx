@@ -4,6 +4,7 @@ import Cookies from "js-cookie";
 
 import Navbar from "./components/Navbar";
 import Statistics from "./components/Statistics.jsx";
+import Help from "./components/Help.jsx";
 
 import Sidebar from "./components/Sidebar";
 import MapComponent from "./components/MapComponent";
@@ -492,6 +493,7 @@ function App() {
                     }
                 />
                 <Route path="/statistics" element={<Statistics />} />
+                <Route path="/help" element={<Help />} />
             </Routes>
         </Router>
     );

@@ -63,6 +63,20 @@ const Navbar = () => {
                     >
                         Statistics
                     </Link>
+                    <Link
+                        to="/help"
+                        style={{
+                            textDecoration: "none",
+                            color: "black",
+                            padding: "5px 10px",
+                            borderRadius: "5px",
+                            transition: "background 0.2s",
+                        }}
+                        onMouseEnter={(e) => (e.target.style.background = "rgba(0, 0, 0, 0.1)")}
+                        onMouseLeave={(e) => (e.target.style.background = "transparent")}
+                    >
+                        Help
+                    </Link>
                 </div>
         </nav>
 );
