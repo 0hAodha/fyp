@@ -200,8 +200,118 @@ Other constraints include:
     \item   API security policies which limit what kind of requests can be made and from what origin.
 \end{itemize}
 
-\chapter{Research}
+\chapter{Research \& Planning}
 \section{Similar Services}
+As background research for this project, a list of transport-tracking applications available online was compiled, with each application then being analysed to determine their positive characteristics from which inspiration should be taken and their negative characteristics which should be avoided or fixed.
+
+\subsection{Irish Rail Live Map}
+The Irish Rail Live Map\supercite{liveir} displays the current location of Irish Rail intercity, commuter, \& DART services, with clickable icons that display information about the selected service including the lateness of the train and its next stop.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{../PDD/images/irlive.png}
+    \caption{Irish Rail live map}
+\end{figure}
+
+Strengths of the Irish Rail live map that were identified include:
+\begin{itemize}
+    \item   Services can be clicked on to display a pop-up panel showing the punctuality of that service, the next stop of that service, and the stops on that service's route;
+    \item   There are basic filtering options to display a specific type of service such as DARTs;
+    \item   Bridges, level crossings, \& stations are shown on the map.
+            The stations can also be selected and information about them viewed.
+\end{itemize}
+
+Limitations of the Irish Rail live map that were identified include:
+\begin{itemize}
+    \item   The pop-up information panel covers the entire map and hides it;
+    \item   There is no search feature to find a specific service;
+    \item   The filtering options are greatly limited;
+    \item   The UI is slow and not particularly responsive;
+    \item   There is no visual distinction between the icons for different kinds of services.
+\end{itemize}
+
+\subsection{Google Maps}
+Google Maps\supercite{gmaps} is a common choice for finding the next the upcoming nearby services and route planning.
+It covers a number of different types of service, include buses \& trains.
+The mobile UI has been included here alongside the desktop UI as there is no live service information available on the desktop version of Google Maps.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[c]{0.2\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../PDD/images/gmobile.png}
+        \caption{Mobile view}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[c]{0.79\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../PDD/images/gdesk.png}
+        \caption{Desktop view}
+    \end{subfigure}
+    \caption{Google Maps mobile \& desktop views}
+\end{figure}
+
+Strengths of Google Maps include:
+\begin{itemize}
+    \item   It facilitates route determination, and can tell the user about what services they need to take to get any arbitrary location;
+    \item   The mobile version lists when services are due and how long they are expected to be delayed.
+\end{itemize}
+
+Limitations of Google Maps include:
+\begin{itemize}
+    \item   There is no live service information on the desktop version;
+    \item   Vehicle locations are not plotted on the map and thus the user cannot tell where the service actually is;
+    \item   Specific services cannot be searched for, and there is no filtering to display only a certain type of service.
+\end{itemize}
+
+\subsection{TFI Live Departures}
+The TFI Live Departures map\supercite{tfilive} shows live departure information for both bus stops and train stations.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{../PDD/images/tfi.png}
+    \caption{TFI Live Departures map}
+\end{figure}
+
+Strengths of the TFI Live Departures map include:
+\begin{itemize}
+    \item   A stop or a station can be clicked on to show a pop-up information panel that appears at the side of the screen and does not cover the map;
+    \item   There is a powerful search feature that allows the user to search by location, route, or stop number;
+    \item   If a specific route is selected, the route is highlighted on the map and its stops are plotted;
+    \item   The map is highly detailed, making it easier to find a particular location on the map and find nearby services.
+\end{itemize}
+
+Limitations of the TFI Live Departures map include:
+\begin{itemize}
+    \item   The map doesn't show the live locations of the services, it shows the stops or stations from which the services depart;
+    \item   The map has no filtering options beyond the search feature;
+    \item   The map has to be zoomed in very far to actually display the stations in that area, making the map more difficult to use \& navigate;
+    \item   It doesn't say whether or not services will be delayed or where they currently are, only saying when they are scheduled for.
+\end{itemize}
+
+\subsection{Flightradar24}
+Flightradar24\supercite{radar} is a live-tracking application for monitoring aeroplane \& helicopter flights;
+while not public transport and therefore not within the scope of this project, this application has nonetheless chosen to be included in this analysis as it is particularly good example of transport-tracking UI, and is highly successful
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{../PDD/images/flightradar.png}
+    \caption{Flightradar24 UI}
+\end{figure}
+
+Strengths of Flightradar24 include:
+\begin{itemize}
+    \item   Ability to select a given service and open a pop-up panel that displays details about that service;
+    \item   Selected services are highlighted in red on the map;
+    \item   The information panel shows the scheduled departure time, the actual departure time, the scheduled arrival time, \& the estimated arrival time;
+    \item   The information panel displays an image of the selected vehicle;
+    \item   Searching \& filtering features;
+    \item   Larger planes have larger icons on the map and helicopters have distinct icons from planes.
+\end{itemize}
+
+Limitations of Flightradar24 include:
+\begin{itemize}
+    \item   Bookmarking a vehicle requires a paid account;
+    \item   The UI contains advertisements for free users.
+\end{itemize}
+
 \section{Data Sources}
 \section{Technologies}
 \subsection{Frontend Technologies}
