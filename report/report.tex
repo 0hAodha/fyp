@@ -1106,7 +1106,9 @@ long enough that it won't be triggered until the user pauses typing, but short e
 \\\\
 However, if very large amounts of data are being displayed, such as in the event that the user has selected all data sources, the search can take a noticeable amount of time and make the UI sluggish \& unresponsive as the search is executed.
 To address this, if the number of items being displayed is so high that it will induce noticeably slow loading times, the debounce time is increased to 400 milliseconds to be more careful in avoiding unnecessary computations, and the loading overlay is displayed as the filtering is performed to prevent the user from being exposed to a sub-optimally performant UI.
-
+\\\\
+The search function makes use of the \mintinline{js}{useMemo}\supercite{usememo} React hook to cache the results of filtering the markers based off the search text, and making it so that it will only be re-calculated if the search term changes or if the markers change.
+Without \mintinline{js}{useMemo}, every re-render of the page would cause the filter function to run even if nothing had changed, which would be a huge waste of computational resources.
 \subsubsection{Map}
 The map component itself is the presentational component in which all of the mapping \& plotting functionality is performed, implemented using the Leaflet\supercite{leaflet} mapping libraries and map tiles from OpenStreetMap\supercite{osm}.
 It receives the markers to be displayed, a Boolean determining whether clustering is enabled, and the geolocation of the user, if available.
