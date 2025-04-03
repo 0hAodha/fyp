@@ -35,6 +35,7 @@
 \usepackage{changepage}     % adjust margins on the fly
 \usepackage{amsmath}
 \usepackage{amsmath,amssymb}
+\renewcommand{\thefootnote}{\alph{footnote}}
 
 \usepackage{array}
 \renewcommand{\arraystretch}{1.5}
@@ -105,9 +106,6 @@
 \setcounter{page}{1}
 \pagenumbering{arabic}
 
-% yap about mental models with regards to how filters work
-% trying to make the application work the same way the user expects it to work
-
 \chapter{Introduction}
 \section{Project Overview}
 The purpose of this project is to create a useful \& user-friendly application that can be used to track the current whereabouts \& punctuality of various forms of Irish public transport, as well as access historical data on the punctuality of these forms of transport.
@@ -127,26 +125,77 @@ it was therefore thought to be an apt name for an application which conveys live
     \caption{Iompar project icon\supercite{trainticket}}
 \end{figure}
 
+\section{Objectives}
+\subsection{Core Objectives}
+The core objectives of the project are as follows:
+\begin{itemize}
+    \item   Create a live map of train, DART, bus, \& Luas services in Ireland, which displays the real-time whereabouts of the service, relevant information about that particular service, and the punctuality of the service, to the extent that is possible with publicly-available data.
+    \item   Make the live map searchable to facilitate easy navigation \& use, such as allowing the user to find the particular service in which they are interested..
+    \item   Provide an extensive array of filters that can be applied to the map to limit what services are displayed, including filtering by transport mode \& punctuality.
+    \item   Collect \& store historical data about services and make this available to the user as relevant, either via a dashboard or via relevant predictions about the punctuality of a service based off its track record.
+    \item   An easy-to-use \& responsive user interface that is equally functional on both desktop \& mobile devices.
+\end{itemize}
+
+\subsection{Additional Objectives}
+In addition to the core objectives, some additional objectives include:
+
+\begin{itemize}
+    \item   Many of those who commute by bus don't have a specific service they get on as there are a number of bus routes that go from their starting point to their destination, and therefore it would be useful to have some kind of route-based information rather than just service-based information. 
+    \item   A feature which allows the user to ``favourite'' or save specific services such as a certain bus route.
+    \item   Implement unit testing and obtain a high degree of test coverage for the application, using a unit testing framework such as PyUnit.
+    \item   The ability to predict the punctuality of services that will be running in the coming days or weeks for precise journey planning.
+    \item   User accounts that allow the user to save preferences and share them across devices.
+    \item   User review capability that allows users to share information not available via APIs, such as how busy a given service is or reports of anti-social behaviour on that service.
+    \item   Make the web application publicly accessible online with a dedicated domain name.
+    \item   Port the React application to React Native and make the application run natively on both Android \& iOS devices.
+    \item   Publish the native applications to the relevant software distribution platforms (Apple App Store \& Google Play Store).
+\end{itemize}
+
+\section{Use Cases}
+The use cases for the application are essentially any situation in which a person might want to know the location or the punctuality of a public transport service, or to gain some insight into the historical behaviour of public transport services.
+The key issue considered was the fact that the aim of the project is to give a user an insight into the true location and punctuality of public transport: where a service actually is, not where it's supposed to be.
+The application isn't a fancy replacement for schedule information: the dissemination of scheduling information for public transport is a well-solved issue.
+Schedules can be easily found online, and are printed at bus stops and train stations, and displayed on live displays at Luas stops.
+Public transport users know when their service is \textit{supposed} to be there, what they often don't know is where it \textit{actually} is.
+The application is to bridge this gap between schedules and reality.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{./images/DSCF3477.JPG}
-    \caption{Photograph of a TFI display erroring due to the clocks going back [Taken: 2025--03--30]}
+    \caption{Photograph of a TFI display erroring due to the clocks going forward [Taken: 2025--03--30]}
+    \label{fig:tfierror}
 \end{figure}
 
-\chapter{Research}
-\section{Data Sources}
-\section{Similar Services}
+Furthermore, any existing solution that attempts to give public transport users live updates can be unreliable, slow to update, difficult to use, and only supports one type of transport which forces users to download or bookmark numerous different website and apps, and learn the different interfaces \& quirks for each.
+Figure~\ref{fig:tfierror} above is a recent example of this: the few bus stops in Galway that actually have a live information display all displayed error messages on Sunday the 30\textsuperscript{th} of March because the clocks went forward by an hour and the system broke.
+There is a need for a robust and reliable solution for public transport users who want to know where their service is.
+\\\\
+With this being said, the main use cases that were kept in mind during the design process were:
+\begin{itemize}
+    \item   A bus user waiting for their bus that hasn't shown up when it was supposed to and needs to know where it actually is so they can adjust their plans accordingly;
+    \item   A train user waiting for their train that hasn't shown up;
+    \item   A train user on a train wondering when they will arrive at their destination;
+    \item   A Luas user who wants to catch the next Luas from their nearest stop.
+\end{itemize}
 
+\section{Constraints}
+The primary constraint on this project is the availability of data.
+Different public transport providers have different APIs which provide different types of data:
+some don't provide location data, others don't provide have punctuality data, and others don't have any API at all.
+Other constraints include:
+\begin{itemize}
+    \item   API rate limits \& update frequencies;
+    \item   Cost of compute \& storage resources;
+    \item   API security policies which limit what kind of requests can be made and from what origin.
+\end{itemize}
+
+\chapter{Research}
+\section{Similar Services}
+\section{Data Sources}
 \section{Technologies}
 \subsection{Frontend Technologies}
 \subsection{Backend Technologies}
 \subsection{Project Management Technologies}
-
-\chapter{Requirements}
-\section{Functional Requirements}
-\section{Non-Functional Requirements}
-\section{Use Cases}
-\section{Constraints}
 
 \chapter{Backend Design \& Implementation}
 \begin{figure}[H]
@@ -216,11 +265,12 @@ Since this data is not temporal in nature, no timestamping of records is necessa
 ]
 \end{minted}
 \caption{Sample of the various types of items stored in the permanent data table}
+\label{listing:permanent_data}
 \end{code}
 
-Beyond what is returned for an item by its source API, two additional fields are included for each item:
+As can be seen in Listing~\ref{listing:permanent_data}, two additional fields are included for each item beyond what is returned for that item by its source API:
 the \verb|objectType| to allow for querying based on this attribute and the \verb|objectID|, an attribute constructed from an item's \verb|objectType| and the unique identifier for that item in the system from which it was sourced, thus creating a globally unique identifier for the item.
-However, this attribute is \textit{not} used as the primary key for the table;
+However (for reasons that will be discussed shortly), this attribute is \textit{not} used as the primary key for the table;
 instead, it exists primarily so that each item has a unique identifier that does not need to be constructed on the fly on the frontend, thus allowing the frontend to treat specific items in specific ways.
 An example of a use for this is the ``favourites'' functionality: a unique identifier must be saved for each item that is added to a user's favourites.
 Defining this unique identifier in the backend rather than the frontend reduces frontend overhead (important when dealing with tens of thousands of items) and also makes the system more flexible.
@@ -281,6 +331,7 @@ Since the \verb|objectID| was to be constructed regardless for use on the fronte
 \subsubsection{Transient Data Table}
 The transient data table holds the live tracking data for each currently running public transport vehicle in the country, including information about the vehicle and its location.
 Similar to the permanent data table, a unique \verb|objectID| is constructed for each item.
+A sample of the data stored in the transient data table can be seen below in Listing~\ref{listing:transient_data}:
 
 \begin{code}
 \begin{minted}[linenos, breaklines, frame=single]{json}
@@ -325,6 +376,7 @@ Similar to the permanent data table, a unique \verb|objectID| is constructed for
   },
 \end{minted}
 \caption{Sample of the various types of items stored in the transient data table}
+\label{listing:transient_data}
 \end{code}
 
 There are only two types of objects stored in the transient data table: Irish Rail Trains and Buses.
@@ -366,7 +418,7 @@ This \verb|timestamp| attribute is a UNIX timestamp in seconds which uniquely id
 Each train \& bus obtained in the same batch have the same \verb|timestamp|, making querying for the newest data in the table more efficient.
 Because the data is timestamped, old data does not have to be deleted, saving both the overhead of deleting old data every time new data is fetched, and allowing an archive of historical data to be built up over time. 
 \\\\
-Since the primary type of query ran on this table will be queries which seek to return all the items of a certain \verb|objectType| (or \verb|objectType|s) for the latest timestamp, it would be ideal if the primary key could be a combination of the two for maximum efficiency in querying;
+Since the primary type of query to be run on this table will be queries which seek to return all the items of a certain \verb|objectType| (or \verb|objectType|s) for the latest timestamp, it would be ideal if the primary key could be a combination of the two for maximum efficiency in querying;
 however, such a combination would fail to uniquely identify each record and thus would be inappropriate for a primary key.
 Instead, the primary key must be some combination of the \verb|timestamp| attribute and the \verb|objectID| attribute.
 It was decided that the partition key would be the \verb|objectID| and the sort key to be the \verb|timestamp| so that all the historical data for a given item could be retrieved efficiently.
@@ -430,7 +482,7 @@ If the \verb|objectType| were not included, this table would have to be replaced
 \\\\
 In the same vein as including the \verb|objectType| in each record, the primary key for this table was created with partition key \verb|objectType| and sort key \verb|objectID|, like in the permanent data table.
 This means that if an additional type of public transport were to be added to the table, querying based on that \verb|objectType| would be fast \& efficient by default.
-Since the primary key of a table cannot be changed once the table has been created, not using the \verb|objectType| in the primary key would meant that adding an additional public transport type to the table would require deleting the table and starting again, or at the very least the creation of an otherwise unnecessary GSI to facilitate efficient querying.
+Since the primary key of a table cannot be changed once the table has been created, not using the \verb|objectType| in the primary key would mean that adding an additional public transport type to the table would require deleting the table and starting again, or at the very least the creation of an otherwise unnecessary GSI to facilitate efficient querying.
 
 \subsubsection{Punctuality by \texttt{timestamp} Table}
 To provide historical insights such as punctuality trends over time, it is necessary to keep a record of the average punctuality for each timestamp recorded in the database.
@@ -462,8 +514,7 @@ AWS offers two main types of API functionality with Amazon API Gateway\supercite
     \item   \textbf{RESTful APIs:} for a request/response model wherein the client sends a request and the server responds, stateless with no session information stored between calls, and supporting common HTTP methods \& CRUD operations.
           AWS API Gateway supports two types of RESTful APIs\supercite{httpvsrest}:
           \begin{itemize}
-              \item   \textbf{HTTP APIs:} low latency, fast, \& cost-effective APIs with support for various AWS microservices such as AWS Lambda, and native CORS support, but with limited support for usage plans and caching.
-                      Despite what the name may imply, these APIs default to HTTPS and are RESTful in nature.
+              \item   \textbf{HTTP APIs:} low latency, fast, \& cost-effective APIs with support for various AWS microservices such as AWS Lambda, and native CORS support\footnote{\textbf{Cross-Origin Resource Sharing (CORS)} is a web browser security feature that restricts web pages from making requests to a different domain than the one that served the page, unless the API specifically allows requests from the domain that served the page\supercite{w3c-cors}. If HTTP APIs did not natively support CORS, the configuration to allow requests from a given domain would have to be done in boilerplate code in the Lambda function that handles the API requests for that endpoint, and duplicated for each Lambda function that handles API requests.}, but with limited support for usage plans and caching. Despite what the name may imply, these APIs default to HTTPS and are RESTful in nature.
               \item   \textbf{REST APIs:} older \& more fully-featured, suitable for legacy or complex APIs requiring fine-grained control, such as throttling, caching, API keys, and detailed monitoring \& logging, but with higher latency, cost, and more complex set-up \& maintenance.
           \end{itemize}
 
@@ -474,12 +525,13 @@ It was decided that a HTTP API would be more suitable for this application for t
 The API functions needed for this application consist only of requests for data and data responses, so the complex feature set of AWS REST APIs is not necessary.
 The primary drawback of not utilising the more complex REST APIs is that HTTP APIs do not natively support caching;
 this means that every request must be processed in the backend and a data response generated, meaning potentially slower throughput over time.
-However, the fact that this application relies on the newest data available to give accurate \& up-to-date location information about public transport, so the utility of caching is somewhat diminished, as the cache will expire and become out of date within minutes or even seconds of its creation.
+However, the fact that this application relies on the newest data available to give accurate \& up-to-date location information about public transport means that the utility of caching is somewhat diminished, as the cache will expire and become out of date within minutes or even seconds of its creation.
 This combined with the fact that HTTP APIs are 3.5$\times$ cheaper\supercite{apipricing} than REST APIs resulted in the decision that a HTTP API would be more suitable.
 \\\\
 It is important to consider the security of public-facing APIs, especially ones which accept query parameters: a malicious attacker could craft a payload to either divert the control flow of the program or simply sabotage functionality.
 For this reason, no query parameter is ever evaluated as code or blindly inserted into a database query;
-any interpolation of query parameters is done in such a way that they are not used in raw query strings but in parameterised expressions using the \mintinline{python}{boto3} library\supercite{boto3query}.
+any interpolation of query parameters is done in such a way that they are not used in raw query strings but in \textbf{parameterised expressions} using the \mintinline{python}{boto3} library\supercite{boto3query}.
+This means that query parameters are safely bound to named placeholder attributes in queries rather than inserted into raw query strings and so the parameters have no potential for being used to control the structure or logic of the query itself.
 The AWS documentation emphasises the use of parameterised queries for database operations, in particular for SQL databases which are more vulnerable, but such attacks can be applied to any database architecture\supercite{useparameterisedqueries}. 
 This, combined with unit testing of invalid API query parameters means that the risk of malicious parameter injection is greatly mitigated (although never zero), as each API endpoint simply returns an error if the parameters are invalid.
 
@@ -493,6 +545,7 @@ The Cross-Origin Resource Sharing (CORS) policy accepts only \verb|GET| requests
 While the API handles no sensitive data, it is nonetheless best practice to enforce a CORS policy and a ``security-by-default'' approach so that the application does not need to be secured retroactively as its functionality expands.
 If the frontend application were moved to a publicly available domain, the URL for this new domain would need to be added to the CORS policy, or else all requests would be blocked.
 
+\subsection{API Endpoints}
 \subsubsection{\texttt{/return\_permanent\_data[?objectType=IrishRailStation,BusStop,LuasStop]}}
 The \verb|/return_permanent_data| endpoint accepts a comma-separated list of \verb|objectType| query parameters, and returns a JSON response consisting of all items in the permanent data table which match those parameters.
 If no query parameters are supplied, it defaults to returning \textit{all} items in the permanent data table.
@@ -531,7 +584,38 @@ It accepts a comma-separated list of \verb|timestamp|s, and defaults to returnin
 The \verb|/return_all_coordinates| endpoint returns a JSON array of all current location co-ordinates in the transient data table for use in statistical analysis.
 
 \section{Serverless Functions}
-All the backend code \& logic is implemented in a number of serverless functions, triggered as needed.
+All the backend code \& logic is implemented in a number of \textbf{serverless functions}\supercite{hassan2021survey}, triggered as needed.
+Serverless functions are small, single-purpose units of code that run in the cloud and reduce the need to manage servers \& runtime environments.
+In contrast to a server program which is always running, serverless functions are event-driven, meaning that they are triggered by events such as API calls or invocations from other serverless functions and do not run unless triggered.
+Each serverless function is \textit{stateless}, which means that each function invocation is independent and that no state data is stored between calls;
+they are also \textit{ephemeral}, starting only when triggered and stopping when finished, running only for a short period of time.
+This means that they automatically scale up or down depending on usage, and because they only run when they need to, they are much cheaper in terms of compute time than a traditional server application.
+\\\\
+AWS Lambda\supercite{awslambda} is a serverless compute service provided by Amazon Web Services that allows for the creation of serverless functions without provisioning or managing servers.
+A Python AWS Lambda function typically consists of a single source code file with specified entrypoint function, the name of which can vary, but is typically called \verb|lambda_handler()|.
+They can be created and managed via the GUI AWS Management Console\supercite{aws_management_console} or via the AWS CLI tool\supercite{aws_cli}.
+Each Lambda function can be configured to have a set memory allocation, a timeout duration (how long the function can run for before being killed), and environment variables.
+\\\\
+Often, when a serverless application replaces a legacy mainframe application, the time \& memory needed to perform routine tasks is drastically reduced because it becomes more efficient to process events individually as they come rather than batching events together to be processed all at once;
+the high computational cost of starting up a mainframe system means that it's most efficient to keep it running and to batch process events.
+For this reason, serverless functions often require very little memory and compute time.
+This application, however, is somewhat unusual as it requires the processing of quite a large amount of data at once:
+status updates for public transport don't come from the source APIs individually for each vehicle on an event-by-event basis, but in batches of data that are updated regularly.
+Therefore, the serverless functions for this application will require more memory and more compute time to complete.
+In this context, memory and compute time have an inversely proportional relationship:
+more memory means more items can be processed quickly, thus reducing computational time, and less memory means that fewer items can be processed quickly, thus increasing the computational time.
+\\\\
+One common approach to tuning the configuration of AWS Lambda functions is to use \textbf{AWS Lambda Power Tuning}\supercite{awsPowerTuning}, an open-source tool that is designed to help optimise the memory \& power configurations for AWS Lambda functions.
+It works by invoking the function to be tuned multiple times across various memory allocations, recording metrics such as execution duration and cost for each configuration, and visualises the trade-off between cost and performance for each tested memory configuration, allowing the user to decide the most suitable memory allocation based on minimising cost, maximising speed, or balancing the two.
+While this is a very powerful \& useful tool for Lambda function optimisation, it was not used in this project in order to (somewhat ironically) manage costs and remain with the AWS Free Tier:
+running the tuner involves several invocations of the target Lambda function at various memory levels, and a typical tuning run involves dozens of Lambda invocations.
+With the amount of data being written to the database per Lambda run (thousands of items), this would quickly exceed the Free Tier and begin incurring costs.
+While these costs would not be prohibitively high, doing so would change the nature of the project from researching \& implementing the optimal approach for this application to paying for a faster \& more performant application.
+The tuner \textit{could} be run with database writes disabled, but this would not generate meaningful results for the functions as writing to the DynamoDB database is the critical choke point for functions in this application.
+\\\\
+Instead, each function was manually tuned to be consume the least amount of resources possible by gradually incrementing the memory allocation until the function could run to completion in a reasonable amount of time.
+In a business setting, the costs of running AWS Lambda Power Tuning would be completely negligible (in the order of fractions of cents per function invocation), and would pay for itself in the money saved via function optimisation;
+if this project were not a student project, there is no doubt that AWS Lambda Power Tuning would be the correct way to go about optimising the function configurations.
 
 \subsubsection{\mintinline{python}{fetch_permanent_data}}
 The \verb|fetch_permanent_data| Lambda function is used to populate the permanent data table.
@@ -551,7 +635,7 @@ This makes little difference to the data processing however, as downloading a fi
 The function runs asynchronously with a thread per type of data being fetched (train station data, Luas stop data, and bus stop \& route data), and once each thread has completed, batch uploads the data to the permanent data table, overwriting its existing contents.
 
 \subsubsection{\mintinline{python}{fetch_transient_data}}
-The \verb|fetch_transient_data| function operates much like the \verb|fetch_transient_data| function, but instead updates the contents of the transient data table.
+The \verb|fetch_transient_data| function operates much like the \verb|fetch_permanent_data| function, but instead updates the contents of the transient data table.
 It runs asynchronously, with a thread per API being accessed to speed up execution;
 repeated requests to an API within a thread are made synchronously to avoid overloading the API.
 For example, retrieving the type (e.g., Mainline, Suburban, Commuter) of the trains returned by the Irish Rail API requires three API calls:
@@ -561,14 +645,14 @@ Instead, the function queries each type of train individually, and adds the type
 \\\\
 Additionally, the \verb|return_punctuality_by_objectID| function is called when processing the train data so that each train's average punctuality can be added to its data for upload.
 Somewhat unintuitively, it transpired that the most efficient way to request this data was to request all data from the punctuality by \verb|objectID| data table rather than individually request each necessary \verb|objectID|;
-this means that much of the data returned is redundant, as many of the trains whose punctualities are returned are not running at the time and so will not be uploaded, but it means that the function is only ran once, and so only one function invocation, start-up, database connection, and database query have to be created.
+this means that much of the data returned is redundant, as many of the trains whose punctualities are returned are not running at the time and so will not be uploaded, but it means that the function is only run once, and so only one function invocation, start-up, database connection, and database query have to be created.
 It's likely that if bus punctuality data were to become available in the future, this approach would no longer be the most efficient way of doing things, and instead a \verb|return_punctuality_by_objectType| function would be the optimal solution.
 \\\\
 The bus data API doesn't return any information about the bus route beyond a bus route identifier, so the permanent data table is queried on each run to create a dictionary (essentially a Python hash table\supercite{pythondict}) linking bus route identifiers to information about said bus route (such as the name of the route).
 As the bus data is being parsed, the relevant bus route data for each vehicle is inserted.
 Once all the threads have finished executing, the data is uploaded in a batch to the transient data table, with each item timestamped to indicate which function run it was retrieved on.
 \\\\
-This function is ran as part of an \textbf{AWS Step Function} with a corresponding Amazon EventBridge schedule (albeit disabled at present).
+This function is run as part of an \textbf{AWS Step Function} with a corresponding Amazon EventBridge schedule (albeit disabled at present).
 A step function is an AWS service which facilitates the creation of state machines consisting of various AWS microservices to act as a single workflow.
 The state machine allows multiple states and transitions to be defined, with each state representing a step in the workflow and the transitions representing how the workflow moves from one state to another and what data is transferred.
 Step functions have built-in error handling and retry functionality, making them extremely fault-tolerant for critical workflows.
@@ -667,7 +751,7 @@ It also accepts a single parameter (\verb|stationCode|) and makes a request to t
 
 \chapter{Frontend Design \& Implementation}
 The frontend design is built following the Single-Page-Application (SPA)\supercite{spa} design pattern using the React Router\supercite{reactrouter} library, meaning that the web application loads a single HTML page and dynamically updates content as the user interacts with the application, without reloading the webpage. 
-Since there is just one initial page load, the content is dynamically updated via the DOM using JavaSript rather than by requesting new pages from the server;
+Since there is just one initial page load, the content is dynamically updated via the DOM using JavaScript rather than by requesting new pages from the server;
 navigation between pseudo-pages is managed entirely using client-side routing for a smoother \& faster user experience since no full-page reloads are necessary.
 \\\\
 The web application is split into two ``pages'':
@@ -688,6 +772,15 @@ This is done by separating the functionality into two classes of components:
 
 React components are reusable, self-contained pieces of the UI which act as building blocks for the application\supercite{reactcomponents};
 they can receive properties from their parent components, manage their own internal state, render other components within themselves, and respond to events.
+\\\\
+The Container/Presentational pattern can be contrasted with other design patterns for UI design such as the Model-View-Controller (MVC) pattern\supercite{reenskaug2003mvc}:
+in many ways, the containers of the Container/Presentational pattern as a collective can be thought of as analogous to the controller of the MVC pattern, and the presentational components as analogous to the view.
+The key difference between the two patterns is that the Container/Presentational pattern defines only the architecture of the frontend layer, and does not dictate how the backend ought to be laid out;
+the MVC pattern defines the architecture of the entire application and so the backend (the model) is necessarily \textit{tightly coupled}\supercite{mcnatt2001coupling} with the frontend layer (the view) by means of the controller.
+Therefore, updating the backend code will most likely necessitate updating the frontend code (and vice-versa).
+For this reason, MVC is most commonly used for applications in which the backend \& the frontend are controlled by the same codebase, and especially for application in which the frontend rendering is done server-side.
+The Container/Presentational pattern, however, is \textit{loosely coupled}\supercite{mcnatt2001coupling} with the backend and therefore the frontend \& the backend can be updated almost independently of one another as long as the means \& format of data transmission remain unchanged, thus making development both faster \& easier, and mitigating the risk of introducing breaking changes.
+The Container/Presentational pattern lends itself particularly well to React development, as React code is rendered client-side and makes extensive use of components: the Container/Presentational pattern just ensures that this use of components is done in a way that is logical \& maintainable.
 
 \section{Main Page}
 \begin{figure}[H]
@@ -1047,6 +1140,10 @@ when the data being illustrated is a part-to-whole representation, when there is
 Since the data for this application fulfils these criteria, and because testing with bar charts resulted with more difficult to understand results (as part of the proportion), pie charts were deemed suitable for this purpose.
 
 \chapter{Evaluation}
+\section{Objectives Fulfilled}
+\section{Heuristic Evaluation: Nielsen's 10}
+\section{User Evaluation}
+
 \chapter{Conclusion}
 
 
