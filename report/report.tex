@@ -387,7 +387,38 @@ The simplified structure means that they can be very high performance for simple
 \\\\
 For this application, data is semi-structured and varies greatly by API source.
 The data is updated very frequently, which would require many \mintinline{sql}{JOIN} operations or schema migrations for a normalised relational database.
-Non-relational databases, on the other hand, offer flexibility for heterogeneous transport data with different attributes, are more suitable for real-time data ingestion \& retrieval due to low-latency reads \& writes, and can support on-demand scaling without the need for the manual intervention required by relational databases to be scaled up.
+Non-relational databases, on the other hand, offer flexibility for heterogeneous transport data with different attributes, are more suitable for real-time data ingestion \& retrieval due to low-latency reads \& writes, and can support on-demand scaling without the need for the manual intervention required by relational databases to be scaled up;
+a non-relational database structure was selected for this reason.
+\\\\
+AWS offers several non-relational database services, each of which is optimised for a different use case\supercite{awsdatabases}:
+\begin{itemize}
+    \item   \textbf{Amazon DynamoDB}\supercite{dynamodb} is a fully-managed, serverless No-SQL database designed for low-latency, high-throughput workflows that supports storing data as key-value pair or as JSON-like documents.
+            Key features of DynamoDB include the choice between on-demand or provisioned capacity, global tables for replication across multiple geographic regions, and fine-grained access control with Amazon Identity and Access Management (IAM).
+
+    \item   \textbf{Amazon DocumentDB}\supercite{documentdb} is a fully-managed, document-based database using JSON-like BSON with MongoDB compatibilities, designed for applications using MongoDB APIs.
+            However, unlike DynamoDB, it is not fully serverless, and is instead a managed cluster-based service that must be provisioned \& scaled manually.
+
+    \item   \textbf{Amazon ElastiCache}\supercite{elasticache} is an in-memory data store for extremely fast caching (sub-millisecond response times) and changing data, with data stored only per session.
+            However, it cannot be used for persistent data storage, making it insufficient as a sole database service for this application.
+
+    \item   \textbf{Amazon Neptune}\supercite{neptune} is a managed database for storing \& querying relationships using graph models, generally used for recommendation engines \& knowledge graphs and therefore not suitable for this application.
+
+    \item   \textbf{Amazon Timestream}\supercite{timestream} is a time-series database that is purpose-built for the storage and analysis of time-series data, i.e., timestamped data.
+            This would be a good choice for the historical analysis side of this application, but inappropriate for real-time data.
+
+    \item   \textbf{Amazon OpenSearch service}\supercite{opensearch} is a distributed full-text search \& analytics engine based upon Elasticsearch that supports advanced filtering, sorting, \& ranking of query results on an \textit{ad-hoc} basis by default and supports JSON document ingestion.
+            However, the higher querying flexibility comes at the cost of higher-latency queries, making it less appropriate for real-time data.
+\end{itemize}
+
+DynamoDB was chosen for the database service due to its suitability for the data being processed, its scalability, and its low-latencies.
+
+\subsubsection{Programming Language}
+AWS Lambda functions officially support many programming languages, including Node JS, Python, Java, C\#, \& Go;
+custom runtime environments can also be created, making practically any language usable within AWS Lambda functions with some effort.
+Due to previous experience with these programming languages, the main options considered for this project were Node JS, Python, \& Java:
+
+
+
 
 
 \subsection{Frontend Technologies}
@@ -853,10 +884,6 @@ The tuner \textit{could} be run with database writes disabled, but this would no
 \\\\
 Instead, each function was manually tuned to consume the least amount of resources (reasonably) possible by gradually incrementing the memory allocation until the function could run to completion in what was deemed to be a reasonable amount of time (somewhat subjectively) for this application;
 for this reason, the functions could almost certainly achieve superior execution times if they were allocated more resources, but this would bring the application closer and closer to exceeding the free tier limit of 400,000 GB-seconds (allocated memory in GB $\times$ execution time in seconds).
-As this is a student project, it was decided that the backend should be optimised to avoid incurring costs:
-while it wouldn't be prohibitively expensive to pay for additional resources, it was deemed inappropriate for this project as it does not demonstrate ability in the field of computer science but ability in the field of entering one's bank card details.
-In a business setting, the costs of running AWS Lambda Power Tuning would be completely negligible (in the order of fractions of cents per function invocation), and would pay for itself in the money saved via function optimisation;
-if this project were not a student project, there is no doubt that AWS Lambda Power Tuning would be the correct way to go about optimising the function configurations.
 
 \subsubsection{\mintinline{python}{fetch_permanent_data}}
 The \verb|fetch_permanent_data| Lambda function is used to populate the permanent data table.
