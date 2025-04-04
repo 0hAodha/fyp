@@ -142,12 +142,12 @@ In addition to the core objectives, some secondary objectives include:
 \begin{itemize}
     \item   Many of those who commute by bus don't have a specific service they get on as there are a number of bus routes that go from their starting point to their destination, and therefore it would be useful to have some kind of route-based information rather than just service-based information. 
     \item   A feature which allows the user to ``favourite'' or save specific services such as a certain bus route.
-    \item   Implement unit testing and obtain a high degree of test coverage for the application, using a unit testing framework such as PyUnit.
+    \item   Implement unit testing and obtain a high degree of test coverage for the application, using a unit testing framework such as PyUnit\supercite{pyunit}.
     \item   The ability to predict the punctuality of services that will be running in the coming days or weeks for precise journey planning.
     \item   User accounts that allow the user to save preferences and share them across devices.
     \item   User review capability that allows users to share information not available via APIs, such as how busy a given service is or reports of anti-social behaviour on that service.
     \item   Make the web application publicly accessible online with a dedicated domain name.
-    \item   Port the React application to React Native and make the application run natively on both Android \& iOS devices.
+    \item   Port the React\supercite{react} application to React Native\supercite{native} and make the application run natively on both Android \& iOS devices.
     \item   Publish the native applications to the relevant software distribution platforms (Apple App Store \& Google Play Store).
 \end{itemize}
 
@@ -192,12 +192,13 @@ With this being said, the main use cases that were kept in mind during the desig
 \section{Constraints}
 The primary constraint on this project is the availability of data.
 Different public transport providers have different APIs which provide different types of data:
-some don't provide location data, others don't provide have punctuality data, and others don't have any API at all.
+some don't provide location data, others don't provide punctuality data, and others don't have any API at all.
 Other constraints include:
 \begin{itemize}
     \item   API rate limits \& update frequencies;
     \item   Cost of compute \& storage resources;
-    \item   API security policies which limit what kind of requests can be made and from what origin.
+    \item   API security policies which limit what kind of requests can be made and from what origin;
+    \item   Availability of live data for certain geographical locations.
 \end{itemize}
 
 \chapter{Research \& Planning}
@@ -313,10 +314,126 @@ Limitations of Flightradar24 include:
 \end{itemize}
 
 \section{Data Sources}
+\subsection{Irish Rail API}
+Live train data, including DART information, can be sourced from the Irish Rail Realtime API\supercite{irishrailapi}.
+This is a mostly RESTful-like  API which seems to be a legacy hybrid between REST\supercite{fielding2000rest} (Representational State Transfer) and SOAP\supercite{box2000soap} (Simple Object Access Protocol): unlike SOAP, it accepts HTTP \verb|GET| requests instead of a HTTP \verb|POST| of an XML envelope containing the request, but it doesn't use resource-based URLs and returns a namespaced XML response instead of plain XML.
+Nonetheless, it can be interacted with in more or less the same way as one would a REST API to obtain data.
+It provides a number of endpoints, with the relevant endpoints to this project being:
+\begin{itemize}
+    \item   \verb|/getAllStationsXML| and \verb|getAllStationsXML_WithStationType?StationType=<A,M,S,D>| which returns information about Irish Rail stations including latitude \& longitude.
+    \item   \verb|/getCurrentTrainsXML| and \verb|/getCurrentTrainsXML_WithTrainType?=<A,M,S,D>| which returns information about all the currently running trains (with latitude \& longitude), including trains that are due to depart within 10 minutes of the query time.
+    \item   \verb|/getStationDataByCodeXML?StationCode=<station_code>| which returns the trains due to serve the station in question in the next 90 minutes.
+\end{itemize}
+
+The documentation page for the API warns that some areas are not fully supported for real-time information due to the central signalling system being subject to ``ongoing work to support this real-time facility'' and that, in the case that a train is in an area of the rail system where real-time data is unavailable, the scheduled data for the train will be returned instead.
+The extent to which coverage of real-time data is available today is unclear, as the API documentation page has not been updated since the 8\textsuperscript{th} of December 2015 at the very latest\supercite{irishrail-api-archive} (although a more realistic estimate would be 2011 based off example dates used in the documentation) and so is now likely nearly a decade out-of-date, but this does not affect how the data will have to be processed very much;
+since the scheduling information is just returned in the absence of real-time data, this can be treated as a best approximation of the real-time data and does not need to be handled differently.
+
+\subsection{Luas API}
+The Luas API\supercite{luasapi} is an XML-over-HTTP API with a REST-like interface that provides real-time updates of expected Luas arrivals for a given Luas stop, based upon the location data of the trams from their Automatic Vehicle Location System (AVLS).
+No location data about individual trams is made publicly available;
+instead each stop must be queried individually using the \verb|/get.ashx?action=forecast&stop=<stop_code>| endpoint, which returns an XML file with a list of all inbound \& outbound trams due into that stop.
+
+\subsection{NTA GTFS API}
+The National Transport Authority (NTA) provides a General Transit Feed Specification (GTFS)\supercite{gtfs} REST API named GTFS-Realtime\supercite{gtfsapi} which provides real-time location data about buses operating in Ireland.
+GTFS is a standardised format for public transport schedules \& associated geographic information that provides both static data (such as timetables, routes, \& stop locations) and real-time data (such as live location data).
+The static GTFS feed is made up of comma-separated value files (as is standard) and the real-time data is returned in JSON format from the REST API endpoint \verb|gtfsr/v2/Vehicles[?format=json]|.
+It is free to use, but requires an API key for access.
+
 \section{Technologies}
-\subsection{Frontend Technologies}
 \subsection{Backend Technologies}
-\subsection{Project Management Technologies}
+\subsubsection{Server-Based versus Serverless Architectures}
+The first choice to be made for the backend technologies for this project was whether the backend should be designed using a server-based or serverless architecture. 
+A traditional server-based model was initially considered, either running on its own dedicated hardware or making use of a Virtual Private Server (VPS)\supercite{AWS:VPS} but was ultimately rejected.
+A server-based architecture requires extensive management of infrastructure, including the provisioning of hardware, system administration, and maintenance of the server application itself.
+Despite extensive personal experience with Linux-based and UNIX-like operating systems, the ongoing administration of a server would distract from the development of the application itself, and would be very difficult to scale to make the application available to a large number of users.
+While scaling issues could be partially mitigated with the utilisation of containerisation and a server-based microservices architecture\supercite{IBM:Microservices, AWS:Microservices} using technologies such as Docker\supercite{DockerEngineDocs}, it would nonetheless take a large amount of administrative effort to scale the application as usage demands grew.
+\\\\
+In contrast, serverless architectures\supercite{digitalocean_serverless_2023, google_serverless_2025, aws_serverless_2025} abstract away these infrastructure concerns, allowing the focus of the project to be solely on the application logic.
+Since serverless functions are invoked on demand and billing for serverless models is based solely upon the usage, serverless architectures are generally much more cost-effective for the workloads with variable or intermittent traffic that would be expected for a user-facing application such as this one.
+The serverless model lends itself especially well to a microservices architecture, which allows the system to broken into small, independent services responsible for their own pieces of functionality, with each microservice being independently deployable and scalable.
+Instead of establishing or purchasing server infrastructure in advance, a serverless architecture can automatically scale up or down to meet the demand put upon it, preventing outages when large strain is put upon the service and preventing excessive financial or computational costs when there is low usage;
+the issue of over-provisioning or under-provisioning of compute resources is entirely circumvented, and the need for load balancers is eliminated entirely.
+Serverless functions support event-driven architecture, making them a natural fit for a system that must react to user demands as they occur.
+Furthermore, the fast time-to-production of serverless architectures results in faster iteration \& experimentation, easier integration into CI/CD pipelines for continuous delivery, and simplifies rollbacks (should they be necessary) by deploying only small, isolated units, all without the need to spin up servers or configure deployment environment.
+\\\\
+The ephemeral nature of serverless functions makes them highly fault-tolerant, as an error in a function execution will only affect that execution, whereas an improperly handled error in a server architecture could, in the very worst-case scenario, bring the entire system down and require a reboot.
+Moreover, although not especially relevant for this project as it does not handle sensitive data, the attack surface for a serverless architecture is much smaller and there is no need to manually configure server patches or firewall rules, as these are handled by the serverless provider.
+For these reasons, a serverless architecture was chosen for this project.
+
+\subsubsection{Serverless Platforms}
+A number of serverless platforms were considered for this project, including Amazon Web Services (AWS)\supercite{aws}, Google Cloud\supercite{googlecloud}, Microsoft Azure\supercite{azure}, and Cloudflare\supercite{cloudflare}.
+While these platforms have innumerable differences, and are better and worse suited for different applications, a brief overview of their strengths \& weaknesses as considered for this project is as follows:
+\begin{itemize}
+    \item   AWS has a mature \& extensive ecosystem with broad service integration and a generous free tier, but its complexity can result in a steeper learning curve and a more complex initial set-up.
+    \item   Google Cloud has a simpler set-up, and tight integration with Firebase \& Google APIs along with a similarly generous free tier, but fewer advanced features, less control over configuration, and a less extensive ecosystem.
+    \item   Microsoft Azure has a deep integration with the Microsoft ecosystem such as SQL server\supercite{azuresql}, but less community support and a steep learning curve for non-Windows developers.
+    \item   Cloudflare has extremely low latency, excellent support for edge computing\supercite{ibm_edge_computing} (running on servers geographically close to users), and is great for lightweight apps, but has extremely limited memory and runtime, making it unsuitable for heavy backend logic.
+            Its database \& storage solutions are also not as mature or as scalable as comparable solutions.
+\end{itemize}
+
+AWS and Google cloud offer the most generous free tiers, while Cloudflare has very tight limits (CPU time is limited to 10ms maximum in the free tier\supercite{cloudflareworkers}) and thus is only suitable for very lightweight tasks, not the kind of extensive data processing that this application will be engaging in.
+Therefore, AWS was chosen as the serverless platform for this project as it is was deemed to be the most flexible \& affordable option.
+
+\subsubsection{Relational versus Non-Relational Databases}
+AWS offers a wide array of relational and non-relational database services, so the next choice was between a relational \& non-relational database.
+\textbf{Relational databases} store data in tables using fixed schemata consisting of rows \& columns, and use SQL for querying;
+relationships between tables are strictly enforced with the use of foreign keys.
+These rigid, pre-defined schemata are excellent for data integrity \& relational consistency, and are suitable for applications in which relationships between entities are complex and querying across those relationships is common.
+\\\\
+\textbf{Non-relational databases} store data in more flexible formats, such as key-value pairs, JSON documents, or graphs.
+They are more suitable to scaling horizontally and for handling unstructured or semi-structured data.
+The simplified structure means that they can be very high performance for simple read/write patterns, and are ideal for applications that handle large volumes of fast-changing or unstructured data.
+\\\\
+For this application, data is semi-structured and varies greatly by API source.
+The data is updated very frequently, which would require many \mintinline{sql}{JOIN} operations or schema migrations for a normalised relational database.
+Non-relational databases, on the other hand, offer flexibility for heterogeneous transport data with different attributes, are more suitable for real-time data ingestion \& retrieval due to low-latency reads \& writes, and can support on-demand scaling without the need for the manual intervention required by relational databases to be scaled up.
+
+
+\subsection{Frontend Technologies}
+
+\section{Project Management}
+\textbf{Agile methodologies}\supercite{agile} were employed throughout this project to facilitate iterative development with continuous feedback \& adaptation:
+Agile is a development approach which divides work into phases, emphasising continuous delivery \& improvement.
+Tasks are prioritised according to importance \& dependencies, and are approached in a flexible manner so that approaches could be adjusted if something isn't working as intended.
+Progress was reflected upon regularly, with areas for improvement being identified and plans adjusted accordingly.
+Automated CI/CD pipelines were employed to streamline development, and to ensure that new changes never broke existing functionality.
+Progress was tracked in a Markdown diary file, and a physical Kanban\supercite{kanban} board with Post-It notes was used to track planned work, in progress work, \& completed work.
+\\\\
+The principles of \textbf{clean coding}\supercite{martin2008cleancode} (famously put forward by Robert ``Uncle Bob'' Martin) were also employed to ensure that all code written was easy to read, understand, \& maintain.
+Key principles of clean coding involve ensuring that the code is readable with meaningful function \& variable names, ensuring that the code is simple \& concise with each function doing one thing only and doing that thing well, using consistent naming conventions, and employing the Don't Repeat Yourself (DRY) principle which involves the avoidance of duplicated code by creating re-usable functions \& modules.
+Code should be structured in a way that is meaningful, and should have proper comments \& documentation where necessary;
+comments should only explain \textit{why} something is done, not \textit{what} it does as properly written clean code should be self-explanatory.
+Code should also be written in a way that lends itself easily to unit testing, and should be refactored to make testing as simple as possible rather than making the tests more complicated;
+if the code is decomposed into functions properly, it should be easier to test, upgrade, \& maintain.
+\\\\
+Proper functional decomposition also results in code that is less tightly coupled in to specific libraries, platforms, or services, making it more flexible \& easier to port to different services if needs be.
+With proper separation of concerns, each function has a single responsibility and so dependencies can be isolated, and abstraction layers can prevent direct dependency on a specific implementation;
+if a function is abstracted properly switching libraries or services requires fewer changes and in fewer places.
+Isolated functions are also easier to test with mock functions, reducing reliance on real services during unit testing.
+
+\subsection{Version Control}
+Any software development project of substantial size should make use of version control software, and Git\supercite{git} was chosen for this project due to its ubiquitousness and extensive personal experience with the software.
+GitHub\supercite{github} was chosen as the hosting platform for the Git repository, again largely due to its ubiquitousness and extensive personal experience, but also because of its excellent support for CI/CD operations with GitHub Actions\supercite{githubactions}.
+The decision was made to keep all relevant files for this project, including frontend code, backend code, and document files in a single monolithic repository (monorepo) for ease of organisation, a simplified development workflow, and easier CI/CD set-up.
+While this is not always advisable for very large projects where multiple teams are collaborating, or projects in which the backend and frontend are truly independent of one another and are developed separately, this works well for projects like this one where development is done by a single individual or a small team\supercite{brito2018monorepos}, and is even used on very large projects where unified versioning and simplified dependency management are of paramount importance, such as at Google\supercite{potvin2016google}.
+\\\\
+Commits to this repository were made in adherence with the philosophy of \textit{atomic commits}, meaning that each commit represents a single, logical change:
+commits are kept as small as reasonably possible, and are made very frequently.
+This makes the Git history easier to read, understand, \& revert if needed, makes debugging easier, keeps changes isolated and understandable, and reduces merge conflicts.
+This is the generally accepted best practice, as bundling unrelated changes into a single commit can make review, reversion, \& integration of these commits much more difficult\supercite{dias2015untangling}.
+\\\\
+Meaningful commit messages are of great importance when using version control software, and even more so when making atomic commits as there will be a very large volume of commits \& commit messages.
+For this reason, a custom scoped commit message convention was chosen, where each commit message follows the format \verb|[scope]: Details of commit|, where the \verb|scope| can be \verb|[frontend]| for changes to frontend code, \verb|[backend]| for backend code, \verb|[report]| for changes to the {\LaTeX} project report files, and so on.
+This ensure consistency \& clarity in commit messages, and the strict formatting of the messages make it easy to parse commit messages in a script should that be necessary.
+Recent examples of commit messages to the GitHub repository can be seen in Figure~\ref{fig:reposs} below.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{./images/reposs.png}
+    \caption{Screenshot of the repository files on GitHub}
+    \label{fig:reposs}
+\end{figure}
 
 \chapter{Backend Design \& Implementation}
 \begin{figure}[H]
@@ -871,6 +988,62 @@ It simply accepts a \verb|luasStopCode| parameter, and makes a request to the Lu
 \subsubsection{\mintinline{python}{return_station_data}}
 Like \verb|return_luas_data|, the \verb|return_station_data| is a proxy for the Irish Rail API so that requests can be made as needed from the client's browser to get data about incoming trains due into a specific section without running afoul of Irish Rail's CORS policy.
 It also accepts a single parameter (\verb|stationCode|) and makes a request to the relevant endpoint of the Irish Rail API, and returns the response (parsed from XML to JSON).
+
+\section{CI/CD Pipeline}
+\subsection{Unit Tests}
+As the code for each Lambda function was written, so too were corresponding PyUnit\supercite{pyunit} unit tests for that function to ensure that the function was working as expected, that edge cases were covered, and to indicate if functionality was broken when updates were made.
+Indeed, this often proved invaluable, as the unit tests revealed on multiple occasions edge cases that were not handled properly, such as the handling of the API responses when only a single item was returned.
+Without the utilisation of unit testing, it's likely that these issues would have gone unnoticed in the codebase until they caused an error in deployment, which could have lead to Lambda function crashes, inconsistent database data, and wasted developer time spent on debugging the application.
+\\\\
+These PyUnit tests are run using \mintinline{python}{pytest}\supercite{pytest} which automatically discovers Python test files in a given directory and can generate code coverage reports.
+While PyUnit tests can be run with \mintinline{shell}{python -m unittest}, \mintinline{python}{pytest} makes it easier to run the tests and can generate coverage reports automatically.
+\mintinline{python}{pytest} also allows for unit tests to be specified in its own non-standard format alongside to the standard PyUnit format, but this was not used in an effort to keep the tests as standard and as homogeneous as possible.
+\\\\
+A statement coverage of 70\% was selected to be aimed for when writing tests for this application;
+this is a high degree of test coverage, but allows the tests to focus on testing the core logic of the application rather than boilerplate code and allows for interactions with third-party services that cannot be fully covered by testing and instead have to be mocked\supercite{pyunitmock}.
+The actual total coverage achieved is 85\%, which exceeds this minimum value and ensures that the application is well-covered with test cases.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{./images/testcoverage.png}
+    \caption{Screenshot of (some of) the results from the HTML coverage report generated}
+\end{figure}
+
+\subsection{CI/CD}
+To run the unit tests automatically, a GitHub Workflow\supercite{workflow} was created.
+This workflow is triggered when a pull request to merge code into the \verb|main| Git branch is opened, or when code is pushed to the \verb|main| branch.
+Since the Git repository used for this project is a monorepo containing all code files for the project, not just the backend Python files, many of the commits to this repository will not require re-running the unit tests, as the Python code will not have changed;
+therefore, the workflow only runs if the changes have been made to a \verb|*.py| file.
+
+\begin{code}
+\begin{minted}[linenos, breaklines, frame=single]{yaml}
+name: Continuous Integration / Continuous Deployment
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "**.py"
+  push:
+    branches:
+      - main
+    paths:
+      - "**.py"
+\end{minted}
+\caption{Snippet of the \texttt{ci.yml} workflow file}
+\end{code}
+
+The workflow consists of two ``jobs'':
+\begin{itemize}
+    \item   The \verb|test| job installs the necessary dependencies and runs the unit tests, generating coverage reports in both XML and HTML and uploading these as artifacts\supercite{artifacts} (a way to share data from a GitHub workflow run).
+    \item   The \verb|deploy| job runs only on pushes to \verb|main| (including direct pushes and merges of pull requests).
+            It installs AWS CLI\supercite{aws_cli} and sets the AWS credentials using GitHub Secrets\supercite{githubsecrets} which allow for sensitive information such as environment variables to be stored privately for a repository, even if that repository is public, and avoids having to hard-code these values.
+            It then iterates over each Lambda function in the repository, installs the necessary Python libraries to a temporary directory, and bundles these along with the function source code into a ZIP file for deployment via the AWS CLI. 
+\end{itemize}
+
+
+
 
 
 \chapter{Frontend Design \& Implementation}
