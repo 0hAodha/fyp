@@ -106,6 +106,7 @@ def fetch_luas():
             "luasStopName": "Dawson",
             "luasStopIrishName": "Dásain",
             "luasStopCode": "DAW",
+            "luasStopIsEnabled": "1",
             "luasStopLineID": "2"
         },
         {
@@ -116,6 +117,7 @@ def fetch_luas():
             "luasStopName": "Westmoreland",
             "luasStopIrishName": "Sráid Westmoreland",
             "luasStopCode": "WES",
+            "luasStopIsEnabled": "1",
             "luasStopLineID": "2"
         },
         {
@@ -126,6 +128,7 @@ def fetch_luas():
             "luasStopName": "O'Connell - GPO",
             "luasStopIrishName": " Ó Conaill - AOP",
             "luasStopCode": "OGP",
+            "luasStopIsEnabled": "1",
             "luasStopLineID": "2"
         },
         {
@@ -136,6 +139,7 @@ def fetch_luas():
             "luasStopName": "O'Connell - Upper",
             "luasStopIrishName": "Ó Conaill Uachtarach",
             "luasStopCode": "OUP",
+            "luasStopIsEnabled": "1",
             "luasStopLineID": "2"
         },
         {
@@ -146,6 +150,7 @@ def fetch_luas():
             "luasStopName": "Broombridge",
             "luasStopIrishName": "Droichead Broom",
             "luasStopCode": "BRO",
+            "luasStopIsEnabled": "1",
             "luasStopLineID": "2"
         },
         {
@@ -156,6 +161,7 @@ def fetch_luas():
             "luasStopName": "Cabra",
             "luasStopIrishName": "Cabrach",
             "luasStopCode": "CAB",
+            "luasStopIsEnabled": "1",
             "luasStopLineID": "2"
         },
         {
@@ -166,6 +172,7 @@ def fetch_luas():
             "luasStopName": "Phibsborough",
             "luasStopIrishName": "Baile Phib",
             "luasStopCode": "PHI",
+            "luasStopIsEnabled": "1",
             "luasStopLineID": "2"
         },
         {
@@ -176,6 +183,7 @@ def fetch_luas():
             "luasStopName": "Grangegorman",
             "luasStopIrishName": "Gráinseach Ghormáin",
             "luasStopCode": "GRA",
+            "luasStopIsEnabled": "1",
             "luasStopLineID": "2"
         },
         {
@@ -186,6 +194,7 @@ def fetch_luas():
             "luasStopName": "Broadstone - University",
             "luasStopIrishName": "An Clocháin Leathan",
             "luasStopCode": "BRD",
+            "luasStopIsEnabled": "1",
             "luasStopLineID": "2"
         },
         {
@@ -196,6 +205,7 @@ def fetch_luas():
             "luasStopName": "Dominick",
             "luasStopIrishName": "Doiminic",
             "luasStopCode": "DOM",
+            "luasStopIsEnabled": "1",
             "luasStopLineID": "2"
         },
         {
@@ -206,6 +216,7 @@ def fetch_luas():
             "luasStopName": "Parnell",
             "luasStopIrishName": "Sráid Pharnell",
             "luasStopCode": "PAR",
+            "luasStopIsEnabled": "1",
             "luasStopLineID": "2"
         },
         {
@@ -216,6 +227,7 @@ def fetch_luas():
             "luasStopName": "Marlborough",
             "luasStopIrishName": "Maoilbhríde",
             "luasStopCode": "MAR",
+            "luasStopIsEnabled": "1",
             "luasStopLineID": "2"
         }
     ]
