@@ -431,7 +431,7 @@ Due to previous experience with these programming languages, the main options co
             Despite having fast execution times, it can be slow to start up for Lambda functions as the JVM must be initialised each time, leading to $\sim$1--2 seconds of delay.
 \end{itemize}
 
-Since Java is not really suitable for this application because of its slow start-up times, the decision came down to whether the speed of execution for Node JS or the speed of development for Python should be favoured;
+Java was rejected on the basis that its slow start-up times made it unsuitable for this application, so the decision came down to whether the speed of execution for Node JS or the speed of development for Python should be favoured;
 ultimately, it was decided that Python would be a better choice for rapid prototyping \& development, as the execution speed differences between the two languages are negligible (in this scenario), but the development speed differences are not.
 
 \subsection{Frontend Technologies}
@@ -465,8 +465,22 @@ It was decided that React would be the most suitable JavaScript framework for th
 Since the consideration of native applications is only a secondary objective of this project, the decision was made to focus only on React development and to make use of React-only functionality wherever suitable (such as using HTML + CSS), but to write the components in a clean \& modularised fashion so that a React Native port would not be excessively difficult.
 
 \subsubsection{CSS Frameworks}
+A \textbf{CSS framework} is a collection of pre-written styles, utility classes, or components that can be used to help build UIs quickly without reinventing basic functionality.
+CSS frameworks allow applications to be responsive by default on mobile devices, and maintain consistency throughout the application.
+The two CSS frameworks considered for this application were Tailwind CSS and Bootstrap CSS:
+\begin{itemize}
+    \item   \textbf{Tailwind CSS}\supercite{tailwind} is a utility-first CSS framework in which the user interface is built by composing utility classes directly in HTML / React code;
+            in this context, ``utility first'' refers to the fact that Tailwind does not provide any pre-built components, but instead provides pre-defined utility classes.
+            Layout and styling are all done in-line via class names.
+            This utility-based approach makes the framework very flexible \& customisable, but comes at the cost of not providing any out-of-the-box re-usable components and require for components to be designed from scratch instead.
 
-\subsubsection{Mapping Libraries}
+    \item   \textbf{Bootstrap CSS}\supercite{bootstrap} is a component-first CSS framework designed to help developers build responsive, styled UIs quickly. 
+            It comes with many pre-built components such as buttons and navigation bars, and JavaScript plug-ins for drop-down menus and image carousels.
+            This makes it very useful for fast prototyping and building of UIs, but can look generic due to its pre-built components and overriding the default component styles can be time-consuming.
+\end{itemize}
+
+Tailwind CSS was chosen for this project due to its flexibility \& customisability, and because its utility-first approach means it integrates very well with React's component-based approach as a component's style can be contained entirely within that component.
+
 
 \section{Project Management}
 \textbf{Agile methodologies}\supercite{agile} were employed throughout this project to facilitate iterative development with continuous feedback \& adaptation:
@@ -1481,7 +1495,10 @@ To address this, if the number of items being displayed is so high that it will 
 The search function makes use of the \mintinline{js}{useMemo}\supercite{usememo} React hook to cache the results of filtering the markers based off the search text, and making it so that it will only be re-calculated if the search term changes or if the markers change.
 Without \mintinline{js}{useMemo}, every re-render of the page would cause the filter function to run even if nothing had changed, which would be a huge waste of computational resources.
 \subsubsection{Map}
-The map component itself is the presentational component in which all of the mapping \& plotting functionality is performed, implemented using the Leaflet\supercite{leaflet} mapping libraries and map tiles from OpenStreetMap\supercite{osm}.
+The map component itself is the presentational component in which all of the mapping \& plotting functionality is performed, implemented using the Leaflet\supercite{leaflet} mapping library and map tiles from OpenStreetMap\supercite{osm};
+this option was chosen as it is lightweight \& performant, free to use, and is flexible \& customisable.
+It is also by far the most popular mapping library, and has comprehensive documentation and a wide range of plug-ins.
+Other mapping options exist, such as Mapbox\supercite{mapbox} and the Google Maps API\supercite{gmaps}, but these have limited free tiers compared to the completely free \& open-source option of Leaflet with OpenStreetMap.
 It receives the markers to be displayed, a Boolean determining whether clustering is enabled, and the geolocation of the user, if available.
 If the user's geolocation is available, a ``You are here'' marker is added to the map and the map is centered on those co-ordinates;
 otherwise, the map centers on the geographical centre of the island of Ireland\supercite{osi} and displays no marker.
