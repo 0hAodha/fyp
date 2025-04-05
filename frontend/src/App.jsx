@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 
 import Navbar from "./components/Navbar";
 import Statistics from "./components/Statistics.jsx";
-import Helpt  from "./components/Help.jsx";
+import Help  from "./components/Help.jsx";
 
 import Sidebar from "./components/Sidebar";
 import MapComponent from "./components/MapComponent";
