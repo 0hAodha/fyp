@@ -66,7 +66,7 @@ class TestPermanentData(unittest.TestCase):
         mock_get.return_value.content = 'Abbreviation\tName\tIrishName\tLatitude\tLongitude\tStopID\tLineID\tSortOrder\tIsEnabled\tIsParkAndRide\tIsCycleAndRide\tZoneCountA\tZoneCountB\nABB\tAbbey Street\tSráid na Mainistreach\t53.0\t-6.0\t1\t1\t1\ttrue\tfalse\tfalse\t1\t2'.encode('utf-8-sig')
 
         result = fetch_luas()
-        self.assertEqual(len(result), 1 + 13)
+        self.assertEqual(len(result), 1 + 12)
         self.assertEqual(result[0]['luasStopName'], 'Abbey Street')
 
         @patch('functions.fetch_permanent_data.lambda_function.session.get')
