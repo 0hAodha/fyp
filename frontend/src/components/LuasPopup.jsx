@@ -72,7 +72,7 @@ const LuasPopup = ({ item, objectTitle, luasLine, toggleFavourite, favourites })
             <ul>
                 <li><b>Luas Stop Name:</b> {item.luasStopName} / {item.luasStopIrishName}</li>
                 <li><b>Line:</b> {luasLine}</li>
-                <li><b>Stop ID:</b> {item.luasStopID}</li>
+                <li><b>Stop ID:</b> {item.luasStopID ? item.luasStopID : "Unknown"}</li>
                 <li><b>Park & Ride?:</b> {item.luasStopIsParkAndRide === "1" ? "Yes" : "No"}</li>
                 <li><b>Cycle & Ride?:</b> {item.luasStopIsCycleAndRide === "1" ? "Yes" : "No"}</li>
                 <li><b>Operational?:</b> {item.luasStopIsEnabled === "1" ? "Yes" : "No"}</li>
