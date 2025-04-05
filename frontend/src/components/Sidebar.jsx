@@ -47,6 +47,8 @@ const menuData = [
     },
 ];
 
+const customDefaultChecked = ["mainline","suburban","dart","running","not-yet-running","terminated","early","on-time","late","disabled","buses","irish-rail-trains","luas-stops","enabled","green-line","red-line","irish-rail","bus"]
+
 const getAllDefaultCheckedIds = (data) => {
     const ids = [];
     const traverse = (items, isTopLevel = true) => {
@@ -135,9 +137,10 @@ const CheckboxItem = ({ item, selectedSources, setSelectedSources, enabledSource
 };
 
 const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setClusteringEnabled, fetchData, userLocationAvailable, showFavouritesOnly, setShowFavouritesOnly }) => {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(true);
     const [enabledSources, setEnabledSources] = useState([]);  // New state to track enabled sources
     const [numberInputValue, setNumberInputValue] = useState("");  // State to manage number input value
+    const hasMounted = useRef(false);
 
     // Load selected sources from cookies or set all as default checked
     useEffect(() => {
@@ -145,8 +148,7 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
         if (savedSources) {
             setSelectedSources(JSON.parse(savedSources));
         } else {
-            const allDefaultChecked = getAllDefaultCheckedIds(menuData);
-            setSelectedSources(allDefaultChecked);
+            setSelectedSources(customDefaultChecked);
         }
 
         // Load numberInputValue from cookie
@@ -155,6 +157,13 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
             setNumberInputValue(savedNumberInputValue);
         }
     }, [setSelectedSources]);
+
+    useEffect(() => {
+        if (!hasMounted.current && enabledSources.length > 0) {
+            fetchData(enabledSources, numberInputValue);
+            hasMounted.current = true;
+        }
+    }, [enabledSources]);
 
     const handleSubmit = () => {
         Cookies.set("selectedSources", JSON.stringify(selectedSources), { expires: 365 });
