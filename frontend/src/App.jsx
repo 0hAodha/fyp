@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 
 import Navbar from "./components/Navbar";
 import Statistics from "./components/Statistics.jsx";
-import Help from "./components/Help.jsx";
+import Helpt  from "./components/Help.jsx";
 
 import Sidebar from "./components/Sidebar";
 import MapComponent from "./components/MapComponent";
@@ -341,12 +341,12 @@ function App() {
                             let luasLine;
                             switch (item.luasStopLineID) {
                                 case "1":
-                                    luasLine = "Green Line";
-                                    icon += "Green";
-                                    break;
-                                case "2":
                                     luasLine = "Red Line";
                                     icon += "Red";
+                                    break;
+                                case "2":
+                                    luasLine = "Green Line";
+                                    icon += "Green";
                                     break;
                                 default:
                                     luasLine = "N/A";
