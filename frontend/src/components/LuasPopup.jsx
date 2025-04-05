@@ -38,7 +38,11 @@ const LuasPopup = ({ item, objectTitle, luasLine, toggleFavourite, favourites })
                     } else if (tram["@destination"] === "No trams forecast") {
                         tramDetails += "<br>No trams forecast";
                     } else {
-                        tramDetails += `<br>Destination: ${tram["@destination"]}; Arrival: ${tram["@dueMins"]} minutes.`;
+                        tramDetails += `<br>Destination: ${tram["@destination"]}`;
+
+                        if (tram["@dueMins"]) {
+                            tramDetails += `; Arrival: ${tram["@dueMins"]} minutes.`;
+                        }
                     }
                 });
 
