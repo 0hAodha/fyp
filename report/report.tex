@@ -416,12 +416,57 @@ DynamoDB was chosen for the database service due to its suitability for the data
 AWS Lambda functions officially support many programming languages, including Node JS, Python, Java, C\#, \& Go;
 custom runtime environments can also be created, making practically any language usable within AWS Lambda functions with some effort.
 Due to previous experience with these programming languages, the main options considered for this project were Node JS, Python, \& Java:
+\begin{itemize}
+    \item   Node JS\supercite{node} is a good choice for event-driven \& real-time web applications because of its non-blocking IO, fast cold starts for latency-sensitive functions, and extensive library ecosystem.
+            Asynchronous operations are supported out-of-the-box, making it a good choice for querying external APIs.
+            However, it can become complex to manage for lengthy source files, and can be cumbersome to write compared to something like Python.
+            An advantage of writing the backend in Node JS would be that both the frontend \& the backend would utilise JavaScript code, meaning that the same tooling could be used for both.
 
+    \item   Python\supercite{python} is a good choice for polling of APIs \& data ingestion due to its clean syntax, data parsing features, and extensive library ecosystem.
+            Development \& prototyping in Python is fast and easy to manage, but it does not have built-in support for asynchronous programming.
+            Python is generally slightly slower than Node JS, and start-up time for Python Lambda functions can be longer.
 
+    \item   Java\supercite{java} is a good choice for complex, enterprise-grade applications due to its strong typing \& compile-time safety, and has a mature library ecosystem.
+            However, it can be slower to write due to its verbose syntax, and development environments can be more complex to set up \& configure.
+            Despite having fast execution times, it can be slow to start up for Lambda functions as the JVM must be initialised each time, leading to $\sim$1--2 seconds of delay.
+\end{itemize}
 
-
+Since Java is not really suitable for this application because of its slow start-up times, the decision came down to whether the speed of execution for Node JS or the speed of development for Python should be favoured;
+ultimately, it was decided that Python would be a better choice for rapid prototyping \& development, as the execution speed differences between the two languages are negligible (in this scenario), but the development speed differences are not.
 
 \subsection{Frontend Technologies}
+\subsubsection{JavaScript Frameworks}
+While a web application like this could be developed using HTML and JavaScript alone, the complexity \& dynamic nature of the application means that a JavaScript framework would more suitable for the benefits of re-usability \& modularity, simplified application state management, optimised performance, and extensive library ecosystems.
+The main frameworks considered were React, Angular, \& Vue due to their widespread popularity, good documentation, and extensive feature set:
+\begin{itemize}
+    \item   \textbf{React}\supercite{react} is the most popular choice of the three, with a large user community and a wide array of third-party libraries.
+        It is component-based, making code easily re-usable and allowing the frontend design to be flexible for different design patterns \& architectures.
+        However, it can have a steep learning curve and can be needlessly complicated for simple applications.
+        Technically speaking, it is not a full JavaScript framework, as it only provides built-in features for building UI components: it doesn't have built-in features for routing, data fetching, or tight integration with any backend services, although these can be added either with third-party libraries or by writing custom JavaScript code.
+        \\\\
+        There is also a mobile development framework built on top of React called \textbf{React Native}\supercite{native}, which allows for native Android \& iOS mobile application to be developed using JavaScript and React components.
+        Instead of rendering to a DOM like vanilla React, React Native maps its UI components to native iOS/Android views (i.e., a button in React Native would use the operating system's native button component instead of being defined in HTML).
+        This means that the same React Native codebase can be used to write an iOS and an Android application, and means that the performance will be superior to that of a webview application because of the utilisation of native components.
+        However, React Native does not support any HTML or CSS, meaning that while a React web application is highly portable to React Native, it is not a simple drop-in solution, and a React web application would have to undergo extensive re-writing to use React Native.
+
+    \item   \textbf{Angular}\supercite{angular} is a complete JavaScript framework for large-scale enterprise applications that comes with complete routing, state management, and a HTTP client out-of-the-box, therefore eliminating much of the need for third-party libraries.
+            However, it has a rather steep learning curve, and takes a lot more development time to get up and running than other comparable JavaScript frameworks.
+            It requires a lot of boilerplate code and complex configuration, with relatively simple features sometimes taking a great deal of set-up.
+            It also rigidly enforces certain best practices, which is both a positive and a negative, as this ties the development into the Angular way of doing things.
+
+    \item   \textbf{Vue}\supercite{vue} is a JavaScript framework known for its simplicity and ease-of-use, with very beginner-friendly syntax that is highly similar in appearance to standard HTML \& JavaScript.
+            Reactivity is baked into the framework, with the view updating automatically as data changes, reducing the need to manually update data values.
+            All the HTML, CSS, \& JavaScript for a Vue component is contained within a single component file, simplifying development.
+            However, it has a far less mature library ecosystem than the other two discussed frameworks, and fragmentation between the Vue 2 version and the Vue 3 version means that the few plug-ins that do exist may not be compatible with the version used.
+            Vue's automatic handling of reactivity, while simplifying development, can be a black box that is difficult to understand for debugging purposes.
+\end{itemize}
+
+It was decided that React would be the most suitable JavaScript framework for this project, as it has extensive library support, is flexible \& lightweight, and it lends itself to porting the codebase to a native application if so desired in the future.
+Since the consideration of native applications is only a secondary objective of this project, the decision was made to focus only on React development and to make use of React-only functionality wherever suitable (such as using HTML + CSS), but to write the components in a clean \& modularised fashion so that a React Native port would not be excessively difficult.
+
+\subsubsection{CSS Frameworks}
+
+\subsubsection{Mapping Libraries}
 
 \section{Project Management}
 \textbf{Agile methodologies}\supercite{agile} were employed throughout this project to facilitate iterative development with continuous feedback \& adaptation:
@@ -799,7 +844,7 @@ This combined with the fact that HTTP APIs are 3.5$\times$ cheaper\supercite{api
 \\\\
 It is important to consider the security of public-facing APIs, especially ones which accept query parameters: a malicious attacker could craft a payload to either divert the control flow of the program or simply sabotage functionality.
 For this reason, no query parameter is ever evaluated as code or blindly inserted into a database query;
-any interpolation of query parameters is done in such a way that they are not used in raw query strings but in \textbf{parameterised expressions} using the \mintinline{python}{boto3} library\supercite{boto3query}.
+any interpolation of query parameters is done in such a way that they are not used in raw query strings but in \textbf{parameterised expressions} using the \mintinline{python}{boto3} library\supercite{boto3query}(the official AWS SDK for Python).
 This means that query parameters are safely bound to named placeholder attributes in queries rather than inserted into raw query strings and so the parameters have no potential for being used to control the structure or logic of the query itself.
 The AWS documentation emphasises the use of parameterised queries for database operations, in particular for SQL databases which are more vulnerable, but such attacks can be applied to any database architecture\supercite{useparameterisedqueries}. 
 This, combined with unit testing of invalid API query parameters means that the risk of malicious parameter injection is greatly mitigated (although never zero), as each API endpoint simply returns an error if the parameters are invalid.
@@ -1018,7 +1063,7 @@ It also accepts a single parameter (\verb|stationCode|) and makes a request to t
 
 \section{CI/CD Pipeline}
 \subsection{Unit Tests}
-As the code for each Lambda function was written, so too were corresponding PyUnit\supercite{pyunit} unit tests for that function to ensure that the function was working as expected, that edge cases were covered, and to indicate if functionality was broken when updates were made.
+As the code for each Lambda function was written, so too were corresponding PyUnit\supercite{pyunit} (based on the Java unit testing framework JUnit\supercite{junit}) unit tests for that function to ensure that the function was working as expected, that edge cases were covered, and to indicate if functionality was broken when updates were made.
 Indeed, this often proved invaluable, as the unit tests revealed on multiple occasions edge cases that were not handled properly, such as the handling of the API responses when only a single item was returned.
 Without the utilisation of unit testing, it's likely that these issues would have gone unnoticed in the codebase until they caused an error in deployment, which could have lead to Lambda function crashes, inconsistent database data, and wasted developer time spent on debugging the application.
 \\\\
