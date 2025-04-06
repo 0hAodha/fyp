@@ -144,7 +144,7 @@ The core objectives of the project are as follows:
     \item   Create a live map of train, DART, bus, \& Luas services in Ireland, which displays the real-time whereabouts of the service, relevant information about that particular service, and the punctuality of the service, to the extent that is possible with publicly-available data.
     \item   Make the live map searchable to facilitate easy navigation \& use, such as allowing the user to find the particular service in which they are interested.
     \item   Provide an extensive array of filters that can be applied to the map to limit what services are displayed, including filtering by transport mode \& punctuality.
-    \item   Collect \& store historical data about services and make this available to the user as relevant, either via a dashboard or via relevant predictions about the punctuality of a service based off its track record.
+    \item   Collect \& store historical data about services and make this available to the user as relevant, either via a dashboard or via relevant predictions about the punctuality of a service based on its track record.
     \item   An easy-to-use \& responsive user interface that is equally functional on both desktop \& mobile devices.
 \end{itemize}
 
@@ -339,7 +339,7 @@ It provides a number of endpoints, with the relevant endpoints to this project b
 \end{itemize}
 
 The documentation page for the API warns that some areas are not fully supported for real-time information due to the central signalling system being subject to ``ongoing work to support this real-time facility'' and that, in the case that a train is in an area of the rail system where real-time data is unavailable, the scheduled data for the train will be returned instead.
-The extent to which coverage of real-time data is available today is unclear, as the API documentation page has not been updated since the 8\textsuperscript{th} of December 2015 at the very latest\supercite{irishrail-api-archive} (although a more realistic estimate would be 2011 based off example dates used in the documentation) and so is now likely nearly a decade out-of-date;
+The extent to which coverage of real-time data is available today is unclear, as the API documentation page has not been updated since the 8\textsuperscript{th} of December 2015 at the very latest\supercite{irishrail-api-archive} (although a more realistic estimate would be 2011 based on example dates used in the documentation) and so is now likely nearly a decade out-of-date;
 however, this does not affect how the data will have to be processed very much since the scheduling information is just returned in the absence of real-time data, and can therefore be treated as a best approximation of the real-time data and does not need to be handled differently.
 
 \subsection{Luas API}
@@ -777,7 +777,7 @@ To facilitate efficient querying of items in the table by \verb|objectType| and 
 The downside of creating a GSI is the additional storage requirements, as DynamoDB implements GSIs by duplicating the data into a separate index: efficient for querying, but less so in terms of storage usage.
 
 \subsubsection{Average Punctuality by \texttt{objectID} Table}
-To give the user punctuality predictions based off the historical data stored for a given service, it's necessary that the average punctuality be calculated.
+To give the user punctuality predictions based on the historical data stored for a given service, it's necessary that the average punctuality be calculated.
 The most obvious way to do this would be to calculate the average of the punctuality values for a given \verb|objectID| in the transient data table every time data a new data item with that \verb|objectID| is added to the transient data table.
 However, this would be greatly inefficient, as it would require scanning the entire table for each item uploaded to the table, greatly slowing down the fetching of new data and consuming vast amounts of DynamoDB read/write resources.
 It is also intractable, as the historical data archive in the transient table grows, it will become linearly more expensive to compute the average punctuality for an item.
@@ -1046,7 +1046,7 @@ These questions were carefully considered when deciding how to calculate the ave
   \item   The outlier sensitivity is addressed by the sheer number of items that are considered for the mean:
           since this will be updated every minute of every day, an outlier will quickly be drowned out with time.
 
-  \item   Finally, the average is being calculated so that it can be shown to the user and so that they can make decisions based off it.
+  \item   Finally, the average is being calculated so that it can be shown to the user and so that they can make decisions based on it.
           The average person from a non-technical or non-mathematical background tends to assume that any average value is a mean value, and so it would only serve to confuse users if they were given some value that did not mean what they imagined it to mean.
           While calculating additional different measures of averages would be possible, displaying them to the user would likely be at best not useful and at worst confusing, while also greatly increasing the computation and storage costs.
           This aligns with the second of Nielsen's famous \textit{10 Usability Heuristics for User Interface Design}, which were consulted throughout the design process: ``\textbf{Match between the System and the Real World:} The design should speak the users' language. Use words, phrases, and concepts familiar to the user, rather than internal jargon''\supercite{nielsenheuristics}.
@@ -1550,7 +1550,7 @@ long enough that it won't be triggered until the user pauses typing, but short e
 However, if very large amounts of data are being displayed, such as in the event that the user has selected all data sources, the search can take a noticeable amount of time and make the UI sluggish \& unresponsive as the search is executed.
 To address this, if the number of items being displayed is so high that it will induce noticeably slow loading times, the debounce time is increased to 400 milliseconds to be more careful in avoiding unnecessary computations, and the loading overlay is displayed as the filtering is performed to prevent the user from being exposed to a sub-optimally performant UI.
 \\\\
-The search function makes use of the \mintinline{js}{useMemo}\supercite{usememo} React hook to cache the results of filtering the markers based off the search text, and making it so that it will only be re-calculated if the search term changes or if the markers change.
+The search function makes use of the \mintinline{js}{useMemo}\supercite{usememo} React hook to cache the results of filtering the markers based on the search text, and making it so that it will only be re-calculated if the search term changes or if the markers change.
 Without \mintinline{js}{useMemo}, every re-render of the page would cause the filter function to run even if nothing had changed, which would be a huge waste of computational resources.
 \\\\
 Finally, the keyboard shortcut \verb|CTRL + K| was added to allow advanced users to speed up search interactions and focus the search bar without having to remove their hands from the keyboard, in keeping with Nielsen's heuristic of ``Flexibility \& Efficiency of use'' which says that shortcuts can speed up interactions for expert users so that the design can cater to both experienced \& inexperienced users:
@@ -1615,7 +1615,7 @@ Each of the core objectives set out for this project were completed:
 
     \item   A side-panel was created with an extensive array of filters that can be applied to the map to limit what services are displayed, including filtering by transport mode \& punctuality.
 
-    \item   A historical database was created in which historical data about public transport services is collected, with the insights gained from the historical data being made available to the user via relevant predictions about the punctuality of a service based off its track record.
+    \item   A historical database was created in which historical data about public transport services is collected, with the insights gained from the historical data being made available to the user via relevant predictions about the punctuality of a service based on its track record.
 
     \item   The interface is responsive and is equally functional on both desktop \& mobile devices.
 \end{enumerate}
@@ -1863,7 +1863,7 @@ Each user evaluation session consisted of the user being asked to perform a numb
 Users were asked to use the Think Aloud Protocol (TAP)\supercite{tap} which involves the user verbalising their thoughts, feelings, \& reasoning while interacting with the application.
 This allows a better picture to be drawn of what the user's mental models \& cognitive processes are, and where they do not align with the design.
 Notes were taken throughout the user evaluation on points of interest that were expressed by the user, and they were asked to complete a survey at the end.
-The users were offered no help throughout the process, and instead had to figure out how to use the application themselves based off the information presented to  them.
+The users were offered no help throughout the process, and instead had to figure out how to use the application themselves based on the information presented to  them.
 The primary drawback of this approach is that it's very time-consuming, and requires an interviewer to be present to observe or record the user's though process;
 a take-home survey would be much faster, but also likely much less in-depth.
 \\\\
@@ -1927,7 +1927,7 @@ A potential future task here would be to provide colourblind-friendly accessibil
 This question received more mixed results, with the majority of users describing the interface as ``Intuitive'', followed by ``Very intuitive'', one ``Average'', and one ``Very unintuitive''.
 The primary reason for the discrepancy in the results is that the user who said ``Very unintuitive'' was the first user who performed an evaluation, and the system UI underwent quite a substantial UI change after their evaluation, including a complete re-structuring of the filters side-panel, the addition of the ``Reset'' button, and the addition of user error warnings \& preventions.
 In particular, that particular user struggled with the fact that the application didn't display any useful information on page load: the map was blank, and the filters panel minimised, so the natural first port of call was the search bar which only acts on displayed data, which the user found greatly frustrating.
-To address this, the map was updated to automatically load markers based off the default or last saved filters of the user, and to automatically maximise the filters panel to draw users to it naturally.
+To address this, the map was updated to automatically load markers based on the default or last saved filters of the user, and to automatically maximise the filters panel to draw users to it naturally.
 
 \subsubsection{Question 3: How easy was it to find help on how to use the application?}
 \begin{figure}[H]
