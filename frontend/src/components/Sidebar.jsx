@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from 'prop-types';
 import Cookies from "js-cookie";
+import { toast } from 'react-toastify';
 
 const menuData = [
     {
@@ -19,7 +20,7 @@ const menuData = [
                     { id: "terminated", name: "Terminated", endsec: true },
                     { id: "early", name: "Early" },
                     { id: "on-time", name: "On-time" },
-                    { id: "late", name: "Late" },
+                    { id: "late", name: "Late", endsec: true  },
                 ],
             },
             { id: "irish-rail-stations", name: "Irish Rail Stations" },
@@ -42,9 +43,20 @@ const menuData = [
             { id: "enabled", name: "Enabled" },
             { id: "disabled", name: "Disabled", endsec: true },
             { id: "park-and-ride", name: "Must be Park & Ride" },
-            { id: "cycle-and-ride", name: "Must be Cycle & Ride" },
+            { id: "cycle-and-ride", name: "Must be Cycle & Ride", endsec: true  },
         ],
     },
+];
+
+const sectionGroups = [
+    ["irish-rail", "bus", "luas-stops"],
+    ["irish-rail-trains", "irish-rail-stations"],
+    ["mainline", "suburban", "dart"],
+    ["running", "not-yet-running", "terminated"],
+    ["early", "on-time", "late"],
+    ["buses", "bus-stops"],
+    ["red-line", "green-line"],
+    ["enabled", "disabled"],
 ];
 
 const customDefaultChecked = ["mainline","suburban","dart","running","not-yet-running","terminated","early","on-time","late","disabled","buses","irish-rail-trains","luas-stops","enabled","green-line","red-line","irish-rail","bus"]
@@ -66,14 +78,26 @@ const getAllDefaultCheckedIds = (data) => {
 };
 
 const CheckboxItem = ({ item, selectedSources, setSelectedSources, enabledSources, setEnabledSources, level = 0, parentChecked = true }) => {
-    console.log("item id: " + item.id);
-    console.log(selectedSources.includes(item.id));
-
     const isChecked = selectedSources.includes(item.id);
     const isDisabled = !parentChecked;  // Disable if any parent is not checked
     const isEnabled = isChecked && parentChecked;  // Only enabled if checked and parent is checked
 
     const handleCheckboxChange = () => {
+        if (isChecked) {
+            if (item.id != "park-and-ride" && item.id != "cycle-and-ride") {
+                // Find which section this item is in
+                const section = sectionGroups.find(group => group.includes(item.id));
+
+                if (section.length > 1) {
+                    const selectedInSection = section.filter(id => selectedSources.includes(id));
+                    if (selectedInSection.length === 1 && selectedInSection[0] === item.id) {
+                        toast.warn("At least one item in this section must be selected");
+                        return; // Don't allow unchecking the last one
+                    }
+                }
+            }
+        }
+
         setSelectedSources((prev) =>
             isChecked
                 ? prev.filter((id) => id !== item.id)

@@ -2,6 +2,9 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Cookies from "js-cookie";
 
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import Navbar from "./components/Navbar";
 import Statistics from "./components/Statistics.jsx";
 import Help  from "./components/Help.jsx";
@@ -441,62 +444,65 @@ function App() {
     }, [memoizedFilteredMarkers]);
 
     return (
-        <Router>
-            <Navbar />
-            <Routes>
-                <Route
-                    path="/"
-                    element={
-                        <div style={{ height: "100vh", width: "100vw", display: "flex", position: "relative", paddingTop: "5vh" }}>
-                            {loading && <LoadingOverlay message={"Loading data..."} />}
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    top: "1vh",
-                                    height: "5vh",
-                                    width: "250px", minWidth: "50px",
-                                    left: "50%",
-                                    transform: "translateX(-50%)",
-                                    zIndex: 1000,
-                                    ...(window.innerWidth < 800 ? { top: "auto", bottom: "10vh" } : {})
-                                }}
-                            >
-                                <input
-                                    type="text"
-                                    onChange={(e) => handleSearchChange(e)}
-                                    placeholder="Search..."
+        <>
+            <Router>
+                <Navbar />
+                <Routes>
+                    <Route
+                        path="/"
+                        element={
+                            <div style={{ height: "100vh", width: "100vw", display: "flex", position: "relative", paddingTop: "5vh" }}>
+                                {loading && <LoadingOverlay message={"Loading data..."} />}
+                                <div
                                     style={{
-                                        width: "250px", fontSize: "16px",
-                                        top: "6vh", marginTop: "5vh",
-                                        padding: "10px", background: "rgba(255, 255, 255, 0.9)", color: "black",
-                                        borderRadius: "10px", overflow: "hidden"
+                                        position: "absolute",
+                                        top: "1vh",
+                                        height: "5vh",
+                                        width: "250px", minWidth: "50px",
+                                        left: "50%",
+                                        transform: "translateX(-50%)",
+                                        zIndex: 1000,
+                                        ...(window.innerWidth < 800 ? { top: "auto", bottom: "10vh" } : {})
                                     }}
-                                />
-                            </div>
-                            <Sidebar
-                                selectedSources={selectedSources}
-                                setSelectedSources={setSelectedSources}
-                                clusteringEnabled={clusteringEnabled}
-                                setClusteringEnabled={setClusteringEnabled}
-                                fetchData={fetchData}
-                                userLocationAvailable={userLocationAvailable}
-                                showFavouritesOnly={showFaovouritesOnly}
-                                setShowFavouritesOnly={setShowFavouritesOnly}
-                            />
-                            <div style={{ flex: 1 }}>
-                                <MapComponent
-                                    markers={filteredMarkers}
-                                    clusteringEnabled={clusteringEnabled}
-                                    userLocationAvailable={userLocationAvailable}
+                                >
+                                    <input
+                                        type="text"
+                                        onChange={(e) => handleSearchChange(e)}
+                                        placeholder="Search..."
+                                        style={{
+                                            width: "250px", fontSize: "16px",
+                                            top: "6vh", marginTop: "5vh",
+                                            padding: "10px", background: "rgba(255, 255, 255, 0.9)", color: "black",
+                                            borderRadius: "10px", overflow: "hidden"
+                                        }}
                                     />
+                                </div>
+                                <Sidebar
+                                    selectedSources={selectedSources}
+                                    setSelectedSources={setSelectedSources}
+                                    clusteringEnabled={clusteringEnabled}
+                                    setClusteringEnabled={setClusteringEnabled}
+                                    fetchData={fetchData}
+                                    userLocationAvailable={userLocationAvailable}
+                                    showFavouritesOnly={showFaovouritesOnly}
+                                    setShowFavouritesOnly={setShowFavouritesOnly}
+                                />
+                                <div style={{ flex: 1 }}>
+                                    <MapComponent
+                                        markers={filteredMarkers}
+                                        clusteringEnabled={clusteringEnabled}
+                                        userLocationAvailable={userLocationAvailable}
+                                        />
+                                </div>
                             </div>
-                        </div>
-                    }
-                />
-                <Route path="/statistics" element={<Statistics />} />
-                <Route path="/help" element={<Help />} />
-            </Routes>
-        </Router>
+                        }
+                    />
+                    <Route path="/statistics" element={<Statistics />} />
+                    <Route path="/help" element={<Help />} />
+                </Routes>
+            </Router>
+            <ToastContainer position="bottom-right"/>
+        </>
     );
 }
 export default App;
