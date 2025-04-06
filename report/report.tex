@@ -147,8 +147,7 @@ In addition to the core objectives, some secondary objectives include:
     \item   User accounts that allow the user to save preferences and share them across devices.
     \item   User review capability that allows users to share information not available via APIs, such as how busy a given service is or reports of anti-social behaviour on that service.
     \item   Make the web application publicly accessible online with a dedicated domain name.
-    \item   Port the React\supercite{react} application to React Native\supercite{native} and make the application run natively on both Android \& iOS devices.
-    \item   Publish the native applications to the relevant software distribution platforms (Apple App Store \& Google Play Store).
+    \item   Port the React\supercite{react} application to React Native\supercite{native} and make the application run natively on both Android \& iOS devices, and publish the native applications to the relevant software distribution platforms (Apple App Store \& Google Play Store).
 \end{itemize}
 
 \subsection{Additional Objectives}
@@ -161,6 +160,7 @@ Some additional objectives beyond the objectives that were specified before begi
     \item   Optimise the backend to stay within the limits of AWS Free Tier\supercite{awsfree}.
     \item   Create a CI/CD pipeline to automatically test and deploy new code.
 \end{itemize}
+
 
 \section{Use Cases}
 The use cases for the application are essentially any situation in which a person might want to know the location or the punctuality of a public transport service, or to gain some insight into the historical behaviour of public transport services.
@@ -1084,8 +1084,11 @@ Without the utilisation of unit testing, it's likely that these issues would hav
 These PyUnit tests are run using \mintinline{python}{pytest}\supercite{pytest} which automatically discovers Python test files in a given directory and can generate code coverage reports.
 While PyUnit tests can be run with \mintinline{shell}{python -m unittest}, \mintinline{python}{pytest} makes it easier to run the tests and can generate coverage reports automatically.
 \mintinline{python}{pytest} also allows for unit tests to be specified in its own non-standard format alongside to the standard PyUnit format, but this was not used in an effort to keep the tests as standard and as homogeneous as possible.
-\\\\
-A statement coverage of 70\% was selected to be aimed for when writing tests for this application;
+The coverage percentage is calculated as:
+\begin{align*}
+    \text{Coverage (\%)} = \frac{\text{Number of lines executed}}{\text{Total number of executable lines}} \times 100
+\end{align*}
+A line coverage of 70\% was selected to be aimed for when writing tests for this application;
 this is a high degree of test coverage, but allows the tests to focus on testing the core logic of the application rather than boilerplate code and allows for interactions with third-party services that cannot be fully covered by testing and instead have to be mocked\supercite{pyunitmock}.
 The actual total coverage achieved is 85\%, which exceeds this minimum value and ensures that the application is well-covered with test cases.
 
@@ -1123,14 +1126,10 @@ on:
 The workflow consists of two ``jobs'':
 \begin{itemize}
     \item   The \verb|test| job installs the necessary dependencies and runs the unit tests, generating coverage reports in both XML and HTML and uploading these as artifacts\supercite{artifacts} (a way to share data from a GitHub workflow run).
-    \item   The \verb|deploy| job runs only on pushes to \verb|main| (including direct pushes and merges of pull requests).
+    \item   The \verb|deploy| job runs only on pushes to \verb|main| (including direct pushes and merges of pull requests), and only runs if the \verb|test| job completed successfully: if any of the tests fail, the code will not be deployed and an email will be sent to the administrators of the GitHub repository.
             It installs AWS CLI\supercite{aws_cli} and sets the AWS credentials using GitHub Secrets\supercite{githubsecrets} which allow for sensitive information such as environment variables to be stored privately for a repository, even if that repository is public, and avoids having to hard-code these values.
             It then iterates over each Lambda function in the repository, installs the necessary Python libraries to a temporary directory, and bundles these along with the function source code into a ZIP file for deployment via the AWS CLI. 
 \end{itemize}
-
-
-
-
 
 \chapter{Frontend Design \& Implementation}
 The frontend design is built following the Single-Page-Application (SPA)\supercite{spa} design pattern using the React Router\supercite{reactrouter} library, meaning that the web application loads a single HTML page and dynamically updates content as the user interacts with the application, without reloading the webpage. 
@@ -1541,7 +1540,75 @@ It is intended to be user-friendly and easy to search through;
 this is in part facilitated through its minimalist design (achieved with TailwindCSS) which attempts to prevent the user from having to sift through irrelevant information to find out how to perform a basic task.
 
 \chapter{Evaluation}
-\section{Objectives Fulfilled}
+\section{Objectives Completed}
+Each of the core objectives set out for this project were completed:
+\begin{enumerate}
+    \item   A live map of train, DART, bus, \& Luas services in Ireland was created which displays the real-time whereabouts about the service, relevant information about that particular service, and the punctuality of the service, to the extent that is possible with publicly-available data.
+
+    \item   The live map was given a powerful search tool which facilitates easy navigation \& use, such as allowing the user to find the particular service in which they are interested.
+
+    \item   A side-panel was created with an extensive array of filters that can be applied to the map to limit what services are displayed, including filtering by transport mode \& punctuality.
+
+    \item   A historical database was created in which historical data about public transport services is collected, with the insights gained from the historical data being made available to the user via relevant predictions about the punctuality of a service based off its track record.
+
+    \item   The interface is responsive and is equally functional on both desktop \& mobile devices.
+\end{enumerate}
+
+Many additional objectives beyond the core objectives were also completed:
+\begin{enumerate}
+    \item   The application does not just have vehicle-based information, but also route-based information, allowing users to search for a particular bus route or service.
+    
+    \item   A feature was created to allow the user to ``favourite'' or save specific services, such as a particular bus route or Luas stop.
+
+    \item   Cookies were employed to recall a user's selected filters and favourited items when they re-visit the page.
+
+    \item   The user's geographical location is obtained via their browser's API and plotted on the map, and this information is used to allow users to filter results by proximity to themselves by specifying a radius.
+
+    \item   The UI design complies with Nielsen's 10 Usability Heuristics.
+
+    \item   The frontend performance was optimised and tuned to increase the loading speed of the application by several seconds.
+
+    \item   The backend was cost-optimised to stay within the limit's of the AWS free tier.
+
+
+    \item   Unit tests were written for each piece of backend code, with a line coverage of 85\% achieved, exceeding the minimum target value. 
+
+    \item   A CI/CD pipeline was created which automatically tests and deploys new code.
+\end{enumerate}
+
+However, not all of the secondary objectives which were set out at the beginning of the project were completed:
+\begin{enumerate}
+    \item   No user account feature was added.
+            The primary reason for this was just that it was quite low on the list of priorities, and so time wasn't made for it before the project deadline, although research was done into how it could be executed, and it likely would not be overly difficult.
+            \textbf{Amazon Cognito}\supercite{cognito} provides a user directory, authentication server, and authorisation service, and therefore circumvents the need to create a sign-up process for the application and secure the database from scratch.
+            It integrates into React with the \mintinline{js}{aws-amplify} library\supercite{amplify} which comes with a pre-built login/sign-up UI, and so practically no work would need to be completed to add an accounts system to the application: just enable the service and add some boilerplate React code.
+            The only aspect that would require any substantial development effort would be the creation of a DynamoDB table with the primary key being the user's Cognito ID which stores the user's filters preferences;
+            since these are already stored in JSON format on the user's machine, the structure would not have to be changed at all to add the information to the No-SQL database, and all that would need to be done would be to add a method for uploading the data.
+
+    \item   No user review capability was added to allow users to report issues such as anti-social behaviour.
+            This is primarily because of this feature being very low priority, and being dependent on the creation of a user account feature first to work;
+            theoretically, a review system could be implemented without a user account system by just allowing anyone to \verb|POST| some data to an API which adds it to a database and displays it on the website, but this would be a very bad idea in practice both from a security point of view and from a spam \& vandalism prevention point of view.
+            However, some research and planning was nonetheless carried out:
+            a new DynamoDB table could be created with an item's \verb|objectID| as its partition key, and \verb|userID#timestamp| as the sort key, where \verb|userID| is the Cogito ID of the logged-in user and the \verb|timestamp| is the time the review was made.
+            A form could be added to the frontend which uses \verb|aws-amplify| to make authorised \verb|POST| requests to an API endpoint.
+            Then, when a user loads information about a given service, this table could be queried to display relevant user feedback about that service.
+            In practice, there would need to be some kind of moderation of this review system to prevent spam, vandalism, \& to remove unhelpful reviews.
+
+    \item   The web application was not made available online with a dedicated domain name.
+            The first reason for this is simply to avoid the cost of acquiring a dedicated domain name, but the site could be made available online using an AWS S3 bucket\supercite{s3} (essentially serverless flat file storage) to store the website's build files, and accessed using the auto-generated S3 static endpoint URL;
+            the second reason is that this would expose the application more fully to the open Internet, which could increase the number of API calls made, Lambda functions triggered, and risk pushing the application out of the free tier, although the risk of this is really quite low.
+            The third and primary reason why this was not implemented is that its low priority led it to being sidelined in favour of more mission-critical work.
+
+    \item   The React application was not ported to React native to run natively on Android \& iOS devices, nor was it published to relevant software distribution programs.
+            In retrospect, this was a wildly over-optimistic goal to even consider for this project:
+            while React Native greatly simplifies mobile application development, it is not a magic solution that completely removes the need for platform-specific development, and Android \& iOS knowledge would almost certainly be needed for debugging platform-specific issues or to utilise any native modules that don't have a React Native wrapper.
+            Moreover, such development would require a development \& testing environment using Xcode and Android Studio, and would in doing so require at least a basic understanding of the two operating systems.
+            Porting a web application as substantial as this one to React Native is non-trivial, as there are quite significant differences between the two, and would in itself constitute several months of work.
+\end{enumerate}
+
+Overall, $\frac{14}{18} = 77.\dot{7} \%$ of the specified objectives were completed, including $100\%$ completion of the core objectives, and completion of the majority of the secondary objectives;
+objectives that were not completed were nonetheless researched and planned.
+
 \section{Heuristic Evaluation: Nielsen's 10}
 \section{User Evaluation}
 
