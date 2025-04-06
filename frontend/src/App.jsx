@@ -397,6 +397,7 @@ function App() {
                             popup: popupContent,
                             icon: icon,
                             markerText: markerText.toLowerCase().replace(/[^a-zA-Z0-9]/g, ''),
+                            objectTitle: objectTitle,
                             display: true
                         });
                     }

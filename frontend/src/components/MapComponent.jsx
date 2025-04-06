@@ -1,5 +1,5 @@
 import { React, useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Tooltip } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import L, { Icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -119,8 +119,11 @@ const MapComponent = ({ markers, clusteringEnabled }) => {
             )}
             {clusteringEnabled ? (
                 <MarkerClusterGroup>
-                    {markers.map(({ coords, popup, icon }, index) => (
+                    {markers.map(({ coords, popup, icon, objectTitle}, index) => (
                         <Marker key={index} position={coords} icon={icons.get(icon)}>
+                            <Tooltip>
+                                {objectTitle}
+                            </Tooltip>
                             <Popup>{popup}</Popup>
                         </Marker>
                     ))}
