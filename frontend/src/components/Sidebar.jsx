@@ -13,10 +13,10 @@ const menuData = [
                 children: [
                     { id: "mainline", name: "Mainline" },
                     { id: "suburban", name: "Suburban" },
-                    { id: "dart", name: "DART" },
+                    { id: "dart", name: "DART", endsec: true },
                     { id: "running", name: "Running" },
                     { id: "not-yet-running", name: "Not yet running" },
-                    { id: "terminated", name: "Terminated" },
+                    { id: "terminated", name: "Terminated", endsec: true },
                     { id: "early", name: "Early" },
                     { id: "on-time", name: "On-time" },
                     { id: "late", name: "Late" },
@@ -38,9 +38,9 @@ const menuData = [
         name: "Luas Stops",
         children: [
             { id: "red-line", name: "Red Line" },
-            { id: "green-line", name: "Green Line" },
+            { id: "green-line", name: "Green Line", endsec: true },
             { id: "enabled", name: "Enabled" },
-            { id: "disabled", name: "Disabled" },
+            { id: "disabled", name: "Disabled", endsec: true },
             { id: "park-and-ride", name: "Must be Park & Ride" },
             { id: "cycle-and-ride", name: "Must be Cycle & Ride" },
         ],
@@ -131,6 +131,10 @@ const CheckboxItem = ({ item, selectedSources, setSelectedSources, enabledSource
                         />
                     ))}
                 </div>
+            )}
+
+            {item.endsec && (
+                <hr style={{ margin: "8px 0", borderColor: "#ccc" }} />
             )}
         </div>
     );
