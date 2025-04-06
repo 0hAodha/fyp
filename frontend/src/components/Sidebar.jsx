@@ -210,7 +210,7 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
         Cookies.set("selectedSources", JSON.stringify(selectedSources), { expires: 365 });
         Cookies.set("numberInputValue", numberInputValue, { expires: 365 });  // Save numberInputValue to cookie
 
-        if (showFavouritesOnly && (!favourites.length || favourites.length < 1)) {
+        if (showFavouritesOnly && (favourites.Bus.length < 1 && favourites.BusStop.length < 1 && favourites.IrishRailTrain.length < 1 && favourites.IrishRailStation.length < 1 && favourites.LuasStop.length < 1)) {
             toast.warn("You haven't added any favourites yet!");
             return;
         }
