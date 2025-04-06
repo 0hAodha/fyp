@@ -1,5 +1,32 @@
 import React from "react";
 
+import TrainOnTime from "../assets/icons/train_ontime.png";
+import TrainLate from "../assets/icons/train_late.png";
+import Train from "../assets/icons/train.png";
+import DARTOnTime from "../assets/icons/DARTOnTime.png";
+import DARTLate from "../assets/icons/DARTLate.png";
+import DARTNotRunning from "../assets/icons/DARTnotRunning.png";
+import TrainStation from "../assets/icons/train-station.png";
+import Bus from "../assets/icons/bus.png";
+import BusStop from "../assets/icons/bus-station.png";
+import LuasRed from "../assets/icons/luasRed.png";
+import LuasGreen from "../assets/icons/luasGreen.png";
+
+
+const icons = [
+    { icon: TrainOnTime, text: "On-time & early, running Irish Rail trains", alt: "On-time Train" },
+    { icon: TrainLate, text: "Late, running Irish Rail trains", alt: "Late Train" },
+    { icon: Train, text: "Not-yet running & terminated Irish Rail trains", alt: "Not Running Train" },
+    { icon: DARTOnTime, text: "On-time & early, running DARTs", alt: "On-time DART" },
+    { icon: DARTLate, text: "Late, running DARTs", alt: "Late DART" },
+    { icon: DARTNotRunning, text: "Not-yet running & terminated DARTs", alt: "Not Running DART" },
+    { icon: TrainStation, text: "Irish Rail stations", alt: "Train Station" },
+    { icon: Bus, text: "Buses", alt: "Bus" },
+    { icon: BusStop, text: "Bus stops", alt: "Bus Stop" },
+    { icon: LuasRed, text: "Red line Luas stops", alt: "Red Line Luas" },
+    { icon: LuasGreen, text: "Green line Luas stops", alt: "Green Line Luas" },
+];
+
 const Help = () => {
     return (
         <div
@@ -100,6 +127,18 @@ const Help = () => {
                             prompted.
                         </p>
                     </div>
+
+                <div className="mt-12">
+                    <h2 className="text-2xl font-bold text-center text-gray-800 mb-4">🗺️ Marker Icons &amp; Their Descriptions</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700 text-base max-w-3xl mx-auto justify-center">
+                        {icons.map((item, index) => (
+                            <div key={index} className="flex items-center space-x-4">
+                                <img src={item.icon} alt={item.alt} className="w-10 h-10 object-contain" />
+                                <span>{item.text}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
                 </div>
             </div>
         </div>
