@@ -2,6 +2,8 @@
 \documentclass[a4paper,11pt]{report}
 % packages
 \usepackage{censor}
+
+\usepackage{pdfpages}
 \StopCensoring
 \usepackage{fontspec}
 \setmainfont{EB Garamond}
@@ -117,13 +119,14 @@ their willingness to engage with \& provide feedback on this project proved inva
 
 \chapter{Introduction}
 \section{Project Overview}
-The purpose of this project is to create a useful \& user-friendly application that can be used to track the current whereabouts \& punctuality of various forms of Irish public transport, as well as access historical data on the punctuality of these forms of transport.
+The purpose of this project is to create a useful \& user-friendly application that tracks the current whereabouts \& punctuality of various forms of Irish public transport, as well as allows the user to access historical data on the punctuality of these forms of transport.
 In particular, this location-tracking takes the form of a live map upon which every currently active public transport service is plotted according to its current location, with relevant information about these services and filtering options available to the user.
 \\\\
 The need for this project comes from the fact that there is no extant solution for a commuter in Ireland to track the current location and whereabouts of all the different public transport services available to them.
-There are some fragmented services that purport to display the live location of one particular mode of transport, such as the Irish Rail live map\supercite{liveir}, but this can be slow to update, displays limited information about the services, and only provides information about one form of public transport.
+There are some fragmented services that aim to display the live location of one particular mode of transport, such as the Irish Rail live map\supercite{liveir}, but this can be slow to update, displays limited information about the services, and only provides information about one form of public transport.
 \\\\
-The need for an application that tracks the live location \& punctuality of buses in particular is felt here in Galway, especially amongst students, as the ongoing housing shortage drives students to live further and further away from the university and commute in, with Galway buses often being notoriously unreliable and in some cases not even showing up, many commuters could benefit from an application that tells them where their bus actually is, not where it's supposed to be.
+The need for an application that tracks the live location \& punctuality of buses in particular is felt here in Galway, especially amongst students;
+as the ongoing housing shortage drives students to live further and further away from the university and commute in, and with Galway buses often being notoriously unreliable and in some cases not even showing up, many commuters could benefit from an application that tells them where their bus actually is, not where it's supposed to be.
 \\\\
 The name of the application, ``Iompar'' (IPA: /ˈʊmˠpˠəɾˠ/), comes from the Irish word for ``transport'' but also can be used to mean carriage, conveyance, transmission, and communication\supercite{iompar_teanglann};
 it was therefore thought to be an apt name for an application which conveys live Irish public transport information to a user.
@@ -149,12 +152,13 @@ The core objectives of the project are as follows:
 In addition to the core objectives, some secondary objectives include:
 
 \begin{itemize}
-    \item   Many of those who commute by bus don't have a specific service they get on as there are a number of bus routes that go from their starting point to their destination, and therefore it would be useful to have some kind of route-based information rather than just service-based information. 
-    \item   A feature which allows the user to ``favourite'' or save specific services such as a certain bus route.
+    \item   Many of those who commute by bus don't have a specific service they get on as there are a number of bus routes that go from their starting point to their destination, and therefore it would be useful to have some kind of \textit{route-based} information rather than just \textit{service-based} information. 
+    \item   Provide \textit{route-based} information to the user rather than just \textit{service-based} information, as many of those who commute by bus don't have a specific service they use, as there may be a number of bus routes that go from their starting point to their destination.
+    \item   Implement a feature which allows the user to ``favourite'' or save specific services such as a certain bus route.
     \item   Implement unit testing and obtain a high degree of test coverage for the application, using a unit testing framework such as PyUnit\supercite{pyunit}.
-    \item   The ability to predict the punctuality of services that will be running in the coming days or weeks for precise journey planning.
-    \item   User accounts that allow the user to save preferences and share them across devices.
-    \item   User review capability that allows users to share information not available via APIs, such as how busy a given service is or reports of anti-social behaviour on that service.
+    \item   Provide  ability to ``predict'' the punctuality of services that will be running in the coming days or weeks for precise journey planning.
+    \item   Create user accounts that allow the user to save preferences and share them across devices.
+    \item   Add a user review capability that allows users to share information not available via APIs, such as how busy a given service is or reports of anti-social behaviour on that service.
     \item   Make the web application publicly accessible online with a dedicated domain name.
     \item   Port the React\supercite{react} application to React Native\supercite{native} and make the application run natively on both Android \& iOS devices, and publish the native applications to the relevant software distribution platforms (Apple App Store \& Google Play Store).
 \end{itemize}
@@ -173,7 +177,7 @@ Some additional objectives beyond the objectives that were specified before begi
 
 \section{Use Cases}
 The use cases for the application are essentially any situation in which a person might want to know the location or the punctuality of a public transport service, or to gain some insight into the historical behaviour of public transport services.
-The key issue considered was the fact that the aim of the project is to give a user an insight into the true location and punctuality of public transport: where a service actually is, not where it's supposed to be.
+The key issue considered was the fact that the aim of the project is to give a user an insight into the true location and punctuality of public transport: where a service \textit{actually is}, not where it's \textit{supposed} to be.
 The application isn't a fancy replacement for schedule information: the dissemination of scheduling information for public transport is a well-solved issue.
 Schedules can be easily found online, and are printed at bus stops and train stations, and displayed on live displays at Luas stops.
 Public transport users know when their service is \textit{supposed} to be there, what they often don't know is where it \textit{actually} is.
@@ -232,7 +236,7 @@ Strengths of the Irish Rail live map that were identified include:
 
 Limitations of the Irish Rail live map that were identified include:
 \begin{itemize}
-    \item   The pop-up information panel covers the entire map and hides it;
+    \item   The pop-up information panel covers the entire map and obscures it;
     \item   There is no search feature to find a specific service;
     \item   The filtering options are greatly limited;
     \item   The UI is slow and not particularly responsive;
@@ -283,7 +287,7 @@ The TFI Live Departures map\supercite{tfilive} shows live departure information 
 
 Strengths of the TFI Live Departures map include:
 \begin{itemize}
-    \item   A stop or a station can be clicked on to show a pop-up information panel that appears at the side of the screen and does not cover the map;
+    \item   A stop or a station can be clicked on to show a pop-up information panel that appears at the side of the screen and does not obscure the map;
     \item   There is a powerful search feature that allows the user to search by location, route, or stop number;
     \item   If a specific route is selected, the route is highlighted on the map and its stops are plotted;
     \item   The map is highly detailed, making it easier to find a particular location on the map and find nearby services.
@@ -313,7 +317,7 @@ Strengths of Flightradar24 include:
     \item   The information panel shows the scheduled departure time, the actual departure time, the scheduled arrival time, \& the estimated arrival time;
     \item   The information panel displays an image of the selected vehicle;
     \item   Searching \& filtering features;
-    \item   Larger planes have larger icons on the map and helicopters have distinct icons from planes.
+    \item   Larger aeroplanes have larger icons on the map, and the markers for helicopters are distinct from those for aeroplanes.
 \end{itemize}
 
 Limitations of Flightradar24 include:
@@ -329,14 +333,14 @@ This is a mostly RESTful-like  API which seems to be a legacy hybrid between RES
 Nonetheless, it can be interacted with in more or less the same way as one would a REST API to obtain data.
 It provides a number of endpoints, with the relevant endpoints to this project being:
 \begin{itemize}
-    \item   \verb|/getAllStationsXML| and \verb|getAllStationsXML_WithStationType?StationType=<A,M,S,D>| which returns information about Irish Rail stations including latitude \& longitude.
+    \item   \verb|/getAllStationsXML| and \verb|getAllStationsXML_WithStationType?StationType=<A,M,S,D>| which returns information about Irish Rail stations including latitude \& longitude (where \verb|A| represents ``All'', \verb|M| ``Mainline'', \verb|S| ``Suburban'', \& \verb|D| ``DART'').
     \item   \verb|/getCurrentTrainsXML| and \verb|/getCurrentTrainsXML_WithTrainType?=<A,M,S,D>| which returns information about all the currently running trains (with latitude \& longitude), including trains that are due to depart within 10 minutes of the query time.
     \item   \verb|/getStationDataByCodeXML?StationCode=<station_code>| which returns the trains due to serve the station in question in the next 90 minutes.
 \end{itemize}
 
 The documentation page for the API warns that some areas are not fully supported for real-time information due to the central signalling system being subject to ``ongoing work to support this real-time facility'' and that, in the case that a train is in an area of the rail system where real-time data is unavailable, the scheduled data for the train will be returned instead.
-The extent to which coverage of real-time data is available today is unclear, as the API documentation page has not been updated since the 8\textsuperscript{th} of December 2015 at the very latest\supercite{irishrail-api-archive} (although a more realistic estimate would be 2011 based off example dates used in the documentation) and so is now likely nearly a decade out-of-date, but this does not affect how the data will have to be processed very much;
-since the scheduling information is just returned in the absence of real-time data, this can be treated as a best approximation of the real-time data and does not need to be handled differently.
+The extent to which coverage of real-time data is available today is unclear, as the API documentation page has not been updated since the 8\textsuperscript{th} of December 2015 at the very latest\supercite{irishrail-api-archive} (although a more realistic estimate would be 2011 based off example dates used in the documentation) and so is now likely nearly a decade out-of-date;
+however, this does not affect how the data will have to be processed very much since the scheduling information is just returned in the absence of real-time data, and can therefore be treated as a best approximation of the real-time data and does not need to be handled differently.
 
 \subsection{Luas API}
 The Luas API\supercite{luasapi} is an XML-over-HTTP API with a REST-like interface that provides real-time updates of expected Luas arrivals for a given Luas stop, based upon the location data of the trams from their Automatic Vehicle Location System (AVLS).
@@ -346,7 +350,7 @@ instead each stop must be queried individually using the \verb|/get.ashx?action=
 \subsection{NTA GTFS API}
 The National Transport Authority (NTA) provides a General Transit Feed Specification (GTFS)\supercite{gtfs} REST API named GTFS-Realtime\supercite{gtfsapi} which provides real-time location data about buses operating in Ireland.
 GTFS is a standardised format for public transport schedules \& associated geographic information that provides both static data (such as timetables, routes, \& stop locations) and real-time data (such as live location data).
-The static GTFS feed is made up of comma-separated value files (as is standard) and the real-time data is returned in JSON format from the REST API endpoint \verb|gtfsr/v2/Vehicles[?format=json]|.
+The static GTFS feed is made up of comma-separated value files (as is standard) and the real-time data is returned in JSON format from the REST API endpoint \verb|/gtfsr/v2/Vehicles[?format=json]|.
 It is free to use, but requires an API key for access.
 
 \section{Technologies}
@@ -355,14 +359,14 @@ It is free to use, but requires an API key for access.
 The first choice to be made for the backend technologies for this project was whether the backend should be designed using a server-based or serverless architecture. 
 A traditional server-based model was initially considered, either running on its own dedicated hardware or making use of a Virtual Private Server (VPS)\supercite{AWS:VPS} but was ultimately rejected.
 A server-based architecture requires extensive management of infrastructure, including the provisioning of hardware, system administration, and maintenance of the server application itself.
-Despite extensive personal experience with Linux-based and UNIX-like operating systems, the ongoing administration of a server would distract from the development of the application itself, and would be very difficult to scale to make the application available to a large number of users.
+Despite substantial personal experience with Linux-based and UNIX-like operating systems, the ongoing administration of a server would distract from the development of the application itself, and would be very difficult to scale to make the application available to a large number of users.
 While scaling issues could be partially mitigated with the utilisation of containerisation and a server-based microservices architecture\supercite{IBM:Microservices, AWS:Microservices} using technologies such as Docker\supercite{DockerEngineDocs}, it would nonetheless take a large amount of administrative effort to scale the application as usage demands grew.
 \\\\
 In contrast, serverless architectures\supercite{digitalocean_serverless_2023, google_serverless_2025, aws_serverless_2025} abstract away these infrastructure concerns, allowing the focus of the project to be solely on the application logic.
 Since serverless functions are invoked on demand and billing for serverless models is based solely upon the usage, serverless architectures are generally much more cost-effective for the workloads with variable or intermittent traffic that would be expected for a user-facing application such as this one.
 The serverless model lends itself especially well to a microservices architecture, which allows the system to broken into small, independent services responsible for their own pieces of functionality, with each microservice being independently deployable and scalable.
 Instead of establishing or purchasing server infrastructure in advance, a serverless architecture can automatically scale up or down to meet the demand put upon it, preventing outages when large strain is put upon the service and preventing excessive financial or computational costs when there is low usage;
-the issue of over-provisioning or under-provisioning of compute resources is entirely circumvented, and the need for load balancers is eliminated entirely.
+the issue of over-provisioning or under-provisioning of compute resources is entirely circumvented, and the need for load balancers is eliminated.
 Serverless functions support event-driven architecture, making them a natural fit for a system that must react to user demands as they occur.
 Furthermore, the fast time-to-production of serverless architectures results in faster iteration \& experimentation, easier integration into CI/CD pipelines for continuous delivery, and simplifies rollbacks (should they be necessary) by deploying only small, isolated units, all without the need to spin up servers or configure deployment environment.
 \\\\
@@ -372,16 +376,16 @@ For these reasons, a serverless architecture was chosen for this project.
 
 \subsubsection{Serverless Platforms}
 A number of serverless platforms were considered for this project, including Amazon Web Services (AWS)\supercite{aws}, Google Cloud\supercite{googlecloud}, Microsoft Azure\supercite{azure}, and Cloudflare\supercite{cloudflare}.
-While these platforms have innumerable differences, and are better and worse suited for different applications, a brief overview of their strengths \& weaknesses as considered for this project is as follows:
+While these platforms have far too many differences to enumerate here, and are better and worse suited for different applications, a brief overview of their strengths \& weaknesses as considered for this project is as follows:
 \begin{itemize}
     \item   AWS has a mature \& extensive ecosystem with broad service integration and a generous free tier, but its complexity can result in a steeper learning curve and a more complex initial set-up.
     \item   Google Cloud has a simpler set-up, and tight integration with Firebase \& Google APIs along with a similarly generous free tier, but fewer advanced features, less control over configuration, and a less extensive ecosystem.
     \item   Microsoft Azure has a deep integration with the Microsoft ecosystem such as SQL server\supercite{azuresql}, but less community support and a steep learning curve for non-Windows developers.
-    \item   Cloudflare has extremely low latency, excellent support for edge computing\supercite{ibm_edge_computing} (running on servers geographically close to users), and is great for lightweight apps, but has extremely limited memory and runtime, making it unsuitable for heavy backend logic.
+    \item   Cloudflare has extremely low latency, excellent support for edge computing\supercite{ibm_edge_computing} (running on servers geographically close to users), and is great for lightweight apps, but has extremely limited memory and runtime due to being designed for ultra-fast, short-lived tasks, which makes it unsuitable for heavy backend logic.
             Its database \& storage solutions are also not as mature or as scalable as comparable solutions.
 \end{itemize}
 
-AWS and Google cloud offer the most generous free tiers, while Cloudflare has very tight limits (CPU time is limited to 10ms maximum in the free tier\supercite{cloudflareworkers}) and thus is only suitable for very lightweight tasks, not the kind of extensive data processing that this application will be engaging in.
+AWS and Google cloud offer the most generous free tiers, while Cloudflare has very tight limits (CPU time is limited to 10ms maximum in the free tier\supercite{cloudflareworkers}) and thus is only suitable for very lightweight tasks, not the kind of lengthy data processing that this application will be engaging in.
 Therefore, AWS was chosen as the serverless platform for this project as it is was deemed to be the most flexible \& affordable option.
 
 \subsubsection{Relational versus Non-Relational Databases}
@@ -391,7 +395,7 @@ relationships between tables are strictly enforced with the use of foreign keys.
 These rigid, pre-defined schemata are excellent for data integrity \& relational consistency, and are suitable for applications in which relationships between entities are complex and querying across those relationships is common.
 \\\\
 \textbf{Non-relational databases} store data in more flexible formats, such as key-value pairs, JSON documents, or graphs.
-They are more suitable to scaling horizontally and for handling unstructured or semi-structured data.
+They are more suitable to scaling horizontally and for handling unstructured or semi-structured data (that is, data that has some structure, but does not conform to a rigid, fixed schema).
 The simplified structure means that they can be very high performance for simple read/write patterns, and are ideal for applications that handle large volumes of fast-changing or unstructured data.
 \\\\
 For this application, data is semi-structured and varies greatly by API source.
@@ -494,7 +498,7 @@ Tailwind CSS was chosen for this project due to its flexibility \& customisabili
 \section{Project Management}
 \textbf{Agile methodologies}\supercite{agile} were employed throughout this project to facilitate iterative development with continuous feedback \& adaptation:
 Agile is a development approach which divides work into phases, emphasising continuous delivery \& improvement.
-Tasks are prioritised according to importance \& dependencies, and are approached in a flexible manner so that approaches could be adjusted if something isn't working as intended.
+Tasks are prioritised according to importance \& dependencies, and are approached in a flexible manner so that methods could be adjusted if something isn't working as intended.
 Progress was reflected upon regularly, with areas for improvement being identified and plans adjusted accordingly.
 Automated CI/CD pipelines were employed to streamline development, and to ensure that new changes never broke existing functionality.
 Progress was tracked in a Markdown diary file, and a physical Kanban\supercite{kanban} board with Post-It notes was used to track planned work, in progress work, \& completed work.
@@ -512,7 +516,7 @@ if a function is abstracted properly switching libraries or services requires fe
 Isolated functions are also easier to test with mock functions, reducing reliance on real services during unit testing.
 
 \subsection{Version Control}
-Any software development project of substantial size should make use of version control software, and Git\supercite{git} was chosen for this project due to its ubiquitousness and extensive personal experience with the software.
+Any software development project of substantial size should make use of version control software, and Git\supercite{git} was chosen for this project due to its ubiquitousness and personal \& professional experience with the software.
 GitHub\supercite{github} was chosen as the hosting platform for the Git repository, again largely due to its ubiquitousness and extensive personal experience, but also because of its excellent support for CI/CD operations with GitHub Actions\supercite{githubactions}.
 The decision was made to keep all relevant files for this project, including frontend code, backend code, and document files in a single monolithic repository (monorepo) for ease of organisation, a simplified development workflow, and easier CI/CD set-up.
 While this is not always advisable for very large projects where multiple teams are collaborating, or projects in which the backend and frontend are truly independent of one another and are developed separately, this works well for projects like this one where development is done by a single individual or a small team\supercite{brito2018monorepos}, and is even used on very large projects where unified versioning and simplified dependency management are of paramount importance, such as at Google\supercite{potvin2016google}.
@@ -521,11 +525,6 @@ Commits to this repository were made in adherence with the philosophy of \textit
 commits are kept as small as reasonably possible, and are made very frequently.
 This makes the Git history easier to read, understand, \& revert if needed, makes debugging easier, keeps changes isolated and understandable, and reduces merge conflicts.
 This is the generally accepted best practice, as bundling unrelated changes into a single commit can make review, reversion, \& integration of these commits much more difficult\supercite{dias2015untangling}.
-\\\\
-Meaningful commit messages are of great importance when using version control software, and even more so when making atomic commits as there will be a very large volume of commits \& commit messages.
-For this reason, a custom scoped commit message convention was chosen, where each commit message follows the format \verb|[scope]: Details of commit|, where the \verb|scope| can be \verb|[frontend]| for changes to frontend code, \verb|[backend]| for backend code, \verb|[report]| for changes to the {\LaTeX} project report files, and so on.
-This ensure consistency \& clarity in commit messages, and the strict formatting of the messages make it easy to parse commit messages in a script should that be necessary.
-Recent examples of commit messages to the GitHub repository can be seen in Figure~\ref{fig:reposs} below.
 
 \begin{figure}[H]
     \centering
@@ -533,6 +532,12 @@ Recent examples of commit messages to the GitHub repository can be seen in Figur
     \caption{Screenshot of the repository files on GitHub}
     \label{fig:reposs}
 \end{figure}
+
+Meaningful commit messages are of great importance when using version control software, and even more so when making atomic commits as there will be a very large volume of commits \& commit messages.
+For this reason, a custom scoped commit message convention was chosen, where each commit message follows the format:
+\verb|[scope]: Details of commit|, where the \verb|scope| can be \verb|[frontend]| for changes to frontend code, \verb|[backend]| for backend code, \verb|[report]| for changes to the {\LaTeX} project report files, and so on.
+This ensure consistency \& clarity in commit messages, and the strict formatting of the messages make it easy to parse commit messages in a script should that be necessary.
+Recent examples of commit messages to the GitHub repository can be seen in Figure~\ref{fig:reposs} above.
 
 \chapter{Backend Design \& Implementation}
 \begin{figure}[H]
@@ -851,7 +856,7 @@ AWS offers two main types of API functionality with Amazon API Gateway\supercite
     \item   \textbf{RESTful APIs:} for a request/response model wherein the client sends a request and the server responds, stateless with no session information stored between calls, and supporting common HTTP methods \& CRUD operations.
           AWS API Gateway supports two types of RESTful APIs\supercite{httpvsrest}:
           \begin{itemize}
-              \item   \textbf{HTTP APIs:} low latency, fast, \& cost-effective APIs with support for various AWS microservices such as AWS Lambda, and native CORS support\footnote{\textbf{Cross-Origin Resource Sharing (CORS)} is a web browser security feature that restricts web pages from making requests to a different domain than the one that served the page, unless the API specifically allows requests from the domain that served the page\supercite{w3c-cors}. If HTTP APIs did not natively support CORS, the configuration to allow requests from a given domain would have to be done in boilerplate code in the Lambda function that handles the API requests for that endpoint, and duplicated for each Lambda function that handles API requests.}, but with limited support for usage plans and caching. Despite what the name may imply, these APIs default to HTTPS and are RESTful in nature.
+              \item   \textbf{HTTP APIs:} low latency, fast, \& cost-effective APIs with support for various AWS microservices such as AWS Lambda, and native CORS\footnote{\textbf{Cross-Origin Resource Sharing (CORS)} is a web browser security feature that restricts web pages from making requests to a different domain than the one that served the page, unless the API specifically allows requests from the domain that served the page\supercite{w3c-cors}. If HTTP APIs did not natively support CORS, the configuration to allow requests from a given domain would have to be done in boilerplate code in the Lambda function that handles the API requests for that endpoint, and duplicated for each Lambda function that handles API requests.} support, but with limited support for usage plans and caching. Despite what the name may imply, these APIs default to HTTPS and are RESTful in nature.
               \item   \textbf{REST APIs:} older \& more fully-featured, suitable for legacy or complex APIs requiring fine-grained control, such as throttling, caching, API keys, and detailed monitoring \& logging, but with higher latency, cost, and more complex set-up \& maintenance.
           \end{itemize}
 
@@ -882,7 +887,7 @@ The Cross-Origin Resource Sharing (CORS) policy accepts only \verb|GET| requests
 While the API handles no sensitive data, it is nonetheless best practice to enforce a CORS policy and a ``security-by-default'' approach so that the application does not need to be secured retroactively as its functionality expands.
 If the frontend application were moved to a publicly available domain, the URL for this new domain would need to be added to the CORS policy, or else all requests would be blocked.
 
-\subsection{API Endpoints}
+\subsection{Iompar API Endpoints}
 \subsubsection{\texttt{/return\_permanent\_data[?objectType=IrishRailStation,BusStop,LuasStop]}}
 The \verb|/return_permanent_data| endpoint accepts a comma-separated list of \verb|objectType| query parameters, and returns a JSON response consisting of all items in the permanent data table which match those parameters.
 If no query parameters are supplied, it defaults to returning \textit{all} items in the permanent data table.
@@ -896,7 +901,7 @@ If no \verb|objectType| parameter is supplied, it defaults to returning all item
 The \verb|/return_historical_data| endpoint functions in the same manner as the \verb|/return_transient_data| endpoint, with the exception that it returns matching items for \textit{all} \verb|timestamp| values in the table, i.e., it returns all items of the given \verb|objectTypes| in the transient data table. 
 
 \subsubsection{\texttt{/return\_luas\_data?luasStopCode=<luas\_stop\_code>}}
-The \verb|/return_luas_data| returns incoming / outgoing tram data for a given Luas stop, and is just a proxy for the Luas real-time API.
+The \verb|/return_luas_data| returns incoming/outgoing tram data for a given Luas stop, and is just a proxy for the Luas real-time API.
 Since the Luas API returns data only for a queried station and does not give information about individual vehicles, the Luas data for a given station is only fetched on the frontend when a user requests it, as there is no information to plot on the map beyond a station's location.
 However, this request cannot be made from the client to the Luas API, as the Luas API's CORS policy blocks requests from unauthorised domains for security purposes;
 this API endpoint acts as a proxy, accepting API requests from the \verb|localhost| domain and forwarding them to the Luas API, and subsequently forwarding the Luas API's response back to the client.
@@ -933,8 +938,8 @@ A Python AWS Lambda function typically consists of a single source code file wit
 They can be created and managed via the GUI AWS Management Console\supercite{aws_management_console} or via the AWS CLI tool\supercite{aws_cli}.
 Each Lambda function can be configured to have a set memory allocation, a timeout duration (how long the function can run for before being killed), and environment variables.
 \\\\
-Often, when a serverless application replaces a legacy mainframe application, the time \& memory needed to perform routine tasks is drastically reduced because it becomes more efficient to process events individually as they come rather than batching events together to be processed all at once;
-the high computational cost of starting up a mainframe system means that it's most efficient to keep it running and to batch process events.
+Often, when a serverless application replaces a legacy server-based application, the time \& memory needed to perform routine tasks is drastically reduced because it becomes more efficient to process events individually as they come rather than batching events together to be processed all at once;
+the high computational cost of starting up a server-based system means that it's most efficient to keep it running and to batch process events.
 For this reason, serverless functions often require very little memory and compute time.
 This application, however, is somewhat unusual as it requires the processing of quite a large amount of data at once:
 status updates for public transport don't come from the source APIs individually for each vehicle on an event-by-event basis, but in batches of data that are updated regularly.
@@ -1009,7 +1014,7 @@ Step functions have built-in error handling and retry functionality, making them
 The step function runs the \verb|fetch_transient_data| function and then runs the \verb|update_average_punctuality| function, if and only if the \verb|fetch_transient_data| function has completed successfully.
 This allows the average punctuality data to be kept up to date and in sync with the transient data, and ensures that they do not become decoupled and therefore incorrect.
 This step function is triggered by a (currently disabled) Amazon EventBridge schedule which runs the function once a minute, which is the maximum frequency possible to specify within a cron schedule, and suitable for this application as the APIs from which the data is sourced don't update much more frequently than that.
-Furthermore, the data from which bus data is sourced will time out if requests are made too frequently, so this value was determined to be appropriate after testing to avoid overwhelming the API or getting timed-out. 
+Furthermore, the API from which bus data is sourced will time out if requests are made too frequently, so this value was determined to be appropriate after testing to avoid overwhelming the API or getting timed-out. 
 It is possible to run EventBridge schedules even more frequently using the \textit{rate-based schedule} schedule type instead of the \textit{cron-based schedule} schedule type but a more frequent schedule would be inappropriate for this application.
 
 \subsubsection{\mintinline{python}{update_average_punctuality}}\label{sec:update_average_punctuality}
@@ -1056,7 +1061,7 @@ If none are provided, it returns every item in the table, regardless of type.
 It returns this data as a JSON string.
 \\\\
 When this function was first being developed, the permanent data table was partitioned by \verb|objectID| alone with no sort key, meaning that querying was very inefficient.
-When the table was re-structured to have a composite primary key consisting of the \verb|objectType| as the partition key and the \verb|objectID| as the sort key, the \verb|return_permanent_data| function was made 10$\times$ faster:
+When the table was re-structured to have a composite primary key consisting of the \verb|objectType| as the partition key and the \verb|objectID| as the sort key, the \verb|return_permanent_data| function was made \textbf{10$\times$ faster}:
 the average execution time was reduced from $\sim$10 seconds to $\sim$1 second, demonstrating the critical importance of choosing the right primary key for the table.
 
 \subsubsection{\mintinline{python}{return_transient_data}}
@@ -1065,7 +1070,7 @@ Like \verb|return_permanent_data|, it checks for a comma-separated list of \verb
 If none are provided, it returns every item in the table, regardless of type.
 \\\\
 Similar to \verb|return_permanent_data|, when this function was originally being developed, there was no GSI on the transient data table to facilitate efficient queries by \verb|objectType| and \verb|timestamp|;
-the addition of the GSI and updating the code to exploit the GSI resulted in an average improvement in run time of $\sim$8$\times$, thus demonstrating the utility which GSIs can provide.
+the addition of the GSI and updating the code to exploit the GSI resulted in an \textbf{$\sim$8$\times$ faster} average runtime, thus demonstrating the utility which GSIs can provide.
 
 \subsubsection{\mintinline{python}{return_punctuality_by_objectID}}
 The \verb|return_punctuality_by_objectID| function is invoked by the \verb|fetch_transient_data| function to return the contents of the punctuality by \verb|objectID| table. 
@@ -1106,7 +1111,7 @@ The coverage percentage is calculated as:
 \end{align*}
 A line coverage of 70\% was selected to be aimed for when writing tests for this application;
 this is a high degree of test coverage, but allows the tests to focus on testing the core logic of the application rather than boilerplate code and allows for interactions with third-party services that cannot be fully covered by testing and instead have to be mocked\supercite{pyunitmock}.
-The actual total coverage achieved is 85\%, which exceeds this minimum value and ensures that the application is well-covered with test cases.
+The final total coverage achieved is 85\%, which exceeds this minimum value and ensures that the application is well-covered with test cases.
 
 \begin{figure}[H]
     \centering
@@ -1394,7 +1399,7 @@ This list of favourites is used to determine whether or not the item is displaye
 Favouriting behaves differently depending on the \verb|objectType| of the item being favourited:
 notably, buses are favourited not on a per-vehicle basis using the item's \verb|objectID|, but on a per-route basis.
 This means that if a user favourites, for example, a 401 Bus Éireann bus, every bus on this route will appear when the user applies the ``Show favourites only'' filter.
-This makes the favourites feature far more useful than it would be otherwise: users are generally interested not in a specific bus vehicle, but a specific bus route.
+This makes the favourites feature far more useful than it would be otherwise: users are generally interested not in a specific bus \textit{vehicle}, but a specific bus \textit{route}.
 
 \begin{figure}[H]
     \centering
@@ -1566,7 +1571,7 @@ Each marker variable component passed to the map component is added to the map, 
 \section{Statistics Page}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{./images/statisiticspage.png}
+    \fbox{\includegraphics[width=\textwidth]{./images/statisiticspage.png}}
     \caption{Screenshot of the statistics page}
 \end{figure}
 
@@ -2037,15 +2042,11 @@ It would have been much easier for me to do a Linux-based project with my previo
 \\\\
 It is my opinion that this project has been a great success, with many objectives achieved, glowing user reviews, and a huge amount learned about HCI, serverless computing, \& modern web development.
 
-
-
-
-
-
-
 \appendix
 \chapter{Source Code}
 All files related to the source code of this project, including frontend source, backend source, diary files, and {\LaTeX} files for the project deliverables can be found in the project Git repository: \url{https://github.com/0hAodha/fyp}.
+The user evaluation survey results in CSV format can be found in this repository under \verb|/report/survey/results.csv|.
+
 
 \printbibliography
 \end{document}
