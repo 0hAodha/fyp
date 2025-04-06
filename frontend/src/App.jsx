@@ -41,6 +41,7 @@ const defaultFavourites = {
 function App() {
     const [favourites, setFavourites] = useState(defaultFavourites);
     const [showFaovouritesOnly, setShowFavouritesOnly] = useState(false);
+    const searchInputRef = useRef(null);
 
     useEffect(() => {
         try {
@@ -106,6 +107,22 @@ function App() {
             setUserLocation([53.4494762, -7.5029786]);
             setUserLocationAvailable(false);
         }
+    }, []);
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+                e.preventDefault(); // prevent browser search
+                if (searchInputRef.current) {
+                    searchInputRef.current.focus();
+                }
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
     }, []);
 
     const handleSearchChange = (e) => {
@@ -451,31 +468,59 @@ function App() {
                     <Route
                         path="/"
                         element={
-                            <div style={{ height: "100vh", width: "100vw", display: "flex", position: "relative", paddingTop: "5vh" }}>
-                                {loading && <LoadingOverlay message={"Loading data..."} />}
+                            <div style={{
+                                height: "100vh",
+                                width: "100vw",
+                                display: "flex",
+                                position: "relative",
+                                paddingTop: "5vh"
+                            }}>
+                                {loading && <LoadingOverlay message={"Loading data..."}/>}
                                 <div
                                     style={{
                                         position: "absolute",
-                                        top: "1vh",
+                                        top: "6vh",
                                         height: "5vh",
                                         width: "250px", minWidth: "50px",
                                         left: "50%",
                                         transform: "translateX(-50%)",
                                         zIndex: 1000,
-                                        ...(window.innerWidth < 800 ? { top: "auto", bottom: "10vh" } : {})
+                                        ...(window.innerWidth < 800 ? {top: "auto", bottom: "4vh"} : {})
                                     }}
                                 >
-                                    <input
-                                        type="text"
-                                        onChange={(e) => handleSearchChange(e)}
-                                        placeholder="Search..."
-                                        style={{
-                                            width: "250px", fontSize: "16px",
-                                            top: "6vh", marginTop: "5vh",
-                                            padding: "10px", background: "rgba(255, 255, 255, 0.9)", color: "black",
-                                            borderRadius: "10px", overflow: "hidden"
-                                        }}
-                                    />
+                                    <div style={{position: "relative"}}>
+                                        <input
+                                            ref={searchInputRef}
+                                            type="text"
+                                            onChange={(e) => handleSearchChange(e)}
+                                            placeholder="Search..."
+                                            style={{
+                                                width: "100%",
+                                                fontSize: "16px",
+                                                padding: "10px 40px 10px 10px", // space for badge
+                                                background: "rgba(255, 255, 255, 0.9)",
+                                                color: "black",
+                                                borderRadius: "10px",
+                                                border: "1px solid #ccc",
+                                                overflow: "hidden",
+                                            }}
+                                        />
+                                        <span style={{
+                                            position: "absolute",
+                                            right: "10px",
+                                            top: "50%",
+                                            transform: "translateY(-50%)",
+                                            background: "#f0f0f0",
+                                            border: "1px solid #ccc",
+                                            borderRadius: "6px",
+                                            fontSize: "12px",
+                                            padding: "2px 6px",
+                                            color: "#333",
+                                            fontFamily: "monospace"
+                                        }}>
+            Ctrl+K
+        </span>
+                                    </div>
                                 </div>
                                 <Sidebar
                                     selectedSources={selectedSources}
@@ -486,23 +531,25 @@ function App() {
                                     userLocationAvailable={userLocationAvailable}
                                     showFavouritesOnly={showFaovouritesOnly}
                                     setShowFavouritesOnly={setShowFavouritesOnly}
+                                    favourites={favourites}
                                 />
-                                <div style={{ flex: 1 }}>
+                                <div style={{flex: 1}}>
                                     <MapComponent
                                         markers={filteredMarkers}
                                         clusteringEnabled={clusteringEnabled}
                                         userLocationAvailable={userLocationAvailable}
-                                        />
+                                    />
                                 </div>
                             </div>
                         }
                     />
-                    <Route path="/statistics" element={<Statistics />} />
-                    <Route path="/help" element={<Help />} />
+                    <Route path="/statistics" element={<Statistics/>}/>
+                    <Route path="/help" element={<Help/>}/>
                 </Routes>
             </Router>
             <ToastContainer position="bottom-right"/>
         </>
     );
 }
+
 export default App;

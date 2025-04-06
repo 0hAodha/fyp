@@ -138,6 +138,19 @@ const CheckboxItem = ({ item, selectedSources, setSelectedSources, enabledSource
                 />
                 <label htmlFor={item.id} style={{ cursor: isDisabled ? "not-allowed" : "pointer" }}>
                     {item.name}
+                    {item.id === "luas-stops" && (
+                        <span
+                            title="To view live Luas data, click on a stop and click 'Load Inbound/Outbound Trams'"
+                            style={{
+                                display: "inline-block",
+                                color: "#666",
+                                fontSize: "14px",
+                                cursor: "help",
+                                marginLeft: "4px"
+                            }}
+                        >  🛈
+        </span>
+                    )}
                 </label>
             </div>
             {hasChildren && (
@@ -164,7 +177,7 @@ const CheckboxItem = ({ item, selectedSources, setSelectedSources, enabledSource
     );
 };
 
-const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setClusteringEnabled, fetchData, userLocationAvailable, showFavouritesOnly, setShowFavouritesOnly }) => {
+const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setClusteringEnabled, fetchData, userLocationAvailable, showFavouritesOnly, setShowFavouritesOnly, favourites }) => {
     const [isOpen, setIsOpen] = useState(true);
     const [enabledSources, setEnabledSources] = useState([]);  // New state to track enabled sources
     const [numberInputValue, setNumberInputValue] = useState("");  // State to manage number input value
@@ -196,6 +209,12 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
     const handleSubmit = () => {
         Cookies.set("selectedSources", JSON.stringify(selectedSources), { expires: 365 });
         Cookies.set("numberInputValue", numberInputValue, { expires: 365 });  // Save numberInputValue to cookie
+
+        if (showFavouritesOnly && (!favourites.length || favourites.length < 1)) {
+            toast.warn("You haven't added any favourites yet!");
+            return;
+        }
+
         fetchData(enabledSources, numberInputValue);  // Use enabledSources for data fetching
     };
 
