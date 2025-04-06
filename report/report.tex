@@ -99,6 +99,15 @@
     \end{center}
 \end{titlepage}
 
+\chapter*{Acknowledgements}
+\addcontentsline{toc}{chapter}{Acknowledgements}
+I would like to extend my gratitude to my project supervisor, Dr. Adrian Clear for his willingness to take on an additional project for supervision proposed by a student, and his continued support over the past 8 months;
+without his continuous flexibility \& support throughout this project, the tight development cycles and fast iterations that were employed would not have been possible.
+\\\\
+I would also like to extend my gratitude to everyone who participated in the user evaluation for this project:
+their willingness to engage with \& provide feedback on this project proved invaluable in making the design as useful \& as functional as possible, and it would not be what it is today without their input.
+
+
 \pagenumbering{roman}
 \newpage
 \tableofcontents
@@ -960,6 +969,13 @@ The \verb|fetch_permanent_data| function retrieves Irish Rail Station data direc
 instead, the Luas stop data is made available online in a tab-separated \verb|TXT| file, and the bus stop \& bus route data are available online in comma-separated \verb|TXT| files distributed as a single ZIP file.
 This makes little difference to the data processing however, as downloading a file from a server and parsing its contents is little different in practice from downloading an API response from a server and parsing its contents.
 The function runs asynchronously with a thread per type of data being fetched (train station data, Luas stop data, and bus stop \& route data), and once each thread has completed, batch uploads the data to the permanent data table, overwriting its existing contents.
+\\\\
+User testing conducted at the end of the development phase for this project revealed that the frontend's live map was missing several Luas stops, and inspection of the permanent data database revealed that these stops were not present in the database either.
+Under further investigation, it transpired that the official Luas stop datasets distributed by Transport Infrastructure Ireland and by \url{data.gov.ie} are missing several Luas stops on the Green Line\supercite{tfiluasdata, luasstopsdata}:
+these datasets have not been updated since 2015, and the Green Line was extended in 2017\supercite{greenlineextension}.
+Because this is the only official Luas dataset publicly available online, these additional stops were manually added to this Lambda function so that the live map could be accurate \& useful.
+In the unlikely event that this dataset does eventually get updated by those responsible for it, the function will not duplicate any entries as they will have the same \verb|objectID| and so only one will be uploaded to the database, preventing any inconsistencies.
+
 
 \subsubsection{\mintinline{python}{fetch_transient_data}}
 The \verb|fetch_transient_data| function operates much like the \verb|fetch_permanent_data| function, but instead updates the contents of the transient data table.
@@ -1165,6 +1181,8 @@ Therefore, updating the backend code will most likely necessitate updating the f
 For this reason, MVC is most commonly used for applications in which the backend \& the frontend are controlled by the same codebase, and especially for application in which the frontend rendering is done server-side.
 The Container/Presentational pattern, however, is \textit{loosely coupled}\supercite{mcnatt2001coupling} with the backend and therefore the frontend \& the backend can be updated almost independently of one another as long as the means \& format of data transmission remain unchanged, thus making development both faster \& easier, and mitigating the risk of introducing breaking changes.
 The Container/Presentational pattern lends itself particularly well to React development, as React code is rendered client-side and makes extensive use of components: the Container/Presentational pattern just ensures that this use of components is done in a way that is logical \& maintainable.
+\\\\
+In keeping with the Agile principle of continuous improvement\supercite{agilemanifesto}, the frontend design has been updated in accordance with user feedback to address issues as they become known. 
 
 \section{Main Page}
 \begin{figure}[H]
@@ -1182,7 +1200,9 @@ The data is retrieved and processed in a function named \mintinline{javascript}{
 When the ``Submit'' button is clicked in the filters side-panel, the function is triggered and sends asynchronous API requests to the \verb|/return_permanent_data| and \verb|/return_transient_data| API endpoints as necessary.
 The \verb|App.jsx| file contains a JavaScript object which identifies what checkboxes in the side-panel pertain to \verb|objectType|s in the backend, and which API endpoint they can be sourced from.
 When the function is fetching data, it constructs a comma-separated list of selected \verb|objectType|s to send to each API endpoint, thereby making only one request to each API endpoint to avoid unnecessary repeated queries.
-\\\\
+In order to avoid unnecessary \verb|GET| requests, this function was originally only run when the user clicked ``Submit'', but this was changed due to user feedback as users were confused as to why no data appeared when they first opened the application;
+now, this function is automatically executed on page load.
+\\\
 Originally, the returned data was processed using JavaScript functional array methods\supercite{arraymethods} (very superficially similar to the Java \mintinline{java}{Stream}\supercite{javastream} interface), which allow for the creation of chained operations on arrays, not dissimilar to chained shell operations using the pipe (\mintinline{shell}{|}) operator on UNIX-like systems\supercite{redhatpipe}.
 Methods like \mintinline{javascript}{.map()}, \mintinline{javascript}{.reduce()}, etc. are some of the methods covered in JavaScript functional array methods which allow data processing pipelines to be specified in a clean, elegant, \& readable manner.
 However, the price of this elegance is slower and less efficient execution:
@@ -1366,6 +1386,7 @@ Haversine distance is not too computationally expensive, and guarantees a reliab
 When the data is being fetched, a pop-up is created for each new marker collected, to be displayed when the marker is clicked. 
 For each \verb|objectType|, there is a separate React component for its pop-up to which the item's data is passed so that it can be rendered differently depending on the service type.
 The \verb|IrishRailTrain| pop-up, \verb|Bus| pop-up, \& \verb|BusStop| are the most similar and the simplest, as they simply display information passed into their respective components, the only variance being that different \verb|objectType|s have different fields to display.
+On mouse-over of a marker icon, a tool-tip displays the item's title, as user feedback expressed that it would be useful for the item's title to be displayed on mouse-over so that the user doesn't have to click into the pop-up to see the service to which a marker belongs.
 \\\\
 Each pop-up has a ``star'' button which, when clicked, adds the selected item to a list of the user's ``favourite'' services, which is stored as a cookie in the user's browser.
 This cookie is loaded when the main page is loaded and updated every time an item is toggled to be ``starred'' or not.
@@ -1425,12 +1446,40 @@ The component appears in the top-right hand corner of the screen, and can be min
 When a user clicks ``Submit'', the \mintinline{js}{fetchData()} function is invoked with the selected filters, and these selected filters are saved as a cookie to the user's browser; 
 this cookie is loaded when the main page is first loaded, so that a user's last used filters are pre-selected for them when they open the application.
 Even the value of the ``Within KM'' number is stored as a cookie and loaded in with page load so that a user's experience is a seamless as possible between uses.
+These saved filters are applied automatically when the data is first being fetched as the page loads so as to reduce the user's workload and need to interact with the application.
 \\\\
 The first three top-level filters determine what data sources are used: Irish Rail, Bus, and/or Luas Stops.
 If a top-level or second-level filter is deselected, all its child filters are greyed out and cannot be interacted with until all its parents are selected. 
-By default, if no cookie is stored for a user, the top-level filters are all deselected and all of their children are selected, making it as easy as possible for the user to select what they want to filter by.
+Initially, if no cookie was stored for a user, the top-level filters would all be deselected and all of their children would be selected, in an effort to allow the user to only include the filters that they wanted to include;
+however, user feedback indicated that this was annoying \& cumbersome, so the panel was updated to default to displaying all the live data available on page load, 
+with ``Irish Rail Trains'', ``Bus'', and ``Luas Stops'' selected and all of their children.
 The only exception to this are the ``Must be Park \& Ride'' and the ``Must be Cycle \& Ride'' filters underneath ``Luas Stops'': these filters are more restrictive, and hide any item that does not match them, and so are not selected by default.
 \\\\
+In the initial design, any checkbox could be de-selected as the user pleased but this had the negative side-effect of there being filter selection combinations that would necessarily display no data, for example if ``Mainline'', ``Suburban'', and ``DART'' were de-selected then there would be no Irish Rail Train fulfilling the criteria of being not one of those three train types, and so no train data could be displayed;
+this caused confusion and frustration in users.
+There was also no indication of which filters shared these dependencies: all the child filters of a filter were just listed vertically.
+To address these issues, functionally dependent filters were grouped together with the use of horizontal rules to indicate groupings in a subtle yet intuitive manner.
+Then, in keeping with Nielsen's usability heuristic of ``Error Prevention'', the panel was updated so that it was no longer possible to de-select every filter in a dependent group;
+if a user attempts to do so, a notification will appear to inform them that they must have at least one filter from that group must be selected (also in keeping with the Nielsen's heuristic of ``Visibility of System Status'' and ``Help Users Recognise, Diagnose, \& Recover from Errors''.
+For example, if a user de-selects the ``Terminated'' and ``Not yet running'' filters for Irish Rail Trains, they will be prevented from de-selecting the ``Running'' filter, as a train must be in at least one of those three states.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{./images/mmustselectatleastone.png}
+    \caption{Notification displayed to user if they attempt to deselect all filters in a dependent group }
+\end{figure}
+
+Another addition that was made in response to user feedback was the addition of a information icon \& an information tooltip that appears on mouse-over, which explains how to see live tram data:
+some users expressed confusion about the unavailability of live tram location data, and suggested that the information be made more readily accessible to the user than in a help page that the user has to click into themselves.
+The addition of this tooltip makes the information easily \& readily accessible, without excessively cluttering up the user interface.
+This is in keeping with Nielsen's heuristic of ``Help \& Documentation'', which suggests that documentation (should it be required) ought to be presented in context right at the moment that the user requires it.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{./images/luasstopsmouseover.png}
+    \caption{Information tooltip which is displayed on mouse-over of the Luas Stops filter}
+\end{figure}
+
 The ``Cluster overlapping icons'' option does not change what data is shown, but how it is shown;
 by default, any items whose icons overlap one another's at the current zoom level are \textit{clustered} into a single icon that displays the number of items which are contained within it using a Leaflet plug-in called \verb|Leaflet.markercluster|\supercite{leaflet_markercluster}.
 This option toggles this behaviour, which may be desirable depending on the user's preferences, especially when only few items are being displayed in a small geographical area. 
@@ -1467,6 +1516,11 @@ if the data sources selected did not change but a display filter did (for exampl
 Not requesting new data would mean a faster loading time and a more responsive program, at the cost of showing the user potentially out-of-date data.
 It was decided that each new click of ``Submit'' should always fetch new data, to align the program as much as possible with the user's mental model of the program, in keeping with the HCI principle of \textbf{conceptual model alignment}\supercite{norman_design_2013}: the behaviour of the application should match how the user imagines it to behave.
 Users are familiar with the ``make selections, then confirm'' paradigm, and will expect the submit button to do the same thing each time (which aligns with Nielsen's usability heuristic of ``Consistency \& Standards'' and of ``speaking the user's language''\supercite{nielsenheuristics}).
+\\\\
+In keeping with Nielsen's heuristic of ``User Control \& Freedom'' (which suggests that there should be a clearly accessible ``undo'' button to allow users to back out of a process to foster a sense of freedom \& confidence, and to allow them to avoid getting stuck), a ``Reset'' button was added to the panel which resets the selected filters to the last saved selection for the user (or the default selection if there is no last saved selection);
+this means that if a user makes or mistake or wants to backtrack, they can do so easily.
+\\\\
+The initial design for this application had the filters panel minimised by default for a clean \& minimalist aesthetic, but user testing \& feedback showed that the panel should be maximised by default so that users can easily see how they are supposed with the application and know where to look for controls.
 
 \subsubsection{Search Bar}
 The search bar allows the user to further refine the displayed items beyond what is possible with the filters side-panel by specifying text that should be present in the marker.
@@ -1493,6 +1547,11 @@ To address this, if the number of items being displayed is so high that it will 
 \\\\
 The search function makes use of the \mintinline{js}{useMemo}\supercite{usememo} React hook to cache the results of filtering the markers based off the search text, and making it so that it will only be re-calculated if the search term changes or if the markers change.
 Without \mintinline{js}{useMemo}, every re-render of the page would cause the filter function to run even if nothing had changed, which would be a huge waste of computational resources.
+\\\\
+Finally, the keyboard shortcut \verb|CTRL + K| was added to allow advanced users to speed up search interactions and focus the search bar without having to remove their hands from the keyboard, in keeping with Nielsen's heuristic of ``Flexibility \& Efficiency of use'' which says that shortcuts can speed up interactions for expert users so that the design can cater to both experienced \& inexperienced users:
+inexperienced users can focus the search bar the simple \& intuitive way using the mouse, and experienced users can do it in a faster manner using the keyboard.
+
+
 \subsubsection{Map}
 The map component itself is the presentational component in which all of the mapping \& plotting functionality is performed, implemented using the Leaflet\supercite{leaflet} mapping library and map tiles from OpenStreetMap\supercite{osm};
 this option was chosen as it is lightweight \& performant, free to use, and is flexible \& customisable.
@@ -1538,9 +1597,11 @@ Since the data for this application fulfils these criteria, and because testing 
 The help page is a very simple web page that just contains questions and answers on how to perform basic tasks, such as favouriting an item or viewing real-time Luas information.
 It is intended to be user-friendly and easy to search through; 
 this is in part facilitated through its minimalist design (achieved with TailwindCSS) which attempts to prevent the user from having to sift through irrelevant information to find out how to perform a basic task.
+A legend of the icons used \& their meanings was added in response to a user request for a legend.
 
-\chapter{Evaluation}
-\section{Objectives Completed}
+\chapter{Evaluation \& Conclusion}
+\section{Evaluation}
+\subsection{Objectives Completed}
 Each of the core objectives set out for this project were completed:
 \begin{enumerate}
     \item   A live map of train, DART, bus, \& Luas services in Ireland was created which displays the real-time whereabouts about the service, relevant information about that particular service, and the punctuality of the service, to the extent that is possible with publicly-available data.
@@ -1595,7 +1656,7 @@ However, not all of the secondary objectives which were set out at the beginning
             In practice, there would need to be some kind of moderation of this review system to prevent spam, vandalism, \& to remove unhelpful reviews.
 
     \item   The web application was not made available online with a dedicated domain name.
-            The first reason for this is simply to avoid the cost of acquiring a dedicated domain name, but the site could be made available online using an AWS S3 bucket\supercite{s3} (essentially serverless flat file storage) to store the website's build files, and accessed using the auto-generated S3 static endpoint URL;
+            The first reason for this is simply to avoid the cost of acquiring a dedicated domain name, but the site nonetheless could be made available online using an AWS S3 bucket\supercite{s3} (essentially serverless flat file storage) to store the website's build files, and accessed using the auto-generated S3 static endpoint URL;
             the second reason is that this would expose the application more fully to the open Internet, which could increase the number of API calls made, Lambda functions triggered, and risk pushing the application out of the free tier, although the risk of this is really quite low.
             The third and primary reason why this was not implemented is that its low priority led it to being sidelined in favour of more mission-critical work.
 
@@ -1609,66 +1670,110 @@ However, not all of the secondary objectives which were set out at the beginning
 Overall, $\frac{14}{18} = 77.\dot{7} \%$ of the specified objectives were completed, including $100\%$ completion of the core objectives, and completion of the majority of the secondary objectives;
 objectives that were not completed were nonetheless researched and planned.
 
-\section{Heuristic Evaluation: Nielsen's 10}
-Nielsen's 10 usability heuristics for user interface design are a commonly-applied evaluation framework used by UX professionals to identify common usability issues, and so the application was defined with these heuristics in mind.
+\subsection{Heuristic Evaluation: Nielsen's 10}
+Nielsen's 10 usability heuristics for user interface\supercite{nielsenheuristics} design are a commonly-applied evaluation framework used by UX professionals to identify common usability issues, and so the application was defined with these heuristics in mind.
+Nielsen's 10 usability heuristics provide a comprehensive, research-backed framework for evaluating the usability of user interfaces and are widely accepted in the field of Human-Computer Interaction, in particular for their general yet actionable nature which makes them applicable to nearly any user interface.
 
-\subsection{Visibility of System Status}
+\subsubsection{Visibility of System Status}
 \begin{quote}
     \textit{The design should always keep users informed about what is going on, through appropriate feedback within a reasonable amount of time}
 \end{quote}
 
-\subsection{User Control \& Freedom}
+The system status of the application at any given time is displayed clearly to the user, in an intuitive manner:
+\begin{itemize}
+    \item   The live location of each service is plotted on the map, clearly indicating the geographical state of each item. 
+    \item   Each item has a colour-coded icon that tells the user the type of service it is, and specific information about that particular service beyond type, e.g., if the train is late or if the Luas stop belongs to the green line.
+    \item   The details of each item plotted on the map are displayed in a clear format and are readily available: 
+            a tooltip which appears on mouse-over tells the user the service to which a marker belongs, and clicking on a marker displays a pop-up where the information about the service is laid out clearly in text form.
+            This pop-up is pre-generated as the live data is fetched \& parsed, so it loads as quickly as the DOM can be updated.
+    \item   Whenever data is being fetched, a loading screen is displayed with variable text that changes depending on what's being loaded:
+            for example, when the user's location is being determined it says ``Attempting to determine the current location...'' (subtly informing the user that it may not successfully determine the location if, say, GPS data is disabled on the user's device), and when the data is being fetched it says ``Loading data...''.
+            Individual graphs on the Statistics page that may take longer to load than other graphs have their own loading overlays, for example, the heatmap has an overlay that says ``Loading heatmap...''.
+
+    \item   Whether or not an item is ``favourited'' is clearly indicated in the top right-hand corner of the item's pop-up, which updates instantly as the item is toggled as a favourite.
+
+    \item   When a user is prevented from taking an action that would produce undesired behaviour, such as when the user is prevented from de-selecting all the filters in a single group such as ``Mainline'', ``Suburban'', \& ``DART'' (because any train must be at least one of those three), a notification is displayed telling the user what happened and how they can avoid it in the future.
+
+    \item   The filters panel uses the widely-recognisable \& widely-understood checkbox to indicate whether or not a filter is applied, which updates as soon as the checkbox is clicked.
+\end{itemize}
+
+Potential for improvement in this domain could include displaying the timestamp of when the data displayed was obtained in a status bar at the bottom of the screen, along with other pieces of information like the number of items displayed.
+
+\subsubsection{Match Between the System \& the Real World}
+\begin{quote}
+    \textit{The design should speak the users' language. Use words, phrases, and concepts familiar to the user, rather than internal jargon. Follow real-world conventions, making information appear in a natural and logical order.}
+\end{quote}
+
+The application seeks to match the user's expected meaning for any term, symbol, or value displayed.
+\begin{itemize}
+    \item   averages
+    \item   names of filters
+    \item   submit button mental models
+    \item   filters displayed in natural and logical order
+    \item   no internal jargon used
+    \item   intuitive icons 
+    \item   favourites instead of saved services or something stupid
+\end{itemize}
+
+\subsubsection{User Control \& Freedom}
 \begin{quote}
     \textit{Users often perform actions by mistake. They need a clearly marked "emergency exit" to leave the unwanted action without having to go through an extended process.}
 \end{quote}
 
-\subsection{Consistency \& Standards}
+\subsubsection{Consistency \& Standards}
 \begin{quote}
     \textit{ Users should not have to wonder whether different words, situations, or actions mean the same thing. Follow platform and industry conventions. }
 \end{quote}
 
-\subsection{Error Prevention}
+\subsubsection{Error Prevention}
 \begin{quote}
     \textit{ Good error messages are important, but the best designs carefully prevent problems from occurring in the first place. Either eliminate error-prone conditions, or check for them and present users with a confirmation option before they commit to the action. }
 \end{quote}
 
-\subsection{Recognition Rather than Recall}
+\subsubsection{Recognition Rather than Recall}
 \begin{quote}
     \textit{ Minimize the user's memory load by making elements, actions, and options visible. The user should not have to remember information from one part of the interface to another. Information required to use the design (e.g. field labels or menu items) should be visible or easily retrievable when needed. }
 \end{quote}
 
-\subsection{Flexibility \& Efficiency of Use}
+\subsubsection{Flexibility \& Efficiency of Use}
 \begin{quote}
     \textit{ Shortcuts — hidden from novice users — may speed up the interaction for the expert user so that the design can cater to both inexperienced and experienced users. Allow users to tailor frequent actions. }
 \end{quote}
 
-\subsection{Aesthetic \& Minimalist Design}
+\subsubsection{Aesthetic \& Minimalist Design}
 \begin{quote}
     \textit{ Interfaces should not contain information that is irrelevant or rarely needed. Every extra unit of information in an interface competes with the relevant units of information and diminishes their relative visibility. }
 \end{quote}
 
-\subsection{Help users Recognise, Diagnose, \& Recover from Errors}
+\subsubsection{Help users Recognise, Diagnose, \& Recover from Errors}
 \begin{quote}
     \textit{ Error messages should be expressed in plain language (no error codes), precisely indicate the problem, and constructively suggest a solution. }
 \end{quote}
 
-\subsection{Help \& Documentation}
+\subsubsection{Help \& Documentation}
 \begin{quote}
     \textit{ It’s best if the system doesn’t need any additional explanation. However, it may be necessary to provide documentation to help users understand how to complete their tasks. }
 \end{quote}
 
-\section{User Evaluation}
+\subsection{User Evaluation}
 
-\chapter{Conclusion}
+\subsection{Future Work}
 
-
-
-
+\subsection{Conclusion}
 
 
 
 
+
+
+
+
+
+
+\appendix
+z
+\chapter{Source Code}
+All files related to the source code of this project, including frontend source, backend source, diary files, and {\LaTeX} files for the project deliverables can be found in the project Git repository: \url{https://github.com/0hAodha/fyp}.
 
 \printbibliography
-
 \end{document}
