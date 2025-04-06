@@ -171,6 +171,20 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
         fetchData(enabledSources, numberInputValue);  // Use enabledSources for data fetching
     };
 
+    const resetFilters = () => {
+        const savedSources = Cookies.get("selectedSources");
+        const savedNumberInputValue = Cookies.get("numberInputValue");
+
+        if (savedSources) {
+            setSelectedSources(JSON.parse(savedSources));
+        } else {
+            setSelectedSources(customDefaultChecked);
+        }
+
+        setNumberInputValue(savedNumberInputValue || "");
+    };
+
+
     return (
         <div style={{
             position: "absolute", top: "6vh", right: "1vh",
@@ -206,43 +220,80 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
                         <label htmlFor={"showFavouritesOnly"}>Show Favourites Only</label>
                     </div>
 
-                        <div style={{marginTop: "10px", display: "flex", alignItems: "center", gap: "4px"}}>
-                            <input
-                                type="checkbox"
-                                id="toggleClustering"
-                                checked={clusteringEnabled}
-                                onChange={() => setClusteringEnabled(!clusteringEnabled)}
-                            />
-                            <label htmlFor="toggleClustering">Cluster overlapping icons</label>
-                        </div>
-                        {userLocationAvailable && (
-                            <div style={{marginTop: "10px", display: "flex", alignItems: "center", gap: "8px"}}>
-                                <label htmlFor="numberInput" style={{maxWidth: "40%"}}>Within KM:</label>
-                                <input
-                                    type="number"
-                                    id="numberInput"
-                                    value={numberInputValue}
-                                    onChange={(e) => setNumberInputValue(e.target.value)}
-                                    style={{maxWidth: "40%"}}
-                                />
-                            </div>
-                        )}
-                        <button onClick={handleSubmit} style={{marginTop: "10px", color: "white"}}>Submit</button>
+                    <div style={{marginTop: "10px", display: "flex", alignItems: "center", gap: "4px"}}>
+                        <input
+                            type="checkbox"
+                            id="toggleClustering"
+                            checked={clusteringEnabled}
+                            onChange={() => setClusteringEnabled(!clusteringEnabled)}
+                        />
+                        <label htmlFor="toggleClustering">Cluster overlapping icons</label>
                     </div>
+                    {userLocationAvailable && (
+                        <div style={{marginTop: "10px", display: "flex", alignItems: "center", gap: "8px"}}>
+                            <label htmlFor="numberInput" style={{maxWidth: "40%"}}>Within KM:</label>
+                            <input
+                                type="number"
+                                id="numberInput"
+                                value={numberInputValue}
+                                onChange={(e) => setNumberInputValue(e.target.value)}
+                                style={{maxWidth: "40%"}}
+                            />
+                        </div>
                     )}
+                    <div style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        gap: "10px",
+                        marginTop: "10px",
+                        width: "100%"
+                    }}>
+                        <button
+                            onClick={handleSubmit}
+                            style={{
+                                flex: 1,
+                                color: "white",
+                                backgroundColor: "#4CAF50",
+                                padding: "6px 12px",
+                                borderRadius: "5px",
+                                border: "none",
+                                cursor: "pointer"
+                            }}
+                        >
+                            Submit
+                        </button>
+                        <button
+                            onClick={resetFilters}
+                            style={{
+                                flex: 1,
+                                color: "white",
+                                backgroundColor: "#f44336",
+                                padding: "6px 12px",
+                                borderRadius: "5px",
+                                border: "none",
+                                cursor: "pointer"
+                            }}
+                        >
+                            Reset
+                        </button>
+                    </div>
+
                 </div>
-            );
-            };
+            )}
+        </div>
+    );
+};
 
-            Sidebar.propTypes = {
-            selectedSources: PropTypes.array.isRequired,
-            setSelectedSources: PropTypes.func.isRequired,
-            clusteringEnabled: PropTypes.bool.isRequired,
-            setClusteringEnabled: PropTypes.func.isRequired,
-            fetchData: PropTypes.func.isRequired,
-            userLocationAvailable: PropTypes.bool.isRequired,
-            showFavouritesOnly: PropTypes.bool.isRequired,
-            setShowFavouritesOnly: PropTypes.func.isRequired,
-        };
+Sidebar.propTypes = {
+    selectedSources: PropTypes.array.isRequired,
+    setSelectedSources: PropTypes.func.isRequired,
+    clusteringEnabled: PropTypes.bool.isRequired,
+    setClusteringEnabled: PropTypes.func.isRequired,
+    fetchData: PropTypes.func.isRequired,
+    userLocationAvailable: PropTypes.bool.isRequired,
+    showFavouritesOnly: PropTypes.bool.isRequired,
+    setShowFavouritesOnly: PropTypes.func.isRequired,
+};
 
-            export default Sidebar
+export default Sidebar
