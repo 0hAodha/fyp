@@ -628,7 +628,7 @@ Partitioning the table by \verb|objectID| would make querying by \verb|objectID|
 Instead, the permanent data table uses a composite primary key, using the \verb|objectType| as the partition key and the \verb|objectID| as the sort key.
 Thus, it is very efficient to query by \verb|objectType| and return, for example, all the bus stops and Luas stops in the country.
 \\\\
-Technically speaking, there is some redundant data in each primary by using the \verb|objectID| as the sort key when the partition key is the \verb|objectType|: since the \verb|objectID| already contains the \verb|objectType|, it is repeated.
+Technically speaking, there is some redundant data in each primary key by using the \verb|objectID| as the sort key when the partition key is the \verb|objectType|: since the \verb|objectID| already contains the \verb|objectType|, it is repeated.
 However, the unique identifier for each item is different depending on the system from which it was sourced:
 for train stations, the unique identifier is named \verb|trainStationCode|, while the unique identifier for bus stops is named \verb|busStopID|.
 To use these fields as sort key, they would have to be renamed in each item to some identical title, thus adding overhead to the process of fetching data, and making the table less human-readable.
@@ -1012,7 +1012,7 @@ This step function is triggered by a (currently disabled) Amazon EventBridge sch
 Furthermore, the data from which bus data is sourced will time out if requests are made too frequently, so this value was determined to be appropriate after testing to avoid overwhelming the API or getting timed-out. 
 It is possible to run EventBridge schedules even more frequently using the \textit{rate-based schedule} schedule type instead of the \textit{cron-based schedule} schedule type but a more frequent schedule would be inappropriate for this application.
 
-\subsubsection{\mintinline{python}{update_average_punctuality}}
+\subsubsection{\mintinline{python}{update_average_punctuality}}\label{sec:update_average_punctuality}
 The \verb|update_average_punctuality| function runs after \verb|fetch_transient_data| in a step function and populates the average punctuality by \verb|objectID| and average punctuality by \verb|timestamp| tables to reflect the new data collected by \verb|fetch_transient_data|.
 For each item in the new data, it updates the average punctuality in the average punctuality by \verb|objectID| table according to the aforementioned formula:
 \[
@@ -1434,7 +1434,7 @@ This information is then displayed in the pop-up itself, with a scrollbar if the
     \caption{Demonstration of the ``favourite'' functionality with buses}
 \end{figure}
 
-\subsubsection{Filters Side-Panel}
+\subsubsection{Filters Side-Panel}\label{sec:filters_side_panel}
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.3\textwidth]{./images/filterspanel.png}
@@ -1673,6 +1673,10 @@ objectives that were not completed were nonetheless researched and planned.
 \subsection{Heuristic Evaluation: Nielsen's 10}
 Nielsen's 10 usability heuristics for user interface\supercite{nielsenheuristics} design are a commonly-applied evaluation framework used by UX professionals to identify common usability issues, and so the application was defined with these heuristics in mind.
 Nielsen's 10 usability heuristics provide a comprehensive, research-backed framework for evaluating the usability of user interfaces and are widely accepted in the field of Human-Computer Interaction, in particular for their general yet actionable nature which makes them applicable to nearly any user interface.
+\\\\
+In a business setting, this heuristic-based analysis would be carried out by a disinterested, third-party HCI professional or expert;
+in the absence of such an evaluation, I have attempted to provide a reasonably \& fair heuristic-based analysis below, that is as unbiased as is possible for an evaluation of an application done by the developer of said application.
+It is my opinion that, as a result of development having been carried out with these heuristics in mind, that the application fulfils each of Nielsen's 10 usability heuristics to a high degree, with some room for marginal improvements in some areas.
 
 \subsubsection{Visibility of System Status}
 \begin{quote}
@@ -1704,65 +1708,334 @@ Potential for improvement in this domain could include displaying the timestamp 
     \textit{The design should speak the users' language. Use words, phrases, and concepts familiar to the user, rather than internal jargon. Follow real-world conventions, making information appear in a natural and logical order.}
 \end{quote}
 
-The application seeks to match the user's expected meaning for any term, symbol, or value displayed.
+The application seeks to match the user's expected meaning for any term, symbol, or value displayed and avoids any technical terminology or jargon that is not immediately obvious in its meaning.
 \begin{itemize}
-    \item   averages
-    \item   names of filters
-    \item   submit button mental models
-    \item   filters displayed in natural and logical order
-    \item   no internal jargon used
-    \item   intuitive icons 
-    \item   favourites instead of saved services or something stupid
-\end{itemize}
+    \item   As detailed in \secref{sec:update_average_punctuality}, the average calculation employed was carefully considered to be as intuitive and immediately understandable as possible to the user;
+            while it is a design flaw if a user doesn't know what is meant by a term used, it is an even worse design flaw if the user thinks they know what is meant by a term used but it doesn't actually mean what they expect it to mean.
+            Therefore, it was of great importance that the average value shown to users was easily understood and what they expected it to be.
+
+    \item   Each filter is named in such a way so that it is immediately obvious how it affects what results are displayed;
+            each filter that is a sub-filter applied to items selected in another filter is displayed visually below and indented to make it clear that the filter in question is a child filter or subordinate to the parent filter, i.e., in a natural \& logical order.
+            Filters that are naturally grouped together in the real world, like the different punctuality filters are delimited with a horizontal rule to make it clear that they are grouped together.
+            This natural mapping\supercite{naturalmapping} makes it easier for users to learn \& remember how the interface works, and to build an experience that feels intuitive.
+
+    \item   As detailed in \secref{sec:filters_side_panel}, much thought was put into making the behaviour of data fetching align with the user's conception of how the data fetching should work, and it was decided that the optimal way to do this would be with the ``make selections, then confirm'' paradigm.
+
+    \item   Nowhere in the UI is esoteric or unusual technical jargon used to describe an aspect of the application;
+            familiar transport terms like ``stop'' and ``route'' are used, and no technical reference is made to the internal operation of the software.
+            To a non-technical user, it has the appearance of ``just working''.
+
+    \item   As previously mentioned, each icon has a unique icon that depicts the public transport type it represents, which utilises familiar imagery to convey a message to users quickly
+            Icons are colour-coded to imply meaning: for example, a black semi-transparent train is not active at the moment, a green train is on time or early, and a red train is late.
+
+    \item   The term ``favourites'' was chosen for the list of services that the user has marked as being of interest to them;
+            a more technically precise term would be something like ``Saved \verb|objectID| list'', but ``favourites'' is much more quickly understood and is not confusing for non-technical users.
+    \end{itemize}
 
 \subsubsection{User Control \& Freedom}
 \begin{quote}
     \textit{Users often perform actions by mistake. They need a clearly marked "emergency exit" to leave the unwanted action without having to go through an extended process.}
 \end{quote}
 
+The application emphasises user control, allowing users to specify whatever combination of filters they see fit (that will return results), and supporting a diverse range of navigation styles such as searching the map with the search bar for a specific service, looking for the service manually on the map, or limiting down the displayed results with filters. 
+In addition to these user controls, the application gives greater control to users with:
+\begin{itemize}
+    \item   The ``Reset'' button in the filters side-panel which can be used to reset the filters to the last saved state if the user has accidentally made a wrong selection or has changed their mind about something (similar to the ``undo'' button of which Nielsen speaks).
+    \item   The browser forward \& back buttons are supported with the use of React Router, something that is not guaranteed for single page applications;
+            if a user visits the statistics or the help page, they can return to the map page by using their browser back buttons, where the application will still be displaying the results of their last search and the filters / search terms used.
+\end{itemize}
+
+There is potential scope for future improvements for this heuristic:
+a button to cancel the fetching of new data on the loading screen could be used to allow the user to change their mind after clicking ``Submit'', especially if they've selected filters that will produce a large number of items to be displayed or if they're on a weak network connection.
+However, the loading speed of the application is fast enough on a moderately fast network that loading a normal selection of filters takes a few seconds at worst, so this is not a particularly critical feature to have.
+Other possible future work includes storing the full history of filters applied by the user so they can skip back through them with dedicated forward \& back buttons, and to store the user's search history so that it appears as suggestions in the search bar as the user types.
+
 \subsubsection{Consistency \& Standards}
 \begin{quote}
     \textit{ Users should not have to wonder whether different words, situations, or actions mean the same thing. Follow platform and industry conventions. }
 \end{quote}
 
+Re-inventing the wheel has been consistently avoided throughout the design of this application:
+if there is a standard and well-understood way of doing something, it was applied in the UI design to make it as simple \& intuitive to use as possible.
+\begin{itemize}
+    \item   As mentioned previously, the ``Submit'' is designed to behave in a way that is consistent \& understandable.
+    \item   The map interactions with Leaflet \& OpenStreetMap support standard \& well-established navigation controls:
+            zoom in/out buttons in the top left-hand corner, scroll to zoom, \verb|+|/|-| keys to zoom, panning by dragging, panning by arrow keys.
+    \item   The keyboard shortcut to focus the search bar (\verb|Ctrl+K|) is a commonly used keyboard shortcut for 
+    \item   The navigation bar component was deliberately designed to be as unsurprising as possible.
+    \item   The means for displaying additional information about a marker by clicking on it is standard across many mapping applications, such as Google Maps\supercite{gmaps}.
+    \item   The checkbox filters used in the filters panel are easily understood \& recognised, and are well-established web features.
+    \item   As mentioned previously, consistent \& standard terms are used throughout the applicatoin.
+    \item   The layout \& theming of the application is consistent throughout the entire application.
+\end{itemize}
+
+
 \subsubsection{Error Prevention}
 \begin{quote}
     \textit{ Good error messages are important, but the best designs carefully prevent problems from occurring in the first place. Either eliminate error-prone conditions, or check for them and present users with a confirmation option before they commit to the action. }
 \end{quote}
+User feedback was used to identify error-prone conditions and prevent them from happening. 
+There were some situations in the application that were identified as never being something that a user with perfect knowledge would deliberately do, such as submitting the filters with none selected.
+\begin{itemize}
+    \item   It is impossible to de-select all of the filters in a dependent group where at least one filter must be selected for there to be matching results.
+    \item   It is impossible to apply the filter ``Show favourites only'' if the user has no favourited items.
+    \item   If the user enters an invalid number ($\leq 0$) for the ``Within KM:'' filter, the application treats it as if no number has been specified in the assumption that the user either mistakenly entered that value or that the user was deliberately selecting an invalid value to disable the filter. 
+\end{itemize}
 
 \subsubsection{Recognition Rather than Recall}
 \begin{quote}
     \textit{ Minimize the user's memory load by making elements, actions, and options visible. The user should not have to remember information from one part of the interface to another. Information required to use the design (e.g. field labels or menu items) should be visible or easily retrievable when needed. }
 \end{quote}
 
+All relevant information to a user's task should be available to them at all times:
+\begin{itemize}
+    \item   The filters panel is always available on the home page, and is only minimised when the user specifies, so it is always ready to be used. 
+            The user can look at the map and the filters panel at the same time to hone their filters.
+
+    \item   A design consideration that was made was whether or not the sub-filters of a de-selected filter should be hidden or just greyed out:
+            in order to prevent the user from having to try and remember what filters are available to them, they are just greyed out and remain visible for ease of use.
+
+    \item   The help information on how to view Luas data is delivered in-context as the user is looking at the Luas section of the filters panel.
+
+    \item   The search bar can be used to look for items based on human-readable information like a route description, rather than a route number. 
+\end{itemize}
+
 \subsubsection{Flexibility \& Efficiency of Use}
 \begin{quote}
     \textit{ Shortcuts — hidden from novice users — may speed up the interaction for the expert user so that the design can cater to both inexperienced and experienced users. Allow users to tailor frequent actions. }
 \end{quote}
+Flexibility \& efficiency of use in the application are achieved in the following ways: 
+\begin{itemize}
+    \item   Any meaningful combination of filters can be selected by a user, allowing them to filter the results however they please.
+    \item   The search bar can be used for maximum flexibility \& efficiency by immediately narrowing down the results.
+    \item   The statistics page allows for users to gain deeper insights into the data, if interested.
+    \item   As previously mentioned, a number of keyboard shortcuts work within in the application including \verb|Ctrl+K| to search and arrow keys to navigate the map.
+    \item   The ``favourites'' functionality allows for users to display just specific services in which they are interested, and once selected they will never have to be faced within non-favourite data again if they are not interested.
+\end{itemize}
 
 \subsubsection{Aesthetic \& Minimalist Design}
 \begin{quote}
     \textit{ Interfaces should not contain information that is irrelevant or rarely needed. Every extra unit of information in an interface competes with the relevant units of information and diminishes their relative visibility. }
 \end{quote}
 
+An aesthetic \& minimalist design is achieved in the following ways:
+\begin{itemize}
+    \item   Clean, minimalist UX achieved with Tailwind CSS.
+    \item   Only the bare minimum information is displayed in the main page to help the user navigate it;
+            in-depth help information is kept in a separate area.
+    \item   The filters panel can be minimised when not in use.
+    \item   Each item's pop-up contains only data that could be relevant to the user, and is kept simple \& logically organised.
+    \item   Colour-coding of icons both enhances the aesthetic appearance of the application and its usability.
+\end{itemize}
+
 \subsubsection{Help users Recognise, Diagnose, \& Recover from Errors}
 \begin{quote}
     \textit{ Error messages should be expressed in plain language (no error codes), precisely indicate the problem, and constructively suggest a solution. }
 \end{quote}
+
+\begin{itemize}
+    \item   All error messages displayed to the user clearly indicate the issue (e.g., no favourites selected) and appear with a clear warning symbol notification pop-up.
+    \item   Error messages are kept simple \& short, and only display user-relevant information.
+            Errors in the application logic are never displayed to users.
+            No technical jargon is used in error messages.
+    \item   The application prevents users from ending up in common error states, and so recovery information is not necessary (e.g., the user cannot de-select the last filter in a dependent group).
+\end{itemize}
 
 \subsubsection{Help \& Documentation}
 \begin{quote}
     \textit{ It’s best if the system doesn’t need any additional explanation. However, it may be necessary to provide documentation to help users understand how to complete their tasks. }
 \end{quote}
 
+Help and documentation is provided in the form of the help page, which is quite comprehensive, and the tool-tip pop-up in the filters panel instructing the user how to see live Luas data.
+This could potentially be augmented with the use of a user demo or tutorial the first time the user visits the page, that takes them through the steps to complete some basic tasks.
+
 \subsection{User Evaluation}
+User evaluation was carried out towards the end of development of the program, with feedback taken on board from each user evaluation being applied to update the application and improve areas that caused users difficulty.
+The user evaluations were conducted in a one-on-one fashion, usually lasting in the range of 10--30 minutes.
+At the beginning of each evaluation, the user was asked for their informed consent to participate in this data collection process, including informing the user what the evaluation is about, what participation in the evaluation involves, their right to withdraw and have their data destroyed at any time, and how their data will be used and processed, including anonymisation of any identifying information.
+\\\\
+Each user evaluation session consisted of the user being asked to perform a number of basic tasks such as finding a specific train or bus, or finding Luas information if they were travelling from a certain location in Dublin.
+Users were asked to use the Think Aloud Protocol (TAP)\supercite{tap} which involves the user verbalising their thoughts, feelings, \& reasoning while interacting with the application.
+This allows a better picture to be drawn of what the user's mental models \& cognitive processes are, and where they do not align with the design.
+Notes were taken throughout the user evaluation on points of interest that were expressed by the user, and they were asked to complete a survey at the end.
+The users were offered no help throughout the process, and instead had to figure out how to use the application themselves based off the information presented to  them.
+The primary drawback of this approach is that it's very time-consuming, and requires an interviewer to be present to observe or record the user's though process;
+a take-home survey would be much faster, but also likely much less in-depth.
+\\\\
+There are a number of limitations associated with the approach to user evaluation that was taken:
+\begin{itemize}
+    \item   The interviews were not conducted by a disinterested third party, but by the developer of the application;
+            bias is inherent here, and cannot be eliminated regardless of best efforts made.
+
+    \item   In the absence of access to large-scale, industrial user evaluations, the sample population for the user evaluation was selected from people whom I know personally, which presents three key issues:
+            \begin{itemize}
+                \item   The sample population is not a representative random selection of the general population;
+                        many of the users came from more technical backgrounds and there was limited age range sampled.
+
+                \item   The sample population is not unbiased: they personally know the developer of the application, and therefore cannot be considered fully impartial regardless of how much they try to remain impartial.
+
+                \item   The sample population is small: ideally, hundreds of users would be surveyed for their feedback, but it was not possible to find that many willing participants within the project deadline. 
+            \end{itemize}
+
+    \item   After each user evaluation, the highlighted flaws or areas for improvement in the program were addressed, meaning that no two user evaluations were on the same version of the application.
+            This allowed for quick iteration \& improvement, at the cost of not having one canonical dataset.
+            The user ratings generally improved with each evaluation as issues were addressed \& the program refined, which is a positive indicator that the feedback was useful \& the attempts to address it worked, but casts some doubt on how comparable each evaluation is with its predecessors.
+\end{itemize}
+
+Overall, a total of 7 user evaluations were conducted, with the users surveyed being in the age range of early teens to late sixties, disproportionately from technical backgrounds, leaning to a male majority, and predominately Irish;
+English was the first language of every user surveyed.
+One user surveyed works as a professional feature tester, and another user suffers from deuteranomaly\supercite{colourblind} (common red-green colourblindness), so the population was relatively diverse despite its small size.
+\\\\
+The questions asked in the survey, and a summary of user answers to each of these questions can be seen below.
+For each question, users were given the optional to elaborate further on their answers in a text box.
+
+\subsubsection{Question 1: How easy was it to use the application?}
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=\textwidth]{./images/question1.png}}
+    \caption{Question 1 responses}
+\end{figure}
+
+The responses to the first question were overwhelmingly positive, with no users finding it ``Hard'' or ``Very hard'' to use the application.
+User comments on this question include:
+\begin{itemize}
+    \item   \textit{``Easy to use. Was impressed with the willingness of the developer to take on feedback and rapidly develop prototypes for discussion.''};
+    \item   \textit{``Self explanatory, just worked''};
+    \item   \textit{``When I had a lot of bus and train data loaded, the performance could be quite slow.''}.
+\end{itemize}
+
+The final comment came from a user who selected all filters for displaying results, which took a non-negligible time to load.
+The main culprit for this is the bus stops, as there are almost 14,000 bus stops alone in the country.
+How best to address this issue remains an open question: the Lambda functions which return the data could be given more memory to allow them to process it more quickly, or perhaps some solution could be employed to only query bus stops from the database if they are within a certain range or on a certain tile;
+most users will likely not be interested in far away bus stops regardless.
+\\\\
+The colourblind user described the greens \& reds of the Green \& Red line Luas stops as ``sufficiently distinguishable'', but struggled to tell the yellow from green in icon clusters (where the colour indicates how many items are in that cluster).
+A potential future task here would be to provide colourblind-friendly accessibility options to the application.
+
+\subsubsection{Question 2: How intuitive was the user interface of the application?}
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=\textwidth]{./images/question2.png}}
+    \caption{Question 2 responses}
+\end{figure}
+
+This question received more mixed results, with the majority of users describing the interface as ``Intuitive'', followed by ``Very intuitive'', one ``Average'', and one ``Very unintuitive''.
+The primary reason for the discrepancy in the results is that the user who said ``Very unintuitive'' was the first user who performed an evaluation, and the system UI underwent quite a substantial UI change after their evaluation, including a complete re-structuring of the filters side-panel, the addition of the ``Reset'' button, and the addition of user error warnings \& preventions.
+In particular, that particular user struggled with the fact that the application didn't display any useful information on page load: the map was blank, and the filters panel minimised, so the natural first port of call was the search bar which only acts on displayed data, which the user found greatly frustrating.
+To address this, the map was updated to automatically load markers based off the default or last saved filters of the user, and to automatically maximise the filters panel to draw users to it naturally.
+
+\subsubsection{Question 3: How easy was it to find help on how to use the application?}
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=\textwidth]{./images/question3.png}}
+    \caption{Question 3 responses}
+\end{figure}
+
+The feedback on how easy it was to find help in the application was overwhelmingly positive, with the majority considering it very easy \& easy, and one user not requiring any help at all (the most positive feedback to this question).
+Users seemed to understand the Help page well, and it was where they looked for it.
+At the request of the users, a legend was added to the help page to definitively say which icons were which, and a mouse-over tool-tip was added to the filters side-panel to instruct users on how to view Luas data, as the unavailability of Luas location caused confusion for many users.
+User comments included:
+\begin{itemize}
+    \item   \textit{``Very good. Most information is available at point of use, with some further info on the FAQ page.''};
+    \item   \textit{``The help tab was there, I would say the button might be better if it was a one time pop up suggestion of where to access it''};
+    \item   \textit{``The website was clearly laid out, and the Help/FAQ section provided me with all necessary information.''};
+    \item   \textit{``Application was very intuitive and self-explanatory.''}.
+\end{itemize}
+
+\subsubsection{Question 4: How would you say the application compares to other existing application?}
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=\textwidth]{./images/question4.png}}
+    \caption{Question 4 responses}
+\end{figure}
+
+Users overwhelming preferred the Iompar application to comparable alternatives, with no users thinking that the application was of similar quality or worse than the existing solutions.
+Users cited the UI/UX and aggregation of all public transport information into one place as reasons for their responses.
+Some comments in response to this question include:
+\begin{itemize}
+    \item   \textit{``The integration of multiple transport services makes for a better overall user-centric experience.''};
+    \item   \textit{``It feels less clunky and more transparent in what it provides.''};
+    \item   \textit{``As stated in my answer to previous questions, I found the User Interface to be much smoother and seamless than other applications I have previously encountered.''}.
+\end{itemize}
+
+\subsubsection{Question 5: How would you say the application compares to other existing application?}
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=\textwidth]{./images/question5.png}}
+    \caption{Question 5 responses}
+\end{figure}
+
+Users generally were positively inclined to using the application again in the future, with equal numbers saying ``Definitely'' and ``Probably'', and one ``Maybe''.
+Comments in response to this question included:
+\begin{itemize}
+    \item   \textit{``It gives me a lot of context on where my train or bus actually is, and I am not relying on information boards that can be inaccurate. ''};
+    \item   \textit{``Really good application, easy to use and gives data on all the forms of transport so I would not have to use multiple trackers if I was using more than one form of transport that day. ''}.
+\end{itemize}
+
+\subsubsection{Question 6: What did you like about the application?}
+Users generally cited speed, the UI, filtering options, and the aggregation of public transport data into a single place as reasons they liked the application.
+Some responses include:
+\begin{itemize}
+    \item   \textit{``It was very fast, despite the potentially large amount of data to be fetched and processed.''};
+    \item   \textit{``I can view everything I want, when I want. Particularly you can can set it to view only a certain local area, as to not load irrelevant data.''};
+\end{itemize}
+
+\subsubsection{Question 7: What did you dislike about the application?}
+Users generally had little negative to say about the application, beyond requests for additional feature.
+Some responses include:
+\begin{itemize}
+    \item   \textit{``Would like satellite tiles option.''};
+    \item   \textit{``Half of my Luas line being missing''} (this user discovered the missing Green Line Luas stops, which have since been added into the database);
+    \item   \textit{``I found very little if anything wrong with the application. Although, I believe an introduction of Northern Irish transport services could be useful, due to the slight overlap of routes.''};
+    \item   \textit{``Couldn't really say. It seemed to have all the features that I personally would need.''};
+\end{itemize}
+
+\subsubsection{Question 8: Was there a feature that you expected to find that you didn't?}
+Two users answered ``No'' to this question, but the rest of the users expressed that they expected some different functionalities.
+Some responses include:
+\begin{itemize}
+    \item   \textit{``I thought there could be an icon for parking etc. at Luas stops.''}: this would certainly be do-able, with the \mintinline{json}{"is-park-and-ride"} field for each Luas stop and a custom icon;
+    \item   \textit{``The bus lines being drawn for a route''}: I believe this response refers to a desire to be able to see the routes taken thus far by a bus or train.
+            This likely would not be impossible, but it would require supplying all past co-ordinates for a bus with that bus data when it's being loaded so that a trail could be drawn, which would likely increase loading times by quite a bit.
+            This functionality could also be implemented by storing the trail for a given bus route, and drawing the line up to the location of the given bus to display its past trail, but this would involve presenting misleading, arguably fake data to the user, and would not be particularly useful;
+    \item   \textit{``Bus schedule information for a stop''}: one user expressed an interest in bus schedule information  being available on a per-stop basis, which is certainly possible to implement as bus schedule information is available online;
+    \item   \textit{``Live locations for Luas trams''}: unfortunately, this data is not publicly available and so cannot be displayed in the application, although it would greatly improve it.
+\end{itemize}
+
+\subsubsection{User Evaluation Conclusion}
+Overall, users seemed to think the application would prove useful in their daily lives, and gave quite positive reviews, especially those who saw the later versions of the application which had been updated to address the concerns of other users.
 
 \subsection{Future Work}
+There are a number of potential expansions \& improvements to the application, including:
+\begin{itemize}
+    \item   Addition of user accounts to store user information, as previously outlined;
+    \item   Addition of a user review capability;
+    \item   Making the web application available online with a dedicated domain name;
+    \item   Running AWS Power Tuner to obtain maximally performant configurations for the Lambda functions;
+    \item   Port the application to React Native and publish it for download on iOS \& Android devices;
+    \item   Add accessibility options, such as colourblindness options or screen-reader friendly content for visually impaired users;
+    \item   Add a dark theme to the website;
+    \item   Make bus schedule information available on a per-stop basis, as per user request;
+    \item   Adding a ``Cancel'' button to loading screens;
+    \item   Expand in scope to other countries or other transport services;
+    \item   Multilingual support, such as for Irish;
+    \item   Alternate map tile options, such as satellite images as per user request;
+    \item   Indicate parking for Luas stops in the Luas stop icons on the map.
+\end{itemize}
+
 
 \subsection{Conclusion}
-
-
-
+In conclusion, all the core objectives that were set out were achieved, and many additional objectives on top of those.
+Non-trivial speed optimisations were made throughout the development of the project, including 10$\times$ and 8$\times$ speed increases.
+User evaluation revealed that users thought highly of the application, preferred it to existing alternatives, and would use it again in the future.
+\\\\
+Personally, this project has been a tremendous learning opportunity for me;
+generally speaking, I have always favoured backend development and have a substantial amount of experience with Linux-based servers.
+To undertake a project with such an emphasis on HCI was greatly outside my comfort zone, and I have learned a massive amount about the field that I didn't know before.
+I have also learned a great deal about AWS and React, both technologies with which I had minimal contact before embarking on this project.
+It would have been much easier for me to do a Linux-based project with my previous experience, but the nature of the application lent itself best to a serverless architecture, which ended up being an incredible learning opportunity, with some of the most intensive upskilling I have ever undergone in such a short time frame.
+\\\\
+It is my opinion that this project has been a great success, with many objectives achieved, glowing user reviews, and a huge amount learned about HCI, serverless computing, \& modern web development.
 
 
 
@@ -1771,7 +2044,6 @@ The application seeks to match the user's expected meaning for any term, symbol,
 
 
 \appendix
-z
 \chapter{Source Code}
 All files related to the source code of this project, including frontend source, backend source, diary files, and {\LaTeX} files for the project deliverables can be found in the project Git repository: \url{https://github.com/0hAodha/fyp}.
 
