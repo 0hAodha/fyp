@@ -182,6 +182,14 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
     const [enabledSources, setEnabledSources] = useState([]);  // New state to track enabled sources
     const [numberInputValue, setNumberInputValue] = useState("");  // State to manage number input value
     const hasMounted = useRef(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+        checkMobile(); // run on mount
+        window.addEventListener("resize", checkMobile);
+        return () => window.removeEventListener("resize", checkMobile);
+    }, []);
 
     // Load selected sources from cookies or set all as default checked
     useEffect(() => {
@@ -234,14 +242,32 @@ const Sidebar = ({ selectedSources, setSelectedSources, clusteringEnabled, setCl
 
     return (
         <div style={{
-            position: "absolute", top: "6vh", right: "1vh",
-            width: "250px", minWidth: "50px",
-            padding: isOpen ? "10px" : "5px 10px", background: "rgba(255, 255, 255, 0.9)", color: "black",
-            borderRadius: "10px", transition: "height 0.2s ease-in-out, padding 0.2s ease-in-out",
-            height: isOpen ? "auto" : "5vh", display: "flex", flexDirection: "column",
-            alignItems: "center", zIndex: 1000, overflow: "hidden", justifyContent: "center"
+            position: "fixed",
+            top: "6vh",
+            right: "1vh",
+            width: "250px",
+            minWidth: "50px",
+            padding: isOpen ? "10px" : "5px 10px",
+            background: "rgba(255, 255, 255, 0.9)",
+            color: "black",
+            borderRadius: "10px",
+            transition: "padding 0.2s ease-in-out",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            zIndex: 1000,
+            justifyContent: "flex-start",
+            maxHeight: isOpen
+                ? isMobile
+                    ? "84vh"
+                    : "90vh"
+                : "5vh",
+            overflowY: isOpen ? "auto" : "hidden",
+            overflowX: "hidden",
+            WebkitOverflowScrolling: "touch",
         }}>
-            <button onClick={() => setIsOpen(!isOpen)} style={{ background: "none", border: "none", color: "black" }}>
+
+            <button onClick={() => setIsOpen(!isOpen)} style={{background: "none", border: "none", color: "black"}}>
                 {isOpen ? "▼ Filters" : "▶ Filters"}
             </button>
             {isOpen && (
